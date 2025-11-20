@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -270,6 +271,67 @@
         }
         #projectStatusChart { max-height: 350px; }
 
+        /* MODAIS */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            animation: modalFadeIn 0.5s forwards;
+        }
+
+        .modal-content {
+            background-color: var(--card-background);
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(0, 230, 118, 0.7);
+            width: 90%;
+            max-width: 600px;
+            border: 2px solid var(--cor-primaria);
+            position: relative;
+            transform: scale(0.9);
+            animation: modalScaleIn 0.5s forwards;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 1px solid var(--cor-borda);
+            padding-bottom: 15px;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: var(--cor-primaria);
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .close-modal {
+            color: var(--cor-texto);
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .close-modal:hover {
+            color: var(--cor-primaria);
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 25px;
+        }
 
         /* Print Styles */
         @media print {
@@ -328,53 +390,19 @@
 
             <section id="clientes" class="page">
                 <h1><i class="ph ph-users"></i> Gestão de Clientes</h1>
-                <div class="form-container">
-                    <h3>Adicionar/Editar Cliente</h3>
-                    <form id="form-cliente" class="form-grid">
-                        <input type="hidden" id="cliente-id">
-                        <input type="text" id="cliente-nome" placeholder="Nome Completo" required>
-                        <input type="email" id="cliente-email" placeholder="E-mail" required>
-                        <input type="tel" id="cliente-telefone" placeholder="Telefone">
-                        <input type="text" id="cliente-documento" placeholder="CPF/CNPJ">
-                        <button type="submit" class="btn-primary">Salvar Cliente</button>
-                    </form>
-                </div>
-                <div class="table-container"><h3>Lista de Clientes</h3><table id="tabela-clientes"><thead><tr><th>Nome</th><th>Email</th><th>Telefone</th><th>Ações</th></tr></thead><tbody></tbody></table></div>
+                <button class="btn-primary" onclick="openClientModal()"><i class="ph ph-plus"></i> Adicionar Cliente</button>
+                <div class="table-container" style="margin-top: 20px;"><h3>Lista de Clientes</h3><table id="tabela-clientes"><thead><tr><th>Nome</th><th>Email</th><th>Telefone</th><th>Ações</th></tr></thead><tbody></tbody></table></div>
             </section>
             
             <section id="projetos" class="page">
                 <h1><i class="ph ph-kanban"></i> Gestão de Projetos</h1>
-                <div class="form-container">
-                    <h3>Adicionar/Editar Projeto</h3>
-                    <form id="form-projeto" class="form-grid">
-                        <input type="hidden" id="projeto-id">
-                        <input type="text" id="projeto-nome" placeholder="Nome do Projeto" required>
-                        <select id="projeto-cliente" required><option value="">Selecione um Cliente</option></select>
-                        <input type="number" id="projeto-valor" placeholder="Valor do Projeto (R$)" step="0.01" required>
-                        <select id="projeto-status" required>
-                            <option value="planejamento">Planejamento</option><option value="andamento">Em Andamento</option>
-                            <option value="concluido">Concluido</option><option value="cancelado">Cancelado</option>
-                        </select>
-                        <select id="projeto-fase" required>
-                            <option value="Análise">Fase: Análise</option><option value="Design (UI/UX)">Fase: Design (UI/UX)</option>
-                            <option value="Desenvolvimento">Fase: Desenvolvimento</option><option value="Testes">Fase: Testes</option>
-                            <option value="Implantação">Fase: Implantação</option>
-                        </select>
-                        <div><label for="projeto-data-inicio">Data de Início</label><input type="date" id="projeto-data-inicio"></div>
-                        <div><label for="projeto-data-fim">Data de Fim</label><input type="date" id="projeto-data-fim"></div>
-                        
-                        <div><label for="projeto-duracao-dias">Duração Estimada (Dias)</label><input type="number" id="projeto-duracao-dias" placeholder="Ex: 30" min="1"></div>
-                        <div><label for="projeto-progresso">Progresso (%)</label><input type="number" id="projeto-progresso" placeholder="0-100" min="0" max="100" value="0"></div>
-
-                        <textarea id="projeto-descricao" placeholder="Descrição do Projeto..." rows="4"></textarea>
-                        <button type="submit" class="btn-primary">Salvar Projeto</button>
-                    </form>
-                </div>
-                <div class="table-container"><h3>Lista de Projetos</h3><table id="tabela-projetos"><thead><tr><th>Projeto</th><th>Cliente</th><th>Fase Atual</th><th>Status</th><th>Ações</th></tr></thead><tbody></tbody></table></div>
+                <button class="btn-primary" onclick="openProjectModal()"><i class="ph ph-plus"></i> Adicionar Projeto</button>
+                <div class="table-container" style="margin-top: 20px;"><h3>Lista de Projetos</h3><table id="tabela-projetos"><thead><tr><th>Projeto</th><th>Cliente</th><th>Fase Atual</th><th>Status</th><th>Ações</th></tr></thead><tbody></tbody></table></div>
             </section>
             
             <section id="financeiro" class="page">
                 <h1><i class="ph ph-currency-circle-dollar"></i> Análise Financeira</h1>
+                <button class="btn-primary" onclick="openFinancialModal()"><i class="ph ph-plus"></i> Adicionar Lançamento</button>
                 <div class="report-container">
                     <div class="report-filters">
                         <label for="financial-period-filter">Exibir período:</label>
@@ -399,18 +427,6 @@
                         </div>
                         <div class="chart-wrapper"><h4>Receitas vs. Despesas Mensais</h4><div class="chart" id="financial-chart"></div></div>
                     </div>
-                </div>
-                <div class="form-container">
-                    <h2>Lançamentos</h2>
-                    <form id="form-financeiro" class="form-grid">
-                        <input type="hidden" id="lancamento-id">
-                        <input type="text" id="lancamento-descricao" placeholder="Descrição (Ex: Adiantamento)" required>
-                        <input type="number" id="lancamento-valor" placeholder="Valor (R$)" step="0.01" required>
-                        <select id="lancamento-tipo" required><option value="receita">Receita</option><option value="despesa">Despesa</option></select>
-                        <input type="date" id="lancamento-data" required>
-                        <select id="lancamento-projeto"><option value="">Vincular a um Projeto (Opcional)</option></select>
-                        <button type="submit" class="btn-primary">Adicionar Lançamento</button>
-                    </form>
                 </div>
                 <div class="table-container">
                     <h3>Histórico Completo de Lançamentos</h3>
@@ -467,12 +483,95 @@
         </main>
     </div>
 
+    <!-- Modal de Boas-Vindas -->
     <div id="welcomeModal" class="welcome-modal">
         <div class="welcome-modal-content">
             <h2>Olá, Programador!</h2>
             <p>Seja bem-vindo ao **GestorPRO**!</p>
             <p>Pronto para começar um novo projeto? 🚀</p>
             <button onclick="closeWelcomeModal()">Vamos lá!</button>
+        </div>
+    </div>
+
+    <!-- Modal de Cliente -->
+    <div id="clientModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="clientModalTitle">Adicionar Cliente</h3>
+                <span class="close-modal" onclick="closeClientModal()">&times;</span>
+            </div>
+            <form id="form-cliente" class="form-grid">
+                <input type="hidden" id="cliente-id">
+                <input type="text" id="cliente-nome" placeholder="Nome Completo" required>
+                <input type="email" id="cliente-email" placeholder="E-mail" required>
+                <input type="tel" id="cliente-telefone" placeholder="Telefone">
+                <input type="text" id="cliente-documento" placeholder="CPF/CNPJ">
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeClientModal()">Cancelar</button>
+                    <button type="submit" class="btn-primary">Salvar Cliente</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Projeto -->
+    <div id="projectModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="projectModalTitle">Adicionar Projeto</h3>
+                <span class="close-modal" onclick="closeProjectModal()">&times;</span>
+            </div>
+            <form id="form-projeto" class="form-grid">
+                <input type="hidden" id="projeto-id">
+                <input type="text" id="projeto-nome" placeholder="Nome do Projeto" required>
+                <select id="projeto-cliente" required><option value="">Selecione um Cliente</option></select>
+                <input type="number" id="projeto-valor" placeholder="Valor do Projeto (R$)" step="0.01" required>
+                <select id="projeto-status" required>
+                    <option value="planejamento">Planejamento</option><option value="andamento">Em Andamento</option>
+                    <option value="concluido">Concluido</option><option value="cancelado">Cancelado</option>
+                </select>
+                <select id="projeto-fase" required>
+                    <option value="Análise">Fase: Análise</option><option value="Design (UI/UX)">Fase: Design (UI/UX)</option>
+                    <option value="Desenvolvimento">Fase: Desenvolvimento</option><option value="Testes">Fase: Testes</option>
+                    <option value="Implantação">Fase: Implantação</option>
+                </select>
+                <div><label for="projeto-data-inicio">Data de Início</label><input type="date" id="projeto-data-inicio"></div>
+                <div><label for="projeto-data-fim">Data de Fim</label><input type="date" id="projeto-data-fim"></div>
+                
+                <div><label for="projeto-duracao-dias">Duração Estimada (Dias)</label><input type="number" id="projeto-duracao-dias" placeholder="Ex: 30" min="1"></div>
+                <div><label for="projeto-progresso">Progresso (%)</label><input type="number" id="projeto-progresso" placeholder="0-100" min="0" max="100" value="0"></div>
+                
+                <!-- NOVO CAMPO: Link do Projeto -->
+                <div><label for="projeto-link">Link do Projeto (URL)</label><input type="url" id="projeto-link" placeholder="https://exemplo.com/projeto"></div>
+
+                <textarea id="projeto-descricao" placeholder="Descrição do Projeto..." rows="4"></textarea>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeProjectModal()">Cancelar</button>
+                    <button type="submit" class="btn-primary">Salvar Projeto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Lançamento Financeiro -->
+    <div id="financialModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="financialModalTitle">Adicionar Lançamento</h3>
+                <span class="close-modal" onclick="closeFinancialModal()">&times;</span>
+            </div>
+            <form id="form-financeiro" class="form-grid">
+                <input type="hidden" id="lancamento-id">
+                <input type="text" id="lancamento-descricao" placeholder="Descrição (Ex: Adiantamento)" required>
+                <input type="number" id="lancamento-valor" placeholder="Valor (R$)" step="0.01" required>
+                <select id="lancamento-tipo" required><option value="receita">Receita</option><option value="despesa">Despesa</option></select>
+                <input type="date" id="lancamento-data" required>
+                <select id="lancamento-projeto"><option value="">Vincular a um Projeto (Opcional)</option></select>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeFinancialModal()">Cancelar</button>
+                    <button type="submit" class="btn-primary">Adicionar Lançamento</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -578,6 +677,59 @@ function closeWelcomeModal() {
     if (modal) modal.style.display = 'none';
 }
 
+// Funções para abrir e fechar modais
+function openClientModal() {
+    document.getElementById('clientModal').style.display = 'block';
+    document.getElementById('clientModalTitle').textContent = 'Adicionar Cliente';
+    document.getElementById('form-cliente').reset();
+    document.getElementById('cliente-id').value = '';
+}
+
+function closeClientModal() {
+    document.getElementById('clientModal').style.display = 'none';
+}
+
+function openProjectModal() {
+    document.getElementById('projectModal').style.display = 'block';
+    document.getElementById('projectModalTitle').textContent = 'Adicionar Projeto';
+    document.getElementById('form-projeto').reset();
+    document.getElementById('projeto-id').value = '';
+    populateClientDropdown('projeto-cliente');
+}
+
+function closeProjectModal() {
+    document.getElementById('projectModal').style.display = 'none';
+}
+
+function openFinancialModal() {
+    document.getElementById('financialModal').style.display = 'block';
+    document.getElementById('financialModalTitle').textContent = 'Adicionar Lançamento';
+    document.getElementById('form-financeiro').reset();
+    document.getElementById('lancamento-id').value = '';
+    populateProjectDropdown('lancamento-projeto');
+}
+
+function closeFinancialModal() {
+    document.getElementById('financialModal').style.display = 'none';
+}
+
+// Fechar modal ao clicar fora dele
+window.onclick = function(event) {
+    const clientModal = document.getElementById('clientModal');
+    const projectModal = document.getElementById('projectModal');
+    const financialModal = document.getElementById('financialModal');
+    
+    if (event.target === clientModal) {
+        closeClientModal();
+    }
+    if (event.target === projectModal) {
+        closeProjectModal();
+    }
+    if (event.target === financialModal) {
+        closeFinancialModal();
+    }
+}
+
 function renderFinancialReport(period = 'esteMes') {
     const transactions = period === 'todoPeriodo' ? db.financeiro : getTransactionsByPeriod(period);
     const totalReceitas = transactions.filter(t => t.tipo === 'receita').reduce((sum, t) => sum + t.valor, 0);
@@ -645,8 +797,7 @@ function handleClientFormSubmit(e) {
         db.clientes.push({ id: 'cli_' + Date.now(), ...data }); 
     } 
     saveData();
-    form.reset();
-    form['cliente-id'].value = '';
+    closeClientModal();
 }
 
 function renderClientsTable() {
@@ -667,6 +818,8 @@ function editClient(id) {
     form['cliente-email'].value = c.email; 
     form['cliente-telefone'].value = c.telefone; 
     form['cliente-documento'].value = c.documento; 
+    document.getElementById('clientModalTitle').textContent = 'Editar Cliente';
+    document.getElementById('clientModal').style.display = 'block';
     showPage('clientes'); 
     window.scrollTo(0,0); 
 }
@@ -683,7 +836,8 @@ function handleProjectFormSubmit(e) {
         valor: parseFloat(form['projeto-valor'].value), status: form['projeto-status'].value,
         fase: form['projeto-fase'].value, dataInicio: form['projeto-data-inicio'].value,
         dataFim: form['projeto-data-fim'].value, descricao: form['projeto-descricao'].value,
-        duracaoDias: parseInt(form['projeto-duracao-dias'].value) || 0, progresso: parseInt(form['projeto-progresso'].value) || 0
+        duracaoDias: parseInt(form['projeto-duracao-dias'].value) || 0, progresso: parseInt(form['projeto-progresso'].value) || 0,
+        link: form['projeto-link'].value // NOVO CAMPO: Link do projeto
     };
     if (id) {
         const index = db.projetos.findIndex(p => p.id === id);
@@ -692,8 +846,7 @@ function handleProjectFormSubmit(e) {
         db.projetos.push({ id: 'proj_' + Date.now(), ...data });
     }
     saveData();
-    form.reset();
-    form['projeto-id'].value = '';
+    closeProjectModal();
 }
 
 function editProject(id) {
@@ -711,6 +864,9 @@ function editProject(id) {
     form['projeto-descricao'].value = p.descricao;
     form['projeto-duracao-dias'].value = p.duracaoDias || '';
     form['projeto-progresso'].value = p.progresso || 0;
+    form['projeto-link'].value = p.link || ''; // NOVO CAMPO: Link do projeto
+    document.getElementById('projectModalTitle').textContent = 'Editar Projeto';
+    document.getElementById('projectModal').style.display = 'block';
     showPage('projetos');
     window.scrollTo(0, 0);
 }
@@ -733,8 +889,7 @@ function handleFinancialFormSubmit(e) {
         db.financeiro.push({ id: 'fin_' + Date.now(), ...data }); 
     } 
     saveData();
-    form.reset();
-    form['lancamento-id'].value = '';
+    closeFinancialModal();
 }
 
 function editFinancial(id) { 
@@ -747,6 +902,8 @@ function editFinancial(id) {
     form['lancamento-tipo'].value = f.tipo; 
     form['lancamento-data'].value = f.data; 
     form['lancamento-projeto'].value = f.projetoId; 
+    document.getElementById('financialModalTitle').textContent = 'Editar Lançamento';
+    document.getElementById('financialModal').style.display = 'block';
     showPage('financeiro'); window.scrollTo(0,0); 
 }
 
