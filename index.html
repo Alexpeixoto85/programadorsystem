@@ -333,6 +333,30 @@
             margin-top: 25px;
         }
 
+        /* Links clicáveis */
+        .project-link {
+            color: var(--cor-secundaria);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: color 0.3s;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .project-link:hover {
+            color: var(--cor-primaria);
+            text-decoration: underline;
+        }
+
+        .project-link .ph {
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
         /* Print Styles */
         @media print {
             body, .container { margin: 0; padding: 0; background-color: white; color: black; }
@@ -397,7 +421,22 @@
             <section id="projetos" class="page">
                 <h1><i class="ph ph-kanban"></i> Gestão de Projetos</h1>
                 <button class="btn-primary" onclick="openProjectModal()"><i class="ph ph-plus"></i> Adicionar Projeto</button>
-                <div class="table-container" style="margin-top: 20px;"><h3>Lista de Projetos</h3><table id="tabela-projetos"><thead><tr><th>Projeto</th><th>Cliente</th><th>Fase Atual</th><th>Status</th><th>Ações</th></tr></thead><tbody></tbody></table></div>
+                <div class="table-container" style="margin-top: 20px;">
+                    <h3>Lista de Projetos</h3>
+                    <table id="tabela-projetos">
+                        <thead>
+                            <tr>
+                                <th>Projeto</th>
+                                <th>Cliente</th>
+                                <th>Link</th>
+                                <th>Fase Atual</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </section>
             
             <section id="financeiro" class="page">
@@ -873,6 +912,35 @@ function editProject(id) {
 
 function deleteProject(id) { if (confirm('Tem certeza?')) { db.projetos = db.projetos.filter(p => p.id !== id); db.financeiro = db.financeiro.filter(f => f.projetoId !== id); saveData(); } }
 
+function renderProjectsTable() { 
+    const tableBody = document.querySelector('#projetos #tabela-projetos tbody'); 
+    tableBody.innerHTML = ''; 
+    db.projetos.forEach(p => { 
+        const cliente = db.clientes.find(c => c.id === p.clienteId); 
+        const r = tableBody.insertRow(); 
+        
+        // Link do projeto clicável
+        let linkHtml = 'N/A';
+        if (p.link) {
+            // Extrair o domínio para exibição mais limpa
+            const domain = p.link.replace(/^https?:\/\/(www\.)?/, '').split('/')[0];
+            linkHtml = `<a href="${p.link}" target="_blank" class="project-link" title="${p.link}"><i class="ph ph-link"></i> ${domain}</a>`;
+        }
+        
+        r.innerHTML = `
+            <td>${p.nome}</td>
+            <td>${cliente ? cliente.nome : 'N/A'}</td>
+            <td>${linkHtml}</td>
+            <td>${p.fase || 'N/A'}</td>
+            <td><span class="status ${p.status}">${p.status.charAt(0).toUpperCase() + p.status.slice(1)}</span></td>
+            <td class="actions">
+                <button class="edit" onclick="editProject('${p.id}')"><i class="ph ph-pencil-simple"></i></button>
+                <button class="delete" onclick="deleteProject('${p.id}')"><i class="ph ph-trash"></i></button>
+            </td>
+        `; 
+    }); 
+}
+
 function handleFinancialFormSubmit(e) {
     e.preventDefault();
     const form = e.target;
@@ -918,16 +986,6 @@ function updateDashboard() {
     document.getElementById('total-projetos-andamento-dashboard').textContent = db.projetos.filter(p => p.status === 'andamento').length;
     document.getElementById('total-projetos-concluido').textContent = db.projetos.filter(p => p.status === 'concluido').length;
     document.getElementById('total-projetos-cancelado').textContent = db.projetos.filter(p => p.status === 'cancelado').length;
-}
-
-function renderProjectsTable() { 
-    const tableBody = document.querySelector('#projetos #tabela-projetos tbody'); 
-    tableBody.innerHTML = ''; 
-    db.projetos.forEach(p => { 
-        const cliente = db.clientes.find(c => c.id === p.clienteId); 
-        const r = tableBody.insertRow(); 
-        r.innerHTML = `<td>${p.nome}</td><td>${cliente ? cliente.nome : 'N/A'}</td><td>${p.fase || 'N/A'}</td><td><span class="status ${p.status}">${p.status.charAt(0).toUpperCase() + p.status.slice(1)}</span></td><td class="actions"><button class="edit" onclick="editProject('${p.id}')"><i class="ph ph-pencil-simple"></i></button><button class="delete" onclick="deleteProject('${p.id}')"><i class="ph ph-trash"></i></button></td>`; 
-    }); 
 }
 
 function renderPhaseReport() {
