@@ -1,2478 +1,2617 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GestorPRO - Sistema Futurista</title>
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap');
-
-        :root {
-            --cor-primaria: #00e676;
-            --cor-secundaria: #8c9eff;
-            --cor-sucesso: #00c853;
-            --cor-perigo: #ff5252;
-            --cor-aviso: #ffea00;
-            --cor-fundo: #1a1a2e;
-            --cor-fundo-sidebar: #16213e;
-            --cor-texto: #e0e0e0;
-            --cor-borda: #0f3460;
-            --sombra-caixa: 0 4px 15px rgba(0, 230, 118, 0.2);
-            --card-background: #0f3460;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
-        body { background-color: var(--cor-fundo); color: var(--cor-texto); overflow-x: hidden; }
-        
-        /* Container responsivo */
-        .container { 
-            display: flex; 
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        /* Sidebar responsiva */
-        .sidebar { 
-            background-color: var(--cor-fundo-sidebar); 
-            padding: 15px;
-            border-bottom: 1px solid var(--cor-borda);
-            width: 100%;
-            z-index: 1000;
-            box-shadow: var(--sombra-caixa);
-            position: relative;
-        }
-        
-        .sidebar-header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .sidebar-header h3 { 
-            font-size: 1.5rem; 
-            color: var(--cor-primaria); 
-            font-family: 'Orbitron', sans-serif; 
-            text-shadow: 0 0 10px var(--cor-primaria);
-            margin: 0;
-        }
-        
-        .mobile-menu-btn {
-            display: none;
-            background: none;
-            border: none;
-            color: var(--cor-primaria);
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
-        
-        .sidebar nav {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-        
-        .sidebar nav button {
-            background: none;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s;
-            color: var(--cor-texto);
-            white-space: nowrap;
-        }
-        
-        .sidebar nav button:hover {
-            background-color: rgba(0, 230, 118, 0.1);
-            color: var(--cor-primaria);
-        }
-        
-        .sidebar nav button.active {
-            background-color: var(--cor-primaria);
-            color: var(--cor-fundo-sidebar);
-            font-weight: bold;
-            box-shadow: 0 0 15px var(--cor-primaria);
-        }
-        
-        .sidebar nav button .ph { font-size: 1.1rem; }
-
-        /* Main content responsivo */
-        .main-content {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            width: 100%;
-        }
-        
-        .page {
-            display: none;
-            width: 100%;
-            animation: fadeIn 0.5s forwards;
-        }
-        
-        .page.active { display: block; }
-        
-        @keyframes fadeIn { 
-            from { opacity: 0; transform: translateY(10px); } 
-            to { opacity: 1; transform: translateY(0); } 
-        }
-
-        /* Typography responsiva */
-        h1, h2, h3 { 
-            color: var(--cor-primaria); 
-            font-family: 'Orbitron', sans-serif; 
-            text-shadow: 0 0 8px rgba(0, 230, 118, 0.5);
-            word-wrap: break-word;
-        }
-        
-        h1 { 
-            font-size: 1.8rem; 
-            margin-bottom: 20px; 
-            display: flex; 
-            align-items: center; 
-            gap: 10px;
-        }
-        
-        h2 { 
-            font-size: 1.5rem; 
-            margin-top: 25px; 
-            margin-bottom: 15px; 
-            border-bottom: 2px solid var(--cor-primaria); 
-            padding-bottom: 6px;
-        }
-        
-        h3 { font-size: 1.3rem; margin-bottom: 15px; }
-
-        /* Buttons responsivos */
-        .btn-primary, .btn-secondary, .btn-danger, .btn-warning {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            color: var(--cor-fundo);
-            font-weight: bold;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin: 5px 0;
-            width: 100%;
-            max-width: 300px;
-            justify-content: center;
-        }
-        
-        .btn-primary { background-color: var(--cor-primaria); box-shadow: 0 0 10px var(--cor-primaria); }
-        .btn-secondary { background-color: var(--cor-secundaria); box-shadow: 0 0 10px var(--cor-secundaria); }
-        .btn-danger { background-color: var(--cor-perigo); box-shadow: 0 0 10px var(--cor-perigo); }
-        .btn-warning { background-color: var(--cor-aviso); color: var(--cor-fundo); box-shadow: 0 0 10px var(--cor-aviso); }
-        
-        .btn-primary:hover { background-color: var(--cor-sucesso); transform: translateY(-2px); box-shadow: 0 5px 15px var(--cor-primaria); }
-        .btn-secondary:hover { background-color: #7987ff; transform: translateY(-2px); box-shadow: 0 5px 15px var(--cor-secundaria); }
-
-        /* Grids e Cards responsivos */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 15px;
-            width: 100%;
-        }
-        
-        .clickable-card {
-            background-color: var(--card-background);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: var(--sombra-caixa);
-            border: 1px solid var(--cor-borda);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            min-height: 120px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        
-        .clickable-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0, 230, 118, 0.3);
-            border-color: var(--cor-primaria);
-        }
-        
-        .clickable-card h3 {
-            margin-bottom: 10px;
-            font-weight: 500;
-            color: var(--cor-texto);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 1rem;
-        }
-        
-        .clickable-card p {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--cor-primaria);
-            font-family: 'Orbitron', sans-serif;
-            margin: 10px 0;
-        }
-        
-        .card-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: auto;
-            font-size: 0.85rem;
-            color: var(--cor-texto);
-        }
-        
-        .card-arrow {
-            color: var(--cor-primaria);
-            font-size: 1rem;
-            transition: transform 0.3s;
-        }
-        
-        .clickable-card:hover .card-arrow {
-            transform: translateX(5px);
-        }
-
-        /* Forms responsivos */
-        .form-container, .table-container, .generator-container, .report-container {
-            background-color: var(--card-background);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: var(--sombra-caixa);
-            margin-bottom: 20px;
-            border: 1px solid var(--cor-borda);
-            width: 100%;
-            overflow-x: auto;
-        }
-        
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 15px;
-        }
-        
-        input, select, textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid var(--cor-borda);
-            border-radius: 8px;
-            font-size: 0.95rem;
-            background-color: #1a1a2e;
-            color: var(--cor-texto);
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-        
-        input:focus, select:focus, textarea:focus {
-            border-color: var(--cor-primaria);
-            box-shadow: 0 0 8px rgba(0, 230, 118, 0.5);
-            outline: none;
-        }
-        
-        textarea {
-            grid-column: 1 / -1;
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        /* Tables responsivas */
-        .table-wrapper {
-            overflow-x: auto;
-            width: 100%;
-            margin-top: 15px;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            min-width: 600px;
-        }
-        
-        th, td {
-            padding: 12px 8px;
-            text-align: left;
-            border-bottom: 1px solid var(--cor-borda);
-            color: var(--cor-texto);
-            font-size: 0.9rem;
-        }
-        
-        th {
-            color: var(--cor-primaria);
-            font-weight: bold;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            white-space: nowrap;
-        }
-        
-        tbody tr:nth-child(even) {
-            background-color: rgba(0, 230, 118, 0.03);
-        }
-        
-        tbody tr:hover {
-            background-color: rgba(0, 230, 118, 0.1);
-        }
-
-        /* Status badges */
-        .status {
-            padding: 5px 10px;
-            border-radius: 20px;
-            color: white;
-            font-size: 0.8rem;
-            font-weight: bold;
-            display: inline-block;
-            text-align: center;
-            min-width: 100px;
-        }
-        
-        .status.planejamento { background-color: var(--cor-aviso); color: var(--cor-fundo); }
-        .status.andamento { background-color: var(--cor-primaria); }
-        .status.concluido { background-color: var(--cor-sucesso); }
-        .status.cancelado { background-color: var(--cor-perigo); }
-
-        /* Modal responsivo */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(5px);
-            animation: modalFadeIn 0.5s forwards;
-            padding: 20px;
-            overflow-y: auto;
-        }
-        
-        .modal-content {
-            background-color: var(--card-background);
-            margin: auto;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 0 30px rgba(0, 230, 118, 0.7);
-            width: 100%;
-            max-width: 800px;
-            border: 2px solid var(--cor-primaria);
-            position: relative;
-            animation: modalScaleIn 0.5s forwards;
-        }
-
-        /* Relatórios responsivos */
-        .report-filters {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-bottom: 20px;
-            align-items: center;
-        }
-        
-        .report-filters label {
-            font-weight: 500;
-            color: var(--cor-primaria);
-            min-width: 120px;
-        }
-        
-        .report-filters select {
-            min-width: 200px;
-            max-width: 300px;
-        }
-        
-        .financial-summary {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .card {
-            background-color: var(--card-background);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: var(--sombra-caixa);
-            border: 1px solid var(--cor-borda);
-            text-align: center;
-        }
-        
-        .card h3 {
-            margin-bottom: 10px;
-            font-weight: 500;
-            color: var(--cor-texto);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            justify-content: center;
-            font-size: 1rem;
-        }
-        
-        .card p {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--cor-primaria);
-            font-family: 'Orbitron', sans-serif;
-            word-break: break-word;
-        }
-        
-        .chart-container {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        
-        .chart-wrapper {
-            background: var(--card-background);
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid var(--cor-borda);
-            box-shadow: var(--sombra-caixa);
-            width: 100%;
-            overflow-x: auto;
-        }
-
-        /* Kanban responsivo */
-        .kanban-board {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            width: 100%;
-        }
-        
-        @media (min-width: 992px) {
-            .kanban-board {
-                flex-direction: row;
-                overflow-x: auto;
-            }
-        }
-        
-        .kanban-column {
-            flex: 1;
-            min-width: 300px;
-            background-color: #16213e;
-            border-radius: 12px;
-            border: 1px solid var(--cor-borda);
-            box-shadow: var(--sombra-caixa);
-        }
-
-        /* Document preview responsivo */
-        #documento-preview {
-            background: var(--cor-fundo-sidebar);
-            width: 100%;
-            min-height: auto;
-            padding: 20px;
-            margin: 1rem auto;
-            box-shadow: var(--sombra-caixa);
-            border: 1px solid var(--cor-borda);
-            font-family: 'Lato', sans-serif;
-            color: var(--cor-texto);
-            overflow-x: auto;
-        }
-        
-        @media (min-width: 768px) {
-            #documento-preview {
-                width: 21cm;
-                min-height: 29.7cm;
-                padding: 2cm;
-            }
-        }
-
-        /* Media Queries para diferentes tamanhos de tela */
-        @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
-            }
-            
-            .sidebar {
-                padding: 10px;
-            }
-            
-            .sidebar nav {
-                flex-direction: column;
-                align-items: stretch;
-                max-height: 0;
-                overflow: hidden;
-                transition: max-height 0.3s ease;
-            }
-            
-            .sidebar nav.active {
-                max-height: 500px;
-            }
-            
-            .mobile-menu-btn {
-                display: block;
-            }
-            
-            .main-content {
-                padding: 15px;
-            }
-            
-            h1 {
-                font-size: 1.6rem;
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 5px;
-            }
-            
-            .dashboard-grid {
-                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-                gap: 12px;
-            }
-            
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .modal-content {
-                padding: 15px;
-                margin: 10px;
-            }
-            
-            .report-filters {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
-            .report-filters select {
-                min-width: 100%;
-            }
-            
-            .financial-summary {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .clickable-card p {
-                font-size: 1.8rem;
-            }
-            
-            .card p {
-                font-size: 1.5rem;
-            }
-            
-            .btn-primary, .btn-secondary, .btn-danger, .btn-warning {
-                padding: 8px 15px;
-                font-size: 0.9rem;
-            }
-            
-            th, td {
-                padding: 8px 5px;
-                font-size: 0.85rem;
-            }
-        }
-        
-        @media (min-width: 769px) {
-            .container {
-                flex-direction: row;
-                height: 100vh;
-            }
-            
-            .sidebar {
-                width: 250px;
-                height: 100vh;
-                position: fixed;
-                left: 0;
-                top: 0;
-                border-right: 1px solid var(--cor-borda);
-                border-bottom: none;
-                padding: 20px;
-            }
-            
-            .sidebar-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            
-            .mobile-menu-btn {
-                display: none;
-            }
-            
-            .sidebar nav {
-                flex-direction: column;
-                flex-wrap: nowrap;
-                align-items: stretch;
-                max-height: none !important;
-            }
-            
-            .main-content {
-                margin-left: 250px;
-                width: calc(100% - 250px);
-                padding: 30px;
-            }
-        }
-
-        /* Print styles */
-        @media print {
-            .sidebar, .mobile-menu-btn, .document-controls button:not(#btn-print) {
-                display: none !important;
-            }
-            
-            .main-content {
-                margin-left: 0 !important;
-                width: 100% !important;
-                padding: 0 !important;
-            }
-            
-            #documento-preview {
-                width: 100% !important;
-                min-height: auto !important;
-                padding: 1cm !important;
-                margin: 0 !important;
-                box-shadow: none !important;
-                border: none !important;
-            }
-        }
-        
-        /* Scrollbar personalizada */
-        .main-content::-webkit-scrollbar {
-            width: 8px;
-        }
-        
-        .main-content::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        
-        .main-content::-webkit-scrollbar-thumb {
-            background-color: var(--cor-primaria);
-            border-radius: 20px;
-            border: 2px solid var(--cor-fundo);
-        }
-        
-        /* Animações */
-        @keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes modalScaleIn { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <h3>GestorPRO</h3>
-                <button class="mobile-menu-btn" onclick="toggleSidebar()">
-                    <i class="ph ph-list"></i>
-                </button>
-            </div>
-            <nav id="sidebar-nav">
-                <button onclick="showPage('dashboard')"><i class="ph ph-house"></i> Painel de Controle</button>
-                <button onclick="showPage('relatorios')"><i class="ph ph-chart-line"></i> Relatórios</button>
-                <button onclick="showPage('clientes')"><i class="ph ph-users"></i> Clientes</button>
-                <button onclick="showPage('projetos')"><i class="ph ph-kanban"></i> Projetos</button>
-                <button onclick="showPage('financeiro')"><i class="ph ph-currency-circle-dollar"></i> Financeiro</button>
-                <button onclick="showPage('contratos')"><i class="ph ph-file-text"></i> Contratos e Recibos</button>
-                <button onclick="showPage('configuracoes')"><i class="ph ph-gear"></i> Configurações</button>
-            </nav>
-        </aside>
-
-        <main class="main-content">
-            <section id="dashboard" class="page active">
-                <h1><i class="ph ph-house"></i> Painel de Controle</h1>
-                <div class="dashboard-grid">
-                    <div class="clickable-card" onclick="navigateTo('clientes')">
-                        <h3><i class="ph ph-users"></i> Clientes Ativos</h3>
-                        <p id="total-clientes">0</p>
-                        <div class="card-info">
-                            <span>Ver todos os clientes</span>
-                            <span class="card-arrow"><i class="ph ph-arrow-right"></i></span>
-                        </div>
-                    </div>
-                    
-                    <div class="clickable-card" onclick="navigateTo('projetos')">
-                        <h3><i class="ph ph-kanban"></i> Total de Projetos</h3>
-                        <p id="total-projetos-geral">0</p>
-                        <div class="card-info">
-                            <span>Ver todos os projetos</span>
-                            <span class="card-arrow"><i class="ph ph-arrow-right"></i></span>
-                        </div>
-                    </div>
-                    
-                    <div class="clickable-card" onclick="navigateTo('projetos', 'planejamento')">
-                        <h3><i class="ph ph-clipboard-text"></i> Planejamento</h3>
-                        <p id="total-projetos-planejamento">0</p>
-                        <div class="card-info">
-                            <span>Ver projetos em planejamento</span>
-                            <span class="card-arrow"><i class="ph ph-arrow-right"></i></span>
-                        </div>
-                    </div>
-                    
-                    <div class="clickable-card" onclick="navigateTo('projetos', 'andamento')">
-                        <h3><i class="ph ph-trend-up"></i> Em Andamento</h3>
-                        <p id="total-projetos-andamento-dashboard">0</p>
-                        <div class="card-info">
-                            <span>Ver projetos em andamento</span>
-                            <span class="card-arrow"><i class="ph ph-arrow-right"></i></span>
-                        </div>
-                    </div>
-                    
-                    <div class="clickable-card" onclick="navigateTo('projetos', 'concluido')">
-                        <h3><i class="ph ph-check-circle"></i> Concluídos</h3>
-                        <p id="total-projetos-concluido">0</p>
-                        <div class="card-info">
-                            <span>Ver projetos concluídos</span>
-                            <span class="card-arrow"><i class="ph ph-arrow-right"></i></span>
-                        </div>
-                    </div>
-                    
-                    <div class="clickable-card" onclick="navigateTo('projetos', 'cancelado')">
-                        <h3><i class="ph ph-x-circle"></i> Cancelados</h3>
-                        <p id="total-projetos-cancelado">0</p>
-                        <div class="card-info">
-                            <span>Ver projetos cancelados</span>
-                            <span class="card-arrow"><i class="ph ph-arrow-right"></i></span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="chart-dashboard-container" style="margin-top: 30px;">
-                    <h2><i class="ph ph-chart-pie"></i> Status dos Projetos</h2>
-                    <div style="height: 300px; width: 100%;">
-                        <canvas id="projectStatusChart"></canvas>
-                    </div>
-                </div>
-            </section>
-
-            <section id="relatorios" class="page">
-                <h1><i class="ph ph-chart-line"></i> Relatórios Avançados</h1>
-                
-                <div class="report-container">
-                    <h3>Filtros de Relatório</h3>
-                    <div class="report-filters">
-                        <div>
-                            <label for="report-type">Tipo de Relatório:</label>
-                            <select id="report-type" onchange="updateReportFilters()">
-                                <option value="projetos">Relatório de Projetos</option>
-                                <option value="financeiro">Relatório Financeiro</option>
-                                <option value="clientes">Relatório de Clientes</option>
-                            </select>
-                        </div>
-                        
-                        <div id="project-filters" style="display: block;">
-                            <label for="project-status-filter">Status do Projeto:</label>
-                            <select id="project-status-filter">
-                                <option value="todos">Todos os Status</option>
-                                <option value="planejamento">Planejamento</option>
-                                <option value="andamento">Em Andamento</option>
-                                <option value="concluido">Concluído</option>
-                                <option value="cancelado">Cancelado</option>
-                            </select>
-                            
-                            <label for="project-phase-filter" style="margin-left: 15px;">Fase:</label>
-                            <select id="project-phase-filter">
-                                <option value="todos">Todas as Fases</option>
-                                <option value="Análise">Análise</option>
-                                <option value="Design (UI/UX)">Design (UI/UX)</option>
-                                <option value="Desenvolvimento">Desenvolvimento</option>
-                                <option value="Testes">Testes</option>
-                                <option value="Implantação">Implantação</option>
-                            </select>
-                        </div>
-                        
-                        <div id="financial-filters" style="display: none;">
-                            <label for="financial-period">Período:</label>
-                            <select id="financial-period">
-                                <option value="esteMes">Este Mês</option>
-                                <option value="mesPassado">Mês Passado</option>
-                                <option value="esteAno">Este Ano</option>
-                                <option value="todoPeriodo">Todo o Período</option>
-                            </select>
-                            
-                            <label for="financial-type" style="margin-left: 15px;">Tipo:</label>
-                            <select id="financial-type">
-                                <option value="ambos">Receitas e Despesas</option>
-                                <option value="receita">Apenas Receitas</option>
-                                <option value="despesa">Apenas Despesas</option>
-                            </select>
-                        </div>
-                        
-                        <div>
-                            <label for="date-range">Período:</label>
-                            <select id="date-range">
-                                <option value="todoPeriodo">Todo o Período</option>
-                                <option value="esteMes">Este Mês</option>
-                                <option value="ultimos3Meses">Últimos 3 Meses</option>
-                                <option value="esteAno">Este Ano</option>
-                                <option value="customizado">Personalizado</option>
-                            </select>
-                        </div>
-                        
-                        <div id="custom-date-range" style="display: none; width: 100%;">
-                            <label for="start-date">Data Inicial:</label>
-                            <input type="date" id="start-date">
-                            
-                            <label for="end-date" style="margin-left: 15px;">Data Final:</label>
-                            <input type="date" id="end-date">
-                        </div>
-                    </div>
-                    
-                    <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
-                        <button class="btn-primary" onclick="generateReport()">
-                            <i class="ph ph-magnifying-glass"></i> Gerar Relatório
-                        </button>
-                        <button class="btn-secondary" onclick="exportReportToPDF()" id="export-pdf-btn" style="display: none;">
-                            <i class="ph ph-file-pdf"></i> Exportar para PDF
-                        </button>
-                        <button class="btn-warning" onclick="exportReportToCSV()" id="export-csv-btn" style="display: none;">
-                            <i class="ph ph-file-csv"></i> Exportar para CSV
-                        </button>
-                    </div>
-                </div>
-                
-                <div id="report-results" class="report-container" style="display: none;">
-                    <h3>Resultados do Relatório</h3>
-                    <div class="table-wrapper">
-                        <table id="report-table">
-                            <thead id="report-table-head">
-                                <!-- Cabeçalho será preenchido dinamicamente -->
-                            </thead>
-                            <tbody id="report-table-body">
-                                <!-- Dados serão preenchidos dinamicamente -->
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <div id="report-summary" style="margin-top: 20px; padding: 15px; background: rgba(0,230,118,0.1); border-radius: 8px;">
-                        <!-- Resumo será preenchido dinamicamente -->
-                    </div>
-                </div>
-                
-                <div class="report-container">
-                    <h3>Relatório de Projetos por Fase (Kanban)</h3>
-                    <div class="kanban-board" id="kanban-board"></div>
-                </div>
-            </section>
-
-            <section id="clientes" class="page">
-                <h1><i class="ph ph-users"></i> Gestão de Clientes</h1>
-                <button class="btn-primary" onclick="openClientModal()"><i class="ph ph-plus"></i> Adicionar Cliente</button>
-                <div class="table-container" style="margin-top: 20px;">
-                    <h3>Lista de Clientes</h3>
-                    <div class="table-wrapper">
-                        <table id="tabela-clientes">
-                            <thead>
-                                <tr>
-                                    <th>Nome</th>
-                                    <th>Email</th>
-                                    <th>Telefone</th>
-                                    <th>Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-            
-            <section id="projetos" class="page">
-                <h1><i class="ph ph-kanban"></i> Gestão de Projetos</h1>
-                <button class="btn-primary" onclick="openProjectModal()"><i class="ph ph-plus"></i> Adicionar Projeto</button>
-                <div class="table-container" style="margin-top: 20px;">
-                    <h3>Lista de Projetos</h3>
-                    <div class="table-wrapper">
-                        <table id="tabela-projetos">
-                            <thead>
-                                <tr>
-                                    <th>Projeto</th>
-                                    <th>Cliente</th>
-                                    <th>Link</th>
-                                    <th>Fase Atual</th>
-                                    <th>Status</th>
-                                    <th>Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-            
-            <section id="financeiro" class="page">
-                <h1><i class="ph ph-currency-circle-dollar"></i> Análise Financeira</h1>
-                <button class="btn-primary" onclick="openFinancialModal()"><i class="ph ph-plus"></i> Adicionar Lançamento</button>
-                <div class="report-container">
-                    <div class="report-filters">
-                        <label for="financial-period-filter">Exibir período:</label>
-                        <select id="financial-period-filter" onchange="renderFinancialReport(this.value)">
-                            <option value="esteMes">Este Mês</option>
-                            <option value="mesPassado">Mês Passado</option>
-                            <option value="esteAno">Este Ano</option>
-                            <option value="todoPeriodo">Todo o Período</option>
-                        </select>
-                    </div>
-                    <div class="financial-summary">
-                        <div class="card receita">
-                            <h3><i class="ph ph-arrow-circle-up"></i>Receitas</h3>
-                            <p id="total-receitas">R$ 0,00</p>
-                        </div>
-                        <div class="card despesa">
-                            <h3><i class="ph ph-arrow-circle-down"></i>Despesas</h3>
-                            <p id="total-despesas">R$ 0,00</p>
-                        </div>
-                        <div class="card saldo">
-                            <h3><i class="ph ph-scales"></i>Saldo</h3>
-                            <p id="saldo-total">R$ 0,00</p>
-                        </div>
-                        <div class="card previsao">
-                            <h3><i class="ph ph-trend-up"></i> Previsão</h3>
-                            <p id="previsao-receita">R$ 0,00</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="report-container">
-                    <h2>Análise Gráfica e por Projeto</h2>
-                    <div class="chart-container">
-                        <div class="table-container" style="margin:0;">
-                            <h4>Receitas por Projeto</h4>
-                            <div class="table-wrapper">
-                                <table id="tabela-receitas-projeto">
-                                    <thead>
-                                        <tr>
-                                            <th>Projeto</th>
-                                            <th>Receita Total</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody></tbody>
-                                </table>
-                            </div>
-                        </div>
-                        <div class="chart-wrapper">
-                            <h4>Receitas vs. Despesas Mensais</h4>
-                            <div class="chart" id="financial-chart"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="table-container">
-                    <h3>Histórico Completo de Lançamentos</h3>
-                    <div class="table-wrapper">
-                        <table id="tabela-financeiro">
-                            <thead>
-                                <tr>
-                                    <th>Descrição</th>
-                                    <th>Valor</th>
-                                    <th>Data</th>
-                                    <th>Projeto</th>
-                                    <th>Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <section id="contratos" class="page">
-                <h1><i class="ph ph-file-text"></i> Gerador de Documentos</h1>
-                <div class="generator-container">
-                    <h3>Configuração do Documento</h3>
-                    <div class="form-grid">
-                        <select id="doc-cliente" onchange="populateProjectDropdown('doc-projeto', this.value)">
-                            <option value="">1. Selecione o Cliente</option>
-                        </select>
-                        <select id="doc-projeto">
-                            <option value="">2. Selecione o Projeto</option>
-                        </select>
-                    </div>
-                    <div class="document-controls" style="margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px;">
-                        <button class="btn-primary" onclick="generateContract()">
-                            <i class="ph ph-file-text"></i> Gerar Contrato
-                        </button>
-                        <button class="btn-secondary" onclick="generateReceipt()">
-                            <i class="ph ph-receipt"></i> Gerar Recibo
-                        </button>
-                        <button id="btn-print" class="btn-warning" style="display: none;" onclick="window.print()">
-                            <i class="ph ph-printer"></i> Imprimir / Salvar PDF
-                        </button>
-                    </div>
-                </div>
-                <div id="documento-preview">
-                    <div style="text-align: center; color: #777; padding: 40px 20px;">
-                        <i class="ph ph-file-dashed" style="font-size: 4rem;"></i>
-                        <p>Selecione um cliente e um projeto para gerar um documento.</p>
-                    </div>
-                </div>
-            </section>
-
-            <section id="configuracoes" class="page">
-                <h1><i class="ph ph-gear"></i> Configurações da Empresa</h1>
-                <div class="form-container">
-                    <h3>Dados da Empresa</h3>
-                    <form id="form-configuracoes" class="form-grid">
-                        <div>
-                            <label for="config-nome-completo">Nome Completo (Responsável)</label>
-                            <input type="text" id="config-nome-completo" placeholder="Seu Nome Completo">
-                        </div>
-                        <div>
-                            <label for="config-cnpj">CNPJ</label>
-                            <input type="text" id="config-cnpj" placeholder="00.000.000/0000-00">
-                        </div>
-                        <div>
-                            <label for="config-razao-social">Razão Social</label>
-                            <input type="text" id="config-razao-social" placeholder="Razão Social da Sua Empresa">
-                        </div>
-                        <div>
-                            <label for="config-nome-fantasia">Nome Fantasia</label>
-                            <input type="text" id="config-nome-fantasia" placeholder="Nome Fantasia da Sua Empresa">
-                        </div>
-                        <div class="logo-upload-container" style="grid-column: 1 / -1;">
-                            <label for="config-logo">Logomarca (PNG, JPG)</label>
-                            <input type="file" id="config-logo" accept="image/png, image/jpeg">
-                            <img id="logo-preview" src="#" alt="Prévia da Logomarca" style="display: none; max-width: 200px; margin-top: 10px;">
-                        </div>
-                        <div style="grid-column: 1 / -1;">
-                            <button type="submit" class="btn-primary">Salvar Configurações</button>
-                        </div>
-                    </form>
-                </div>
-                
-                <h2><i class="ph ph-database"></i> Backup e Restauração</h2>
-                <div class="backup-section" style="background-color: var(--card-background); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
-                    <div style="display: flex; flex-wrap: wrap; gap: 15px; align-items: center;">
-                        <button class="btn-primary" onclick="exportBackup()">
-                            <i class="ph ph-download-simple"></i> Exportar Backup
-                        </button>
-                        <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
-                            <label for="import-file">Importar Backup:</label>
-                            <input type="file" id="import-file" accept=".json">
-                            <button class="btn-secondary" onclick="importBackup()">Carregar</button>
-                        </div>
-                    </div>
-                </div>
-                <button class="btn-danger" onclick="clearAllData()">
-                    <i class="ph ph-trash"></i> Limpar Todos os Dados
-                </button>
-            </section>
-        </main>
-    </div>
-
-    <!-- Modais (mantidos da versão original) -->
-    <div id="clientModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--cor-borda); padding-bottom: 15px;">
-                <h3 id="clientModalTitle">Adicionar Cliente</h3>
-                <span style="color: var(--cor-texto); font-size: 28px; cursor: pointer; transition: color 0.3s;" onclick="closeClientModal()">&times;</span>
-            </div>
-            <form id="form-cliente" class="form-grid">
-                <input type="hidden" id="cliente-id">
-                <input type="text" id="cliente-nome" placeholder="Nome Completo" required>
-                <input type="email" id="cliente-email" placeholder="E-mail" required>
-                <input type="tel" id="cliente-telefone" placeholder="Telefone">
-                <input type="text" id="cliente-documento" placeholder="CPF/CNPJ">
-                <div style="grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
-                    <button type="button" class="btn-secondary" onclick="closeClientModal()">Cancelar</button>
-                    <button type="submit" class="btn-primary">Salvar Cliente</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="projectModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--cor-borda); padding-bottom: 15px;">
-                <h3 id="projectModalTitle">Adicionar Projeto</h3>
-                <span style="color: var(--cor-texto); font-size: 28px; cursor: pointer; transition: color 0.3s;" onclick="closeProjectModal()">&times;</span>
-            </div>
-            <form id="form-projeto" class="form-grid">
-                <input type="hidden" id="projeto-id">
-                <input type="text" id="projeto-nome" placeholder="Nome do Projeto" required>
-                <select id="projeto-cliente" required><option value="">Selecione um Cliente</option></select>
-                <input type="number" id="projeto-valor" placeholder="Valor do Projeto (R$)" step="0.01" required>
-                <select id="projeto-status" required>
-                    <option value="planejamento">Planejamento</option>
-                    <option value="andamento">Em Andamento</option>
-                    <option value="concluido">Concluído</option>
-                    <option value="cancelado">Cancelado</option>
-                </select>
-                <select id="projeto-fase" required>
-                    <option value="Análise">Fase: Análise</option>
-                    <option value="Design (UI/UX)">Fase: Design (UI/UX)</option>
-                    <option value="Desenvolvimento">Fase: Desenvolvimento</option>
-                    <option value="Testes">Fase: Testes</option>
-                    <option value="Implantação">Fase: Implantação</option>
-                </select>
-                <div>
-                    <label for="projeto-data-inicio">Data de Início</label>
-                    <input type="date" id="projeto-data-inicio">
-                </div>
-                <div>
-                    <label for="projeto-data-fim">Data de Fim</label>
-                    <input type="date" id="projeto-data-fim">
-                </div>
-                <div>
-                    <label for="projeto-duracao-dias">Duração Estimada (Dias)</label>
-                    <input type="number" id="projeto-duracao-dias" placeholder="Ex: 30" min="1">
-                </div>
-                <div>
-                    <label for="projeto-progresso">Progresso (%)</label>
-                    <input type="number" id="projeto-progresso" placeholder="0-100" min="0" max="100" value="0">
-                </div>
-                <div>
-                    <label for="projeto-link">Link do Projeto (URL)</label>
-                    <input type="url" id="projeto-link" placeholder="https://exemplo.com/projeto">
-                </div>
-                <div style="grid-column: 1 / -1;">
-                    <label for="projeto-descricao">Descrição do Projeto</label>
-                    <textarea id="projeto-descricao" placeholder="Descrição do Projeto..." rows="4"></textarea>
-                </div>
-                <div style="grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
-                    <button type="button" class="btn-secondary" onclick="closeProjectModal()">Cancelar</button>
-                    <button type="submit" class="btn-primary">Salvar Projeto</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="financialModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--cor-borda); padding-bottom: 15px;">
-                <h3 id="financialModalTitle">Adicionar Lançamento</h3>
-                <span style="color: var(--cor-texto); font-size: 28px; cursor: pointer; transition: color 0.3s;" onclick="closeFinancialModal()">&times;</span>
-            </div>
-            <form id="form-financeiro" class="form-grid">
-                <input type="hidden" id="lancamento-id">
-                <input type="text" id="lancamento-descricao" placeholder="Descrição (Ex: Adiantamento)" required>
-                <input type="number" id="lancamento-valor" placeholder="Valor (R$)" step="0.01" required>
-                <select id="lancamento-tipo" required>
-                    <option value="receita">Receita</option>
-                    <option value="despesa">Despesa</option>
-                </select>
-                <input type="date" id="lancamento-data" required>
-                <select id="lancamento-projeto">
-                    <option value="">Vincular a um Projeto (Opcional)</option>
-                </select>
-                <div style="grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
-                    <button type="button" class="btn-secondary" onclick="closeFinancialModal()">Cancelar</button>
-                    <button type="submit" class="btn-primary">Adicionar Lançamento</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-<script>
-// ================================================================================= //
-// =============================== INÍCIO DO SCRIPT ================================ //
-// ================================================================================= //
-let projectStatusChartInstance = null;
-const defaultDB = { clientes: [], projetos: [], financeiro: [], empresa: {} };
-let db = {};
-let currentFilter = null;
-let currentReportData = null;
-
-document.addEventListener('DOMContentLoaded', () => {
-    initializeApp();
-    
-    document.getElementById('form-cliente')?.addEventListener('submit', handleClientFormSubmit);
-    document.getElementById('form-projeto')?.addEventListener('submit', handleProjectFormSubmit);
-    document.getElementById('form-financeiro')?.addEventListener('submit', handleFinancialFormSubmit);
-    document.getElementById('form-configuracoes')?.addEventListener('submit', handleConfigFormSubmit);
-    document.getElementById('config-logo')?.addEventListener('change', previewLogo);
-    document.getElementById('date-range')?.addEventListener('change', toggleCustomDateRange);
-    
-    // Responsividade - ajustar sidebar em mobile
-    window.addEventListener('resize', handleResize);
-    handleResize();
-});
-
-function initializeApp() {
-    const dataFromStorage = localStorage.getItem('gestorProDB');
-    db = dataFromStorage ? JSON.parse(dataFromStorage) : { ...defaultDB };
-    if (!db.empresa) db.empresa = {};
-    
-    if (localStorage.getItem('first_run_completed') === null) {
-        localStorage.setItem('first_run_completed', 'true');
-        clearAllData(true);
-    } else {
-        showPage('dashboard');
-        renderAllData();
-        loadConfigData();
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GestorPRO · Sistema de Gestão</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+:root {
+  --bg: #0c0e14;
+  --bg-card: #12151f;
+  --bg-sidebar: #0e1018;
+  --bg-input: #1a1d2b;
+  --bg-hover: #1e2235;
+  --border: rgba(255,255,255,0.07);
+  --border-active: rgba(99,102,241,0.5);
+  --primary: #6366f1;
+  --primary-light: #818cf8;
+  --primary-dim: rgba(99,102,241,0.12);
+  --success: #10b981;
+  --success-dim: rgba(16,185,129,0.12);
+  --danger: #ef4444;
+  --danger-dim: rgba(239,68,68,0.12);
+  --warning: #f59e0b;
+  --warning-dim: rgba(245,158,11,0.12);
+  --text: #e2e5f1;
+  --text-muted: #6b7280;
+  --text-faint: #374151;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --sidebar-w: 240px;
+  --font: 'Plus Jakarta Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  --shadow-glow: 0 0 24px rgba(99,102,241,0.2);
 }
 
-function handleResize() {
-    const sidebarNav = document.getElementById('sidebar-nav');
-    const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
-    
-    if (window.innerWidth <= 768) {
-        // Em mobile, esconder menu por padrão
-        sidebarNav.style.maxHeight = '0';
-        mobileMenuBtn.style.display = 'block';
-    } else {
-        // Em desktop, mostrar sempre
-        sidebarNav.style.maxHeight = 'none';
-        mobileMenuBtn.style.display = 'none';
-    }
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── SCROLLBAR ─────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #2a2d40; border-radius: 10px; }
+
+/* ─── LOGIN ──────────────────────────────────── */
+#login-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--bg);
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+#login-screen::before {
+  content: '';
+  position: absolute;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%);
+  top: -100px; right: -100px;
+  pointer-events: none;
+}
+#login-screen::after {
+  content: '';
+  position: absolute;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(16,185,129,0.08) 0%, transparent 70%);
+  bottom: -50px; left: -50px;
+  pointer-events: none;
+}
+
+.login-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 48px 44px;
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+  animation: loginIn 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;
+}
+
+@keyframes loginIn {
+  from { opacity: 0; transform: translateY(24px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.login-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 32px;
+}
+
+.login-logo .logo-icon {
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  color: white;
+  box-shadow: 0 4px 15px rgba(99,102,241,0.4);
+}
+
+.login-logo span {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--text);
+}
+
+.login-logo span em {
+  color: var(--primary-light);
+  font-style: normal;
+}
+
+.login-box h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.login-box p {
+  color: var(--text-muted);
+  margin-bottom: 32px;
+  font-size: 14px;
+}
+
+.login-error {
+  background: var(--danger-dim);
+  border: 1px solid rgba(239,68,68,0.3);
+  color: #fca5a5;
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 13px;
+  margin-bottom: 16px;
+  display: none;
+}
+
+/* ─── APP SHELL ──────────────────────────────── */
+#app {
+  display: none;
+  min-height: 100vh;
+}
+
+/* ─── SIDEBAR ────────────────────────────────── */
+.sidebar {
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+  width: var(--sidebar-w);
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  overflow: hidden;
+}
+
+.sidebar-logo {
+  padding: 20px 20px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.sidebar-logo .logo-icon {
+  width: 34px; height: 34px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  color: white;
+  box-shadow: 0 3px 10px rgba(99,102,241,0.35);
+  flex-shrink: 0;
+}
+
+.sidebar-logo .brand {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+}
+
+.sidebar-logo .brand em {
+  color: var(--primary-light);
+  font-style: normal;
+}
+
+.sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 10px;
+}
+
+.nav-section {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  padding: 8px 10px 4px;
+  margin-top: 8px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 9px;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-weight: 500;
+  font-size: 13.5px;
+  transition: all 0.15s;
+  margin-bottom: 2px;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+}
+
+.nav-item i { font-size: 17px; transition: transform 0.2s; }
+
+.nav-item:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.nav-item.active {
+  background: var(--primary-dim);
+  color: var(--primary-light);
+}
+
+.nav-item.active i { transform: scale(1.1); }
+
+.sidebar-footer {
+  padding: 14px 10px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.user-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+}
+
+.user-avatar {
+  width: 32px; height: 32px;
+  background: linear-gradient(135deg, var(--primary), #a78bfa);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+  color: white;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.user-info { flex: 1; min-width: 0; }
+.user-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.user-role { font-size: 11px; color: var(--text-muted); }
+
+.btn-logout {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 4px;
+  border-radius: 6px;
+  transition: all 0.15s;
+  display: flex;
+}
+
+.btn-logout:hover { color: var(--danger); background: var(--danger-dim); }
+
+/* ─── MAIN CONTENT ───────────────────────────── */
+.main {
+  margin-left: var(--sidebar-w);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  height: 60px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  flex-shrink: 0;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hamburger {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 22px;
+  padding: 4px;
+  border-radius: 6px;
+  transition: color 0.15s;
+}
+
+.hamburger:hover { color: var(--text); }
+
+.page-title { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
+
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+
+.topbar-date {
+  font-size: 12px;
+  color: var(--text-muted);
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-family: var(--font-mono);
+}
+
+.content-area {
+  flex: 1;
+  padding: 28px;
+  overflow-y: auto;
+}
+
+/* ─── PAGES ──────────────────────────────────── */
+.page { display: none; animation: fadeUp 0.3s ease forwards; }
+.page.active { display: block; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── TYPOGRAPHY ─────────────────────────────── */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.section-title {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.section-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ─── STATS GRID ─────────────────────────────── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent, var(--primary));
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.stat-card:hover { border-color: var(--border-active); transform: translateY(-2px); box-shadow: var(--shadow); }
+.stat-card:hover::before { opacity: 1; }
+
+.stat-icon {
+  width: 38px; height: 38px;
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  margin-bottom: 14px;
+  background: var(--icon-bg, var(--primary-dim));
+  color: var(--icon-color, var(--primary-light));
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  letter-spacing: -1px;
+  color: var(--text);
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.stat-footer i { font-size: 14px; }
+
+/* ─── CARDS ──────────────────────────────────── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.card-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+
+/* ─── CHART AREA ─────────────────────────────── */
+.chart-grid {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.chart-wrapper { position: relative; height: 260px; }
+
+/* ─── BUTTONS ────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn i { font-size: 16px; }
+
+.btn-primary {
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 2px 10px rgba(99,102,241,0.35);
+}
+.btn-primary:hover { background: #5457e5; transform: translateY(-1px); box-shadow: 0 4px 15px rgba(99,102,241,0.45); }
+
+.btn-secondary {
+  background: var(--bg-input);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover { background: var(--bg-hover); border-color: rgba(255,255,255,0.15); }
+
+.btn-success { background: var(--success); color: white; }
+.btn-success:hover { background: #0da271; }
+
+.btn-danger { background: var(--danger); color: white; }
+.btn-danger:hover { background: #dc2626; }
+
+.btn-warning { background: var(--warning); color: #0c0e14; }
+.btn-warning:hover { background: #d97706; }
+
+.btn-ghost {
+  background: none;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  padding: 7px 14px;
+}
+.btn-ghost:hover { color: var(--text); border-color: rgba(255,255,255,0.2); background: var(--bg-hover); }
+
+.btn-icon {
+  padding: 7px;
+  border-radius: 7px;
+  min-width: 32px;
+  min-height: 32px;
+  justify-content: center;
+}
+
+.action-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+/* ─── FORMS ──────────────────────────────────── */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group.full { grid-column: 1 / -1; }
+
+.form-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 10px 13px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  transition: all 0.15s;
+  outline: none;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+}
+
+input::placeholder, textarea::placeholder { color: var(--text-faint); }
+
+select option { background: var(--bg-card); }
+
+textarea { resize: vertical; min-height: 90px; }
+
+.form-footer {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+/* ─── TABLES ─────────────────────────────────── */
+.table-wrap { overflow-x: auto; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 560px;
+}
+
+th {
+  text-align: left;
+  padding: 10px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13.5px;
+  color: var(--text);
+  vertical-align: middle;
+}
+
+tbody tr { transition: background 0.12s; }
+tbody tr:hover { background: var(--bg-hover); }
+tbody tr:last-child td { border-bottom: none; }
+
+/* ─── BADGES ─────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.badge-planning { background: rgba(245,158,11,0.15); color: #fbbf24; }
+.badge-active { background: rgba(99,102,241,0.15); color: var(--primary-light); }
+.badge-done { background: rgba(16,185,129,0.15); color: #34d399; }
+.badge-cancelled { background: rgba(239,68,68,0.15); color: #f87171; }
+.badge-income { background: var(--success-dim); color: #34d399; }
+.badge-expense { background: var(--danger-dim); color: #f87171; }
+
+/* ─── ACTION BUTTONS IN TABLES ───────────────── */
+.table-actions { display: flex; gap: 6px; }
+
+.act-btn {
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 7px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-size: 15px;
+}
+
+.act-edit { background: var(--primary-dim); color: var(--primary-light); }
+.act-edit:hover { background: var(--primary); color: white; }
+.act-delete { background: var(--danger-dim); color: #f87171; }
+.act-delete:hover { background: var(--danger); color: white; }
+
+/* ─── MODAL ──────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(6px);
+  z-index: 200;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.modal-overlay.open { display: flex; }
+
+.modal-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 700px;
+  padding: 28px;
+  position: relative;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.5), var(--shadow-glow);
+  animation: modalIn 0.25s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  margin: auto;
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.92) translateY(16px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-title { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
+
+.modal-close {
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  border: none;
+  background: var(--bg-hover);
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 18px;
+  transition: all 0.15s;
+}
+
+.modal-close:hover { background: var(--danger-dim); color: var(--danger); }
+
+/* ─── FINANCIAL SUMMARY ──────────────────────── */
+.fin-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.fin-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  text-align: center;
+}
+
+.fin-card .fin-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.fin-card .fin-value {
+  font-size: 20px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  letter-spacing: -0.5px;
+}
+
+/* ─── KANBAN ─────────────────────────────────── */
+.kanban {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.kanban-col {
+  flex: 0 0 220px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.kanban-col-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.kanban-col-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.kanban-count {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 1px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
+.kanban-col-body { padding: 10px; display: flex; flex-direction: column; gap: 8px; min-height: 80px; }
+
+.kanban-card {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.kanban-card:hover { border-color: var(--border-active); transform: translateY(-1px); }
+
+.kanban-card h5 {
+  font-size: 12.5px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.kanban-card .k-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.k-progress { margin-top: 8px; }
+.k-progress-bar {
+  height: 4px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.k-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--primary-light));
+  border-radius: 4px;
+  transition: width 0.4s;
+}
+.k-progress-label { font-size: 10px; color: var(--text-muted); margin-top: 3px; }
+
+/* ─── REPORT SECTION ─────────────────────────── */
+.report-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  margin-bottom: 20px;
+}
+
+.report-controls .form-group {
+  min-width: 180px;
+  flex: 1;
+}
+
+/* ─── DOC PREVIEW ────────────────────────────── */
+#documento-preview {
+  background: white;
+  color: #1a1a1a;
+  border-radius: var(--radius);
+  padding: 50px;
+  max-width: 800px;
+  margin: 0 auto;
+  box-shadow: var(--shadow);
+  font-family: 'Georgia', serif;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+#documento-preview h3 {
+  font-size: 15px;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+
+#documento-preview h4 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 5px;
+  margin-bottom: 10px;
+}
+
+.doc-header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #1a1a1a; }
+.doc-section { margin-bottom: 24px; }
+.doc-section ol { padding-left: 20px; }
+.doc-section li { margin-bottom: 8px; }
+.doc-signatures { display: flex; justify-content: space-around; margin-top: 50px; text-align: center; }
+.doc-signature-line { border-top: 1px solid #1a1a1a; margin-bottom: 8px; width: 200px; }
+.doc-signature-name { font-size: 12px; }
+
+/* ─── SETTINGS ───────────────────────────────── */
+.settings-section { margin-bottom: 28px; }
+.settings-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ─── EMPTY STATE ────────────────────────────── */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+}
+
+.empty-state i { font-size: 48px; opacity: 0.3; display: block; margin-bottom: 12px; }
+.empty-state p { font-size: 14px; }
+
+/* ─── MOBILE OVERLAY ─────────────────────────── */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 99;
+}
+
+/* ─── RESPONSIVE ─────────────────────────────── */
+@media (max-width: 900px) {
+  .chart-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(calc(-1 * var(--sidebar-w)));
+    box-shadow: none;
+  }
+  .sidebar.open {
+    transform: translateX(0);
+    box-shadow: 4px 0 24px rgba(0,0,0,0.5);
+  }
+  .sidebar-overlay.open { display: block; }
+  .main { margin-left: 0; }
+  .hamburger { display: flex; }
+  .content-area { padding: 18px; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .topbar { padding: 0 16px; }
+  .topbar-date { display: none; }
+}
+
+@media (max-width: 480px) {
+  .stats-grid { grid-template-columns: 1fr; }
+  .fin-summary { grid-template-columns: 1fr 1fr; }
+  .login-box { padding: 32px 24px; }
+  .form-grid { grid-template-columns: 1fr; }
+  #documento-preview { padding: 24px; }
+}
+
+/* ─── CUSTOM CHART BARS ──────────────────────── */
+.bar-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 140px;
+  padding: 10px 0 0;
+}
+
+.bar-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.bar-bars { display: flex; align-items: flex-end; gap: 3px; height: 100px; }
+
+.bar {
+  flex: 1;
+  border-radius: 4px 4px 0 0;
+  transition: height 0.5s cubic-bezier(0.34,1.56,0.64,1);
+  cursor: pointer;
+  position: relative;
+  min-width: 12px;
+}
+
+.bar.income { background: linear-gradient(180deg, var(--success), #059669); }
+.bar.expense { background: linear-gradient(180deg, var(--danger), #b91c1c); }
+
+.bar-label { font-size: 10px; color: var(--text-muted); text-align: center; font-family: var(--font-mono); white-space: nowrap; }
+
+/* ─── PROGRESS BAR ───────────────────────────── */
+.progress-bar {
+  height: 5px;
+  background: var(--border);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--primary-light));
+  border-radius: 5px;
+}
+
+/* ─── TOOLTIP ────────────────────────────────── */
+[title] { cursor: default; }
+
+/* ─── NOTIFICATION TOAST ─────────────────────── */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: var(--shadow);
+  z-index: 9999;
+  font-size: 13.5px;
+  font-weight: 500;
+  transform: translateX(120%);
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  max-width: 320px;
+}
+
+.toast.show { transform: translateX(0); }
+.toast.success { border-left: 3px solid var(--success); }
+.toast.error { border-left: 3px solid var(--danger); }
+.toast i { font-size: 18px; }
+.toast.success i { color: var(--success); }
+.toast.error i { color: var(--danger); }
+
+/* ─── SEARCH BAR ─────────────────────────────── */
+.search-input-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+  max-width: 320px;
+}
+
+.search-input-wrap i {
+  position: absolute;
+  left: 11px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 16px;
+  pointer-events: none;
+}
+
+.search-input-wrap input {
+  padding-left: 36px;
+}
+
+/* ─── PRINT ──────────────────────────────────── */
+@media print {
+  .sidebar, .main .topbar, .action-row, .btn, #app > * { display: none !important; }
+  .main { margin-left: 0 !important; }
+  #documento-preview { display: block !important; box-shadow: none; margin: 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     LOGIN SCREEN
+═══════════════════════════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="logo-icon"><i class="ph ph-lightning"></i></div>
+      <span>Gestor<em>PRO</em></span>
+    </div>
+    <h2>Bem-vindo de volta</h2>
+    <p>Faça login para acessar seu painel de gestão</p>
+
+    <div class="login-error" id="login-error">
+      <i class="ph ph-warning-circle"></i> Usuário ou senha incorretos.
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="form-group">
+        <label>Usuário</label>
+        <input type="text" id="login-user" placeholder="admin" autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label>Senha</label>
+        <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:4px;padding:12px;" onclick="doLogin()">
+        <i class="ph ph-sign-in"></i> Entrar
+      </button>
+    </div>
+
+    <p style="font-size:12px;color:var(--text-muted);text-align:center;margin-top:20px;">
+      Padrão: <code style="font-family:var(--font-mono);color:var(--primary-light);">admin</code> / <code style="font-family:var(--font-mono);color:var(--primary-light);">1234</code>
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     APP
+═══════════════════════════════════════════════════════════ -->
+<div id="app">
+
+  <!-- Sidebar overlay (mobile) -->
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon"><i class="ph ph-lightning"></i></div>
+      <span class="brand">Gestor<em>PRO</em></span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section">Principal</div>
+      <button class="nav-item active" data-page="dashboard" onclick="showPage('dashboard')">
+        <i class="ph ph-squares-four"></i> Painel Geral
+      </button>
+
+      <div class="nav-section" style="margin-top:14px;">Gestão</div>
+      <button class="nav-item" data-page="clientes" onclick="showPage('clientes')">
+        <i class="ph ph-users-three"></i> Clientes
+      </button>
+      <button class="nav-item" data-page="projetos" onclick="showPage('projetos')">
+        <i class="ph ph-kanban"></i> Projetos
+      </button>
+      <button class="nav-item" data-page="financeiro" onclick="showPage('financeiro')">
+        <i class="ph ph-chart-line-up"></i> Financeiro
+      </button>
+
+      <div class="nav-section" style="margin-top:14px;">Ferramentas</div>
+      <button class="nav-item" data-page="relatorios" onclick="showPage('relatorios')">
+        <i class="ph ph-file-text"></i> Relatórios
+      </button>
+      <button class="nav-item" data-page="contratos" onclick="showPage('contratos')">
+        <i class="ph ph-seal-check"></i> Documentos
+      </button>
+
+      <div class="nav-section" style="margin-top:14px;">Sistema</div>
+      <button class="nav-item" data-page="configuracoes" onclick="showPage('configuracoes')">
+        <i class="ph ph-gear-six"></i> Configurações
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar" id="user-avatar">A</div>
+        <div class="user-info">
+          <div class="user-name" id="user-display-name">Admin</div>
+          <div class="user-role">Administrador</div>
+        </div>
+        <button class="btn-logout" onclick="doLogout()" title="Sair">
+          <i class="ph ph-sign-out" style="font-size:17px;"></i>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger" onclick="toggleSidebar()">
+          <i class="ph ph-list"></i>
+        </button>
+        <span class="page-title" id="topbar-title">Painel Geral</span>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-date" id="topbar-date"></div>
+      </div>
+    </header>
+
+    <!-- CONTENT -->
+    <div class="content-area">
+
+      <!-- ── DASHBOARD ─────────────────────────────── -->
+      <section id="page-dashboard" class="page active">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Visão Geral</div>
+            <div class="section-sub">Acompanhe o desempenho do seu negócio</div>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card" onclick="showPage('clientes')" style="--accent:#6366f1;--icon-bg:rgba(99,102,241,0.12);--icon-color:#818cf8;">
+            <div class="stat-icon"><i class="ph ph-users-three"></i></div>
+            <div class="stat-value" id="ds-clientes">0</div>
+            <div class="stat-label">Clientes</div>
+            <div class="stat-footer"><i class="ph ph-arrow-right"></i> Ver todos</div>
+          </div>
+          <div class="stat-card" onclick="showPage('projetos')" style="--accent:#10b981;--icon-bg:rgba(16,185,129,0.12);--icon-color:#34d399;">
+            <div class="stat-icon"><i class="ph ph-kanban"></i></div>
+            <div class="stat-value" id="ds-projetos">0</div>
+            <div class="stat-label">Projetos</div>
+            <div class="stat-footer"><i class="ph ph-arrow-right"></i> Ver todos</div>
+          </div>
+          <div class="stat-card" onclick="filterProjects('andamento')" style="--accent:#f59e0b;--icon-bg:rgba(245,158,11,0.12);--icon-color:#fbbf24;">
+            <div class="stat-icon"><i class="ph ph-trend-up"></i></div>
+            <div class="stat-value" id="ds-andamento">0</div>
+            <div class="stat-label">Em Andamento</div>
+            <div class="stat-footer"><i class="ph ph-arrow-right"></i> Ver projetos</div>
+          </div>
+          <div class="stat-card" onclick="showPage('financeiro')" style="--accent:#10b981;--icon-bg:rgba(16,185,129,0.12);--icon-color:#34d399;">
+            <div class="stat-icon"><i class="ph ph-money"></i></div>
+            <div class="stat-value" id="ds-receita" style="font-size:18px;">R$ 0</div>
+            <div class="stat-label">Receitas (Mês)</div>
+            <div class="stat-footer"><i class="ph ph-arrow-right"></i> Ver financeiro</div>
+          </div>
+          <div class="stat-card" onclick="filterProjects('planejamento')" style="--accent:#8b5cf6;--icon-bg:rgba(139,92,246,0.12);--icon-color:#a78bfa;">
+            <div class="stat-icon"><i class="ph ph-clipboard-text"></i></div>
+            <div class="stat-value" id="ds-planejamento">0</div>
+            <div class="stat-label">Planejamento</div>
+            <div class="stat-footer"><i class="ph ph-arrow-right"></i> Ver projetos</div>
+          </div>
+          <div class="stat-card" onclick="filterProjects('concluido')" style="--accent:#10b981;--icon-bg:rgba(16,185,129,0.12);--icon-color:#34d399;">
+            <div class="stat-icon"><i class="ph ph-check-circle"></i></div>
+            <div class="stat-value" id="ds-concluido">0</div>
+            <div class="stat-label">Concluídos</div>
+            <div class="stat-footer"><i class="ph ph-arrow-right"></i> Ver projetos</div>
+          </div>
+        </div>
+
+        <div class="chart-grid">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Receitas vs. Despesas (Mensal)</span>
+              <div style="display:flex;gap:12px;font-size:12px;">
+                <span style="color:var(--success);"><i class="ph ph-circle-fill" style="font-size:8px;"></i> Receita</span>
+                <span style="color:var(--danger);"><i class="ph ph-circle-fill" style="font-size:8px;"></i> Despesa</span>
+              </div>
+            </div>
+            <div id="dash-bar-chart" class="bar-chart"></div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Status dos Projetos</span>
+            </div>
+            <div class="chart-wrapper" style="height:200px;">
+              <canvas id="doughnut-chart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Projetos Recentes</span>
+            <button class="btn btn-ghost btn-icon" onclick="showPage('projetos')" title="Ver todos"><i class="ph ph-arrow-right"></i></button>
+          </div>
+          <div class="table-wrap">
+            <table id="ds-recent-projects">
+              <thead><tr><th>Projeto</th><th>Cliente</th><th>Status</th><th>Progresso</th><th>Valor</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── CLIENTES ────────────────────────────────── -->
+      <section id="page-clientes" class="page">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Clientes</div>
+            <div class="section-sub">Gerencie seus clientes</div>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('client')">
+            <i class="ph ph-plus"></i> Novo Cliente
+          </button>
+        </div>
+
+        <div class="card">
+          <div class="action-row" style="margin-bottom:16px;">
+            <div class="search-input-wrap">
+              <i class="ph ph-magnifying-glass"></i>
+              <input type="text" placeholder="Buscar cliente..." oninput="filterTable('tb-clientes', this.value, [0,1])">
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Nome</th><th>E-mail</th><th>Telefone</th><th>Projetos</th><th></th></tr></thead>
+              <tbody id="tb-clientes"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── PROJETOS ────────────────────────────────── -->
+      <section id="page-projetos" class="page">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Projetos</div>
+            <div class="section-sub">Acompanhe o andamento dos seus projetos</div>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('project')">
+            <i class="ph ph-plus"></i> Novo Projeto
+          </button>
+        </div>
+
+        <div class="card">
+          <div class="action-row" style="margin-bottom:16px;">
+            <div class="search-input-wrap">
+              <i class="ph ph-magnifying-glass"></i>
+              <input type="text" placeholder="Buscar projeto..." oninput="filterTable('tb-projetos', this.value, [0,1])">
+            </div>
+            <select onchange="filterProjectsByStatus(this.value)" style="max-width:180px;">
+              <option value="">Todos os status</option>
+              <option value="planejamento">Planejamento</option>
+              <option value="andamento">Em Andamento</option>
+              <option value="concluido">Concluído</option>
+              <option value="cancelado">Cancelado</option>
+            </select>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Projeto</th><th>Cliente</th><th>Fase</th><th>Status</th><th>Progresso</th><th>Valor</th><th></th></tr></thead>
+              <tbody id="tb-projetos"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── FINANCEIRO ──────────────────────────────── -->
+      <section id="page-financeiro" class="page">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Financeiro</div>
+            <div class="section-sub">Controle de receitas e despesas</div>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('financial')">
+            <i class="ph ph-plus"></i> Novo Lançamento
+          </button>
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:18px;flex-wrap:wrap;">
+          <label style="font-size:12px;color:var(--text-muted);font-weight:600;">Período:</label>
+          <select id="fin-period" onchange="renderFin(this.value)" style="max-width:200px;">
+            <option value="esteMes">Este Mês</option>
+            <option value="mesPassado">Mês Passado</option>
+            <option value="esteAno">Este Ano</option>
+            <option value="todoPeriodo">Todo o Período</option>
+          </select>
+        </div>
+
+        <div class="fin-summary">
+          <div class="fin-card">
+            <div class="fin-label" style="color:var(--success);"><i class="ph ph-arrow-circle-up"></i> Receitas</div>
+            <div class="fin-value" id="fin-receitas" style="color:var(--success);">R$ 0</div>
+          </div>
+          <div class="fin-card">
+            <div class="fin-label" style="color:var(--danger);"><i class="ph ph-arrow-circle-down"></i> Despesas</div>
+            <div class="fin-value" id="fin-despesas" style="color:var(--danger);">R$ 0</div>
+          </div>
+          <div class="fin-card">
+            <div class="fin-label"><i class="ph ph-scales"></i> Saldo</div>
+            <div class="fin-value" id="fin-saldo">R$ 0</div>
+          </div>
+          <div class="fin-card">
+            <div class="fin-label" style="color:var(--warning);"><i class="ph ph-hourglass"></i> Previsão</div>
+            <div class="fin-value" id="fin-previsao" style="color:var(--warning);">R$ 0</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Histórico de Lançamentos</span>
+            <div class="search-input-wrap" style="max-width:250px;">
+              <i class="ph ph-magnifying-glass"></i>
+              <input type="text" placeholder="Buscar..." oninput="filterTable('tb-financeiro', this.value, [0,2])">
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Descrição</th><th>Tipo</th><th>Projeto</th><th>Data</th><th>Valor</th><th></th></tr></thead>
+              <tbody id="tb-financeiro"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── RELATÓRIOS ──────────────────────────────── -->
+      <section id="page-relatorios" class="page">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Relatórios</div>
+            <div class="section-sub">Análise detalhada do negócio</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><span class="card-title">Filtros</span></div>
+          <div class="report-controls">
+            <div class="form-group">
+              <label>Tipo</label>
+              <select id="report-type" onchange="toggleReportFilters()">
+                <option value="projetos">Projetos</option>
+                <option value="financeiro">Financeiro</option>
+                <option value="clientes">Clientes</option>
+              </select>
+            </div>
+            <div class="form-group" id="rf-status">
+              <label>Status</label>
+              <select id="report-status">
+                <option value="todos">Todos</option>
+                <option value="planejamento">Planejamento</option>
+                <option value="andamento">Em Andamento</option>
+                <option value="concluido">Concluído</option>
+                <option value="cancelado">Cancelado</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Período</label>
+              <select id="report-period">
+                <option value="todoPeriodo">Todo o Período</option>
+                <option value="esteMes">Este Mês</option>
+                <option value="ultimos3Meses">Últimos 3 Meses</option>
+                <option value="esteAno">Este Ano</option>
+              </select>
+            </div>
+            <div style="display:flex;gap:8px;align-items:flex-end;padding-bottom:1px;">
+              <button class="btn btn-primary" onclick="generateReport()"><i class="ph ph-magnifying-glass"></i> Gerar</button>
+              <button class="btn btn-secondary" id="report-pdf-btn" style="display:none;" onclick="exportReportToPDF()"><i class="ph ph-file-pdf"></i> PDF</button>
+              <button class="btn btn-ghost" id="report-csv-btn" style="display:none;" onclick="exportReportToCSV()"><i class="ph ph-export"></i> CSV</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" id="report-results" style="display:none;">
+          <div class="card-header">
+            <span class="card-title">Resultados</span>
+          </div>
+          <div class="table-wrap">
+            <table><thead id="rpt-head"></thead><tbody id="rpt-body"></tbody></table>
+          </div>
+          <div id="rpt-summary" style="margin-top:16px;padding:14px;background:var(--primary-dim);border-radius:var(--radius-sm);font-size:13px;"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><span class="card-title">Quadro Kanban por Fase</span></div>
+          <div class="kanban" id="kanban-board"></div>
+        </div>
+      </section>
+
+      <!-- ── CONTRATOS ──────────────────────────────── -->
+      <section id="page-contratos" class="page">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Gerador de Documentos</div>
+            <div class="section-sub">Contratos e recibos profissionais</div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:20px;">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Cliente</label>
+              <select id="doc-cliente" onchange="populateProjDropdown('doc-projeto', this.value)">
+                <option value="">Selecione o cliente</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Projeto</label>
+              <select id="doc-projeto"><option value="">Selecione o projeto</option></select>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;">
+            <button class="btn btn-primary" onclick="generateContract()"><i class="ph ph-file-text"></i> Gerar Contrato</button>
+            <button class="btn btn-secondary" onclick="generateReceipt()"><i class="ph ph-receipt"></i> Gerar Recibo</button>
+            <button class="btn btn-ghost" id="btn-print" style="display:none;" onclick="window.print()"><i class="ph ph-printer"></i> Imprimir / PDF</button>
+          </div>
+        </div>
+
+        <div id="documento-preview">
+          <div style="text-align:center;padding:60px 20px;color:#999;font-family:var(--font);">
+            <i class="ph ph-file-dashed" style="font-size:48px;display:block;margin-bottom:12px;opacity:0.3;"></i>
+            Selecione cliente e projeto para gerar um documento.
+          </div>
+        </div>
+      </section>
+
+      <!-- ── CONFIGURAÇÕES ──────────────────────────── -->
+      <section id="page-configuracoes" class="page">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Configurações</div>
+            <div class="section-sub">Dados da empresa e sistema</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="settings-section-title">Dados da Empresa</div>
+          <form id="form-config" class="form-grid" onsubmit="saveConfig(event)">
+            <div class="form-group">
+              <label>Nome Completo (Responsável)</label>
+              <input type="text" id="cfg-nome" placeholder="Seu Nome Completo">
+            </div>
+            <div class="form-group">
+              <label>CPF / CNPJ</label>
+              <input type="text" id="cfg-doc" placeholder="000.000.000-00">
+            </div>
+            <div class="form-group">
+              <label>Razão Social</label>
+              <input type="text" id="cfg-razao" placeholder="Empresa Ltda.">
+            </div>
+            <div class="form-group">
+              <label>Nome Fantasia</label>
+              <input type="text" id="cfg-fantasia" placeholder="Nome Fantasia">
+            </div>
+            <div class="form-group full">
+              <label>Logomarca (PNG/JPG)</label>
+              <input type="file" id="cfg-logo" accept="image/png,image/jpeg" onchange="previewLogo(this)">
+              <img id="logo-preview" src="#" style="display:none;max-width:180px;margin-top:10px;border-radius:8px;">
+            </div>
+            <div class="form-footer">
+              <button type="submit" class="btn btn-primary"><i class="ph ph-floppy-disk"></i> Salvar Configurações</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="settings-section-title">Senha de Acesso</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Nova Senha</label>
+              <input type="password" id="cfg-new-pass" placeholder="Nova senha">
+            </div>
+            <div class="form-group">
+              <label>Confirmar Senha</label>
+              <input type="password" id="cfg-confirm-pass" placeholder="Confirmar nova senha">
+            </div>
+            <div class="form-footer">
+              <button class="btn btn-primary" onclick="changePassword()"><i class="ph ph-lock-key"></i> Alterar Senha</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="settings-section-title">Backup e Restauração</div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+            <button class="btn btn-secondary" onclick="exportBackup()"><i class="ph ph-download-simple"></i> Exportar Backup</button>
+            <label class="btn btn-ghost" style="cursor:pointer;">
+              <i class="ph ph-upload-simple"></i> Importar Backup
+              <input type="file" accept=".json" id="import-file" style="display:none;" onchange="importBackup(this)">
+            </label>
+          </div>
+          <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border);">
+            <button class="btn btn-danger" onclick="clearAllData()"><i class="ph ph-trash"></i> Limpar Todos os Dados</button>
+          </div>
+        </div>
+      </section>
+
+    </div><!-- /content-area -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODALS
+═══════════════════════════════════════════════════════════ -->
+
+<!-- Client Modal -->
+<div class="modal-overlay" id="modal-client">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-client-title">Novo Cliente</span>
+      <button class="modal-close" onclick="closeModal('client')"><i class="ph ph-x"></i></button>
+    </div>
+    <form class="form-grid" id="form-client" onsubmit="saveClient(event)">
+      <input type="hidden" id="client-id">
+      <div class="form-group">
+        <label>Nome Completo *</label>
+        <input type="text" id="client-nome" placeholder="João Silva" required>
+      </div>
+      <div class="form-group">
+        <label>E-mail *</label>
+        <input type="email" id="client-email" placeholder="joao@email.com" required>
+      </div>
+      <div class="form-group">
+        <label>Telefone</label>
+        <input type="tel" id="client-tel" placeholder="(82) 99999-0000">
+      </div>
+      <div class="form-group">
+        <label>CPF / CNPJ</label>
+        <input type="text" id="client-doc" placeholder="000.000.000-00">
+      </div>
+      <div class="form-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('client')">Cancelar</button>
+        <button type="submit" class="btn btn-primary"><i class="ph ph-floppy-disk"></i> Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Project Modal -->
+<div class="modal-overlay" id="modal-project">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-project-title">Novo Projeto</span>
+      <button class="modal-close" onclick="closeModal('project')"><i class="ph ph-x"></i></button>
+    </div>
+    <form class="form-grid" id="form-project" onsubmit="saveProject(event)">
+      <input type="hidden" id="project-id">
+      <div class="form-group">
+        <label>Nome do Projeto *</label>
+        <input type="text" id="proj-nome" placeholder="Site Institucional" required>
+      </div>
+      <div class="form-group">
+        <label>Cliente *</label>
+        <select id="proj-cliente" required><option value="">Selecione</option></select>
+      </div>
+      <div class="form-group">
+        <label>Valor (R$)</label>
+        <input type="number" id="proj-valor" placeholder="0.00" step="0.01" min="0">
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="proj-status">
+          <option value="planejamento">Planejamento</option>
+          <option value="andamento">Em Andamento</option>
+          <option value="concluido">Concluído</option>
+          <option value="cancelado">Cancelado</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Fase</label>
+        <select id="proj-fase">
+          <option value="Análise">Análise</option>
+          <option value="Design (UI/UX)">Design (UI/UX)</option>
+          <option value="Desenvolvimento">Desenvolvimento</option>
+          <option value="Testes">Testes</option>
+          <option value="Implantação">Implantação</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Progresso (%)</label>
+        <input type="number" id="proj-progresso" min="0" max="100" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label>Data de Início</label>
+        <input type="date" id="proj-inicio">
+      </div>
+      <div class="form-group">
+        <label>Data de Fim</label>
+        <input type="date" id="proj-fim">
+      </div>
+      <div class="form-group">
+        <label>Duração Estimada (dias)</label>
+        <input type="number" id="proj-duracao" min="1" placeholder="30">
+      </div>
+      <div class="form-group">
+        <label>Link do Projeto</label>
+        <input type="url" id="proj-link" placeholder="https://exemplo.com">
+      </div>
+      <div class="form-group full">
+        <label>Descrição</label>
+        <textarea id="proj-desc" placeholder="Descreva o escopo do projeto..."></textarea>
+      </div>
+      <div class="form-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('project')">Cancelar</button>
+        <button type="submit" class="btn btn-primary"><i class="ph ph-floppy-disk"></i> Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Financial Modal -->
+<div class="modal-overlay" id="modal-financial">
+  <div class="modal-box" style="max-width:500px;">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-fin-title">Novo Lançamento</span>
+      <button class="modal-close" onclick="closeModal('financial')"><i class="ph ph-x"></i></button>
+    </div>
+    <form class="form-grid" id="form-financial" onsubmit="saveFinancial(event)">
+      <input type="hidden" id="fin-id">
+      <div class="form-group full">
+        <label>Descrição *</label>
+        <input type="text" id="fin-desc" placeholder="Ex: Adiantamento projeto X" required>
+      </div>
+      <div class="form-group">
+        <label>Valor (R$) *</label>
+        <input type="number" id="fin-valor" placeholder="0.00" step="0.01" min="0" required>
+      </div>
+      <div class="form-group">
+        <label>Tipo</label>
+        <select id="fin-tipo">
+          <option value="receita">Receita</option>
+          <option value="despesa">Despesa</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Data *</label>
+        <input type="date" id="fin-data" required>
+      </div>
+      <div class="form-group">
+        <label>Projeto (opcional)</label>
+        <select id="fin-projeto"><option value="">Nenhum</option></select>
+      </div>
+      <div class="form-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('financial')">Cancelar</button>
+        <button type="submit" class="btn btn-primary"><i class="ph ph-floppy-disk"></i> Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <i class="ph ph-check-circle" id="toast-icon"></i>
+  <span id="toast-msg">Salvo com sucesso!</span>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════════════ -->
+<script>
+// ─── IndexedDB ────────────────────────────────────────────
+const DB_NAME = 'gestorpro_db';
+const DB_VERSION = 1;
+let idb = null;
+let doughnutChart = null;
+let reportData = null;
+
+function openIDB() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains('store')) {
+        db.createObjectStore('store');
+      }
+    };
+    req.onsuccess = e => { idb = e.target.result; res(idb); };
+    req.onerror = e => rej(e);
+  });
+}
+
+function idbGet(key) {
+  return new Promise((res, rej) => {
+    const tx = idb.transaction('store', 'readonly');
+    const req = tx.objectStore('store').get(key);
+    req.onsuccess = () => res(req.result);
+    req.onerror = e => rej(e);
+  });
+}
+
+function idbSet(key, val) {
+  return new Promise((res, rej) => {
+    const tx = idb.transaction('store', 'readwrite');
+    const req = tx.objectStore('store').put(val, key);
+    req.onsuccess = () => res();
+    req.onerror = e => rej(e);
+  });
+}
+
+// ─── State ────────────────────────────────────────────────
+let state = {
+  clientes: [],
+  projetos: [],
+  financeiro: [],
+  empresa: {},
+  auth: { user: 'admin', pass: '1234' }
+};
+
+let currentUser = null;
+
+// ─── Utilities ────────────────────────────────────────────
+const fmt = (v) => (v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const fmtDate = (s) => s ? new Date(s + 'T00:00:00').toLocaleDateString('pt-BR') : '—';
+const uid = () => '_' + Math.random().toString(36).substr(2, 9);
+
+function toast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  const ic = document.getElementById('toast-icon');
+  document.getElementById('toast-msg').textContent = msg;
+  t.className = `toast ${type}`;
+  ic.className = type === 'success' ? 'ph ph-check-circle' : 'ph ph-x-circle';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ─── Auth ─────────────────────────────────────────────────
+async function doLogin() {
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
+  const err = document.getElementById('login-error');
+
+  if (u === state.auth.user && p === state.auth.pass) {
+    err.style.display = 'none';
+    currentUser = u;
+    document.getElementById('user-display-name').textContent = state.empresa.nomeCompleto || u;
+    document.getElementById('user-avatar').textContent = (state.empresa.nomeCompleto || u).charAt(0).toUpperCase();
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    renderAll();
+  } else {
+    err.style.display = 'flex';
+    err.style.gap = '8px';
+    err.style.alignItems = 'center';
+    document.getElementById('login-pass').value = '';
+  }
+}
+
+function doLogout() {
+  currentUser = null;
+  document.getElementById('login-user').value = '';
+  document.getElementById('login-pass').value = '';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+}
+
+document.getElementById('login-pass').addEventListener('keypress', e => { if (e.key === 'Enter') doLogin(); });
+document.getElementById('login-user').addEventListener('keypress', e => { if (e.key === 'Enter') document.getElementById('login-pass').focus(); });
+
+function changePassword() {
+  const np = document.getElementById('cfg-new-pass').value;
+  const cp = document.getElementById('cfg-confirm-pass').value;
+  if (!np) { toast('Informe a nova senha.', 'error'); return; }
+  if (np !== cp) { toast('As senhas não coincidem.', 'error'); return; }
+  state.auth.pass = np;
+  saveState();
+  document.getElementById('cfg-new-pass').value = '';
+  document.getElementById('cfg-confirm-pass').value = '';
+  toast('Senha alterada com sucesso!');
+}
+
+// ─── Sidebar / Navigation ─────────────────────────────────
+const pageTitles = {
+  dashboard: 'Painel Geral',
+  clientes: 'Clientes',
+  projetos: 'Projetos',
+  financeiro: 'Financeiro',
+  relatorios: 'Relatórios',
+  contratos: 'Documentos',
+  configuracoes: 'Configurações'
+};
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(b => {
+    b.classList.toggle('active', b.dataset.page === id);
+  });
+  document.getElementById('topbar-title').textContent = pageTitles[id] || id;
+  closeSidebar();
+
+  if (id === 'dashboard') renderDashboard();
+  else if (id === 'clientes') renderClientes();
+  else if (id === 'projetos') renderProjetos();
+  else if (id === 'financeiro') renderFin(document.getElementById('fin-period').value);
+  else if (id === 'relatorios') { renderKanban(); }
+  else if (id === 'contratos') { populateClientDropdown('doc-cliente'); }
+  else if (id === 'configuracoes') loadConfigForm();
 }
 
 function toggleSidebar() {
-    const sidebarNav = document.getElementById('sidebar-nav');
-    if (sidebarNav.style.maxHeight === '0px' || sidebarNav.style.maxHeight === '') {
-        sidebarNav.style.maxHeight = '500px';
-    } else {
-        sidebarNav.style.maxHeight = '0';
-    }
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('open');
 }
 
-function saveData() {
-    localStorage.setItem('gestorProDB', JSON.stringify(db));
-    renderAllData();
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('open');
 }
 
-function renderAllData() {
-    renderClientsTable();
-    renderProjectsTable();
-    renderAllFinancialTransactionsTable();
-    renderFinancialReport(document.getElementById('financial-period-filter').value);
-    renderPhaseReport();
-    updateDashboard();
-    updateFinancialForecast();
-    renderProjectStatusChart();
-    populateClientDropdown('projeto-cliente');
-    populateClientDropdown('doc-cliente');
-    populateProjectDropdown('lancamento-projeto');
-    populateProjectDropdown('doc-projeto', document.getElementById('doc-cliente').value);
-    loadConfigData();
+function filterProjects(status) {
+  showPage('projetos');
+  setTimeout(() => {
+    filterProjectsByStatus(status);
+    const sel = document.querySelector('#page-projetos select');
+    if (sel) sel.value = status;
+  }, 50);
 }
 
-function showPage(pageId) {
-    document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-    document.getElementById(pageId).classList.add('active');
-    document.querySelectorAll('.sidebar nav button').forEach(button => {
-        button.classList.remove('active');
-        if (button.getAttribute('onclick').includes(pageId)) button.classList.add('active');
-    });
-    
-    // Fechar menu mobile ao navegar
-    if (window.innerWidth <= 768) {
-        document.getElementById('sidebar-nav').style.maxHeight = '0';
-    }
-    
-    if (currentFilter && pageId === 'projetos') {
-        applyProjectFilter(currentFilter);
-        currentFilter = null;
-    }
-    
-    if (pageId === 'dashboard') {
-        updateDashboard();
-        renderProjectStatusChart();
-    } else if (pageId === 'financeiro') {
-        renderFinancialReport(document.getElementById('financial-period-filter').value);
-        updateFinancialForecast();
-    } else if (pageId === 'relatorios') {
-        renderPhaseReport();
-    }
+// ─── Modals ───────────────────────────────────────────────
+function openModal(type) {
+  document.getElementById('modal-' + type).classList.add('open');
+  if (type === 'project') populateClientDropdown('proj-cliente');
+  if (type === 'financial') { populateProjDropdown('fin-projeto', ''); }
 }
 
-function navigateTo(page, filter = null) {
-    if (filter) {
-        currentFilter = filter;
-    }
-    showPage(page);
+function closeModal(type) {
+  document.getElementById('modal-' + type).classList.remove('open');
+  const form = document.querySelector('#modal-' + type + ' form');
+  if (form) form.reset();
 }
 
-function applyProjectFilter(status) {
-    const tableBody = document.querySelector('#projetos #tabela-projetos tbody');
-    const rows = tableBody.querySelectorAll('tr');
-    
-    rows.forEach(row => {
-        const statusCell = row.querySelector('.status');
-        if (statusCell) {
-            const rowStatus = statusCell.className.split(' ')[1];
-            if (status === rowStatus) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        }
-    });
-    
-    const tableContainer = document.querySelector('#projetos .table-container');
-    let filterIndicator = tableContainer.querySelector('.filter-indicator');
-    
-    if (!filterIndicator) {
-        filterIndicator = document.createElement('div');
-        filterIndicator.className = 'filter-indicator';
-        filterIndicator.style.cssText = 'background: var(--cor-primaria); color: var(--cor-fundo); padding: 8px 15px; border-radius: 5px; margin-bottom: 15px; display: inline-flex; align-items: center; gap: 8px;';
-        tableContainer.insertBefore(filterIndicator, tableContainer.querySelector('.table-wrapper'));
-    }
-    
-    const statusNames = {
-        'planejamento': 'Planejamento',
-        'andamento': 'Em Andamento',
-        'concluido': 'Concluídos',
-        'cancelado': 'Cancelados'
-    };
-    
-    filterIndicator.innerHTML = `
-        <i class="ph ph-funnel"></i>
-        Filtro aplicado: ${statusNames[status]}
-        <button onclick="clearFilter()" style="background: none; border: none; color: var(--cor-fundo); cursor: pointer; margin-left: 10px;">
-            <i class="ph ph-x"></i>
-        </button>
-    `;
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+
+// ─── Save State ───────────────────────────────────────────
+async function saveState() {
+  await idbSet('state', state);
 }
 
-function clearFilter() {
-    const tableBody = document.querySelector('#projetos #tabela-projetos tbody');
-    const rows = tableBody.querySelectorAll('tr');
-    
-    rows.forEach(row => {
-        row.style.display = '';
-    });
-    
-    const filterIndicator = document.querySelector('.filter-indicator');
-    if (filterIndicator) {
-        filterIndicator.remove();
-    }
+// ─── Clientes ─────────────────────────────────────────────
+function saveClient(e) {
+  e.preventDefault();
+  const id = document.getElementById('client-id').value;
+  const data = {
+    id: id || uid(),
+    nome: document.getElementById('client-nome').value,
+    email: document.getElementById('client-email').value,
+    tel: document.getElementById('client-tel').value,
+    doc: document.getElementById('client-doc').value,
+  };
+  if (id) {
+    const i = state.clientes.findIndex(c => c.id === id);
+    if (i > -1) state.clientes[i] = data;
+  } else {
+    state.clientes.push(data);
+  }
+  saveState();
+  closeModal('client');
+  renderClientes();
+  toast(id ? 'Cliente atualizado!' : 'Cliente cadastrado!');
 }
 
-const formatCurrency = (value) => (value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-const formatDate = (dateString) => dateString ? new Date(dateString + 'T00:00:00').toLocaleDateString('pt-BR', {timeZone: 'UTC'}) : 'N/A';
-const getNomeCompleto = () => db.empresa.nomeCompleto || "Seu Nome Completo";
-const getSeuDocumento = () => db.empresa.cnpj || "00.000.000/0001-00";
-const getRazaoSocial = () => db.empresa.razaoSocial || "Sua Razão Social Ltda.";
-const getNomeFantasia = () => db.empresa.nomeFantasia || "Seu Nome Fantasia";
-const getLogomarca = () => db.empresa.logomarca || null;
-
-function openClientModal() {
-    document.getElementById('clientModal').style.display = 'block';
-    document.getElementById('clientModalTitle').textContent = 'Adicionar Cliente';
-    document.getElementById('form-cliente').reset();
-    document.getElementById('cliente-id').value = '';
-}
-
-function closeClientModal() {
-    document.getElementById('clientModal').style.display = 'none';
-}
-
-function openProjectModal() {
-    document.getElementById('projectModal').style.display = 'block';
-    document.getElementById('projectModalTitle').textContent = 'Adicionar Projeto';
-    document.getElementById('form-projeto').reset();
-    document.getElementById('projeto-id').value = '';
-    populateClientDropdown('projeto-cliente');
-}
-
-function closeProjectModal() {
-    document.getElementById('projectModal').style.display = 'none';
-}
-
-function openFinancialModal() {
-    document.getElementById('financialModal').style.display = 'block';
-    document.getElementById('financialModalTitle').textContent = 'Adicionar Lançamento';
-    document.getElementById('form-financeiro').reset();
-    document.getElementById('lancamento-id').value = '';
-    populateProjectDropdown('lancamento-projeto');
-}
-
-function closeFinancialModal() {
-    document.getElementById('financialModal').style.display = 'none';
-}
-
-window.onclick = function(event) {
-    const clientModal = document.getElementById('clientModal');
-    const projectModal = document.getElementById('projectModal');
-    const financialModal = document.getElementById('financialModal');
-    
-    if (event.target === clientModal) closeClientModal();
-    if (event.target === projectModal) closeProjectModal();
-    if (event.target === financialModal) closeFinancialModal();
-}
-
-// Funções existentes para manipulação de dados
-function renderFinancialReport(period = 'esteMes') {
-    const transactions = period === 'todoPeriodo' ? db.financeiro : getTransactionsByPeriod(period);
-    const totalReceitas = transactions.filter(t => t.tipo === 'receita').reduce((sum, t) => sum + t.valor, 0);
-    const totalDespesas = transactions.filter(t => t.tipo === 'despesa').reduce((sum, t) => sum + t.valor, 0);
-    document.getElementById('total-receitas').textContent = formatCurrency(totalReceitas);
-    document.getElementById('total-despesas').textContent = formatCurrency(totalDespesas);
-    document.getElementById('saldo-total').textContent = formatCurrency(totalReceitas - totalDespesas);
-    
-    const receitaPorProjeto = transactions.filter(t => t.tipo === 'receita' && t.projetoId).reduce((acc, t) => { 
-        acc[t.projetoId] = (acc[t.projetoId] || 0) + t.valor; 
-        return acc; 
-    }, {});
-    
-    const tabelaReceitasBody = document.querySelector('#tabela-receitas-projeto tbody');
-    tabelaReceitasBody.innerHTML = '';
-    
-    for (const projetoId in receitaPorProjeto) {
-        const projeto = db.projetos.find(p => p.id === projetoId);
-        if (projeto) {
-            tabelaReceitasBody.insertRow().innerHTML = `
-                <td>${projeto.nome}</td>
-                <td>${formatCurrency(receitaPorProjeto[projetoId])}</td>
-            `;
-        }
-    }
-    
-    renderMonthlyChart(transactions);
-}
-
-function getTransactionsByPeriod(period) {
-    const now = new Date();
-    let startDate, endDate;
-    
-    if (period === 'esteMes') {
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    } else if (period === 'mesPassado') {
-        startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-        endDate = new Date(now.getFullYear(), now.getMonth(), 0);
-    } else if (period === 'esteAno') {
-        startDate = new Date(now.getFullYear(), 0, 1);
-        endDate = new Date(now.getFullYear(), 11, 31);
-    } else {
-        return db.financeiro;
-    }
-    
-    return db.financeiro.filter(t => {
-        const transactionDate = new Date(t.data + 'T00:00:00');
-        return transactionDate >= startDate && transactionDate <= endDate;
-    });
-}
-
-function renderMonthlyChart(transactions) {
-    const chart = document.getElementById('financial-chart');
-    chart.innerHTML = '';
-    
-    const dataByMonth = transactions.reduce((acc, t) => {
-        const month = t.data.substring(0, 7);
-        if (!acc[month]) acc[month] = { receita: 0, despesa: 0 };
-        acc[month][t.tipo] += t.valor;
-        return acc;
-    }, {});
-    
-    const sortedMonths = Object.keys(dataByMonth).sort();
-    
-    if (sortedMonths.length === 0) {
-        chart.innerHTML = '<p style="font-size:0.9rem; color:#777; text-align:center; width:100%;">Sem dados para exibir no período.</p>';
-        return;
-    }
-    
-    const maxVal = Math.max(1, ...Object.values(dataByMonth).flatMap(d => [d.receita, d.despesa]));
-    
-    sortedMonths.forEach(month => {
-        const { receita, despesa } = dataByMonth[month];
-        const monthLabel = new Date(month + '-02').toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
-        
-        const group = document.createElement('div');
-        group.className = 'chart-bar-group';
-        group.innerHTML = `
-            <div class="chart-bar receita" style="height: ${(receita/maxVal)*100}%" title="Receita: ${formatCurrency(receita)}"></div>
-            <div class="chart-bar despesa" style="height: ${(despesa/maxVal)*100}%" title="Despesa: ${formatCurrency(despesa)}"></div>
-            <div class="chart-label">${monthLabel}</div>
-        `;
-        
-        chart.appendChild(group);
-    });
-}
-
-// Restante das funções existentes (handleClientFormSubmit, renderClientsTable, etc.)
-function handleClientFormSubmit(e) {
-    e.preventDefault();
-    const form = e.target;
-    if (!form.checkValidity()) { form.reportValidity(); return; }
-    
-    const id = document.getElementById('cliente-id').value;
-    const data = {
-        nome: form['cliente-nome'].value,
-        email: form['cliente-email'].value,
-        telefone: form['cliente-telefone'].value,
-        documento: form['cliente-documento'].value
-    };
-    
-    if (id) {
-        const index = db.clientes.findIndex(c => c.id === id);
-        if (index > -1) db.clientes[index] = { ...db.clientes[index], ...data };
-    } else {
-        db.clientes.push({ id: 'cli_' + Date.now(), ...data });
-    }
-    
-    saveData();
-    closeClientModal();
-}
-
-function renderClientsTable() {
-    const tableBody = document.querySelector('#clientes #tabela-clientes tbody');
-    tableBody.innerHTML = '';
-    
-    db.clientes.forEach(c => {
-        const r = tableBody.insertRow();
-        r.innerHTML = `
-            <td>${c.nome}</td>
-            <td>${c.email}</td>
-            <td>${c.telefone}</td>
-            <td class="actions">
-                <button class="edit" onclick="editClient('${c.id}')"><i class="ph ph-pencil-simple"></i></button>
-                <button class="delete" onclick="deleteClient('${c.id}')"><i class="ph ph-trash"></i></button>
-            </td>
-        `;
-    });
+function renderClientes() {
+  const tb = document.getElementById('tb-clientes');
+  tb.innerHTML = '';
+  if (!state.clientes.length) {
+    tb.innerHTML = `<tr><td colspan="5"><div class="empty-state"><i class="ph ph-users-three"></i><p>Nenhum cliente cadastrado.</p></div></td></tr>`;
+    return;
+  }
+  state.clientes.forEach(c => {
+    const projCount = state.projetos.filter(p => p.clienteId === c.id).length;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${c.nome}</strong></td>
+      <td>${c.email}</td>
+      <td>${c.tel || '—'}</td>
+      <td><span class="badge badge-active">${projCount} projeto${projCount !== 1 ? 's' : ''}</span></td>
+      <td>
+        <div class="table-actions">
+          <button class="act-btn act-edit" onclick="editClient('${c.id}')"><i class="ph ph-pencil-simple"></i></button>
+          <button class="act-btn act-delete" onclick="deleteClient('${c.id}')"><i class="ph ph-trash"></i></button>
+        </div>
+      </td>`;
+    tb.appendChild(tr);
+  });
 }
 
 function editClient(id) {
-    const c = db.clientes.find(c => c.id === id);
-    if (!c) return;
-    
-    const form = document.getElementById('form-cliente');
-    form['cliente-id'].value = c.id;
-    form['cliente-nome'].value = c.nome;
-    form['cliente-email'].value = c.email;
-    form['cliente-telefone'].value = c.telefone;
-    form['cliente-documento'].value = c.documento;
-    
-    document.getElementById('clientModalTitle').textContent = 'Editar Cliente';
-    document.getElementById('clientModal').style.display = 'block';
-    showPage('clientes');
-    window.scrollTo(0,0);
+  const c = state.clientes.find(c => c.id === id);
+  if (!c) return;
+  document.getElementById('client-id').value = c.id;
+  document.getElementById('client-nome').value = c.nome;
+  document.getElementById('client-email').value = c.email;
+  document.getElementById('client-tel').value = c.tel || '';
+  document.getElementById('client-doc').value = c.doc || '';
+  document.getElementById('modal-client-title').textContent = 'Editar Cliente';
+  openModal('client');
 }
 
 function deleteClient(id) {
-    if (confirm('Tem certeza? Excluir um cliente também excluirá seus projetos e lançamentos financeiros!')) {
-        const projetosDoCliente = db.projetos.filter(p => p.clienteId === id).map(p => p.id);
-        db.clientes = db.clientes.filter(c => c.id !== id);
-        db.projetos = db.projetos.filter(p => p.clienteId !== id);
-        db.financeiro = db.financeiro.filter(f => !projetosDoCliente.includes(f.projetoId));
-        saveData();
-    }
+  if (!confirm('Excluir este cliente e todos os seus projetos?')) return;
+  const projIds = state.projetos.filter(p => p.clienteId === id).map(p => p.id);
+  state.clientes = state.clientes.filter(c => c.id !== id);
+  state.projetos = state.projetos.filter(p => p.clienteId !== id);
+  state.financeiro = state.financeiro.filter(f => !projIds.includes(f.projetoId));
+  saveState();
+  renderClientes();
+  toast('Cliente removido.', 'error');
 }
 
-function handleProjectFormSubmit(e) {
-    e.preventDefault();
-    const form = e.target;
-    if (!form.checkValidity()) { form.reportValidity(); return; }
-    
-    const id = form['projeto-id'].value;
-    const data = {
-        nome: form['projeto-nome'].value,
-        clienteId: form['projeto-cliente'].value,
-        valor: parseFloat(form['projeto-valor'].value),
-        status: form['projeto-status'].value,
-        fase: form['projeto-fase'].value,
-        dataInicio: form['projeto-data-inicio'].value,
-        dataFim: form['projeto-data-fim'].value,
-        descricao: form['projeto-descricao'].value,
-        duracaoDias: parseInt(form['projeto-duracao-dias'].value) || 0,
-        progresso: parseInt(form['projeto-progresso'].value) || 0,
-        link: form['projeto-link'].value
-    };
-    
-    if (id) {
-        const index = db.projetos.findIndex(p => p.id === id);
-        if (index > -1) db.projetos[index] = { ...db.projetos[index], ...data };
-    } else {
-        db.projetos.push({ id: 'proj_' + Date.now(), ...data });
-    }
-    
-    saveData();
-    closeProjectModal();
+// ─── Projetos ─────────────────────────────────────────────
+const statusBadge = {
+  planejamento: '<span class="badge badge-planning">Planejamento</span>',
+  andamento: '<span class="badge badge-active">Em Andamento</span>',
+  concluido: '<span class="badge badge-done">Concluído</span>',
+  cancelado: '<span class="badge badge-cancelled">Cancelado</span>',
+};
+
+function saveProject(e) {
+  e.preventDefault();
+  const id = document.getElementById('project-id').value;
+  const data = {
+    id: id || uid(),
+    nome: document.getElementById('proj-nome').value,
+    clienteId: document.getElementById('proj-cliente').value,
+    valor: parseFloat(document.getElementById('proj-valor').value) || 0,
+    status: document.getElementById('proj-status').value,
+    fase: document.getElementById('proj-fase').value,
+    progresso: parseInt(document.getElementById('proj-progresso').value) || 0,
+    dataInicio: document.getElementById('proj-inicio').value,
+    dataFim: document.getElementById('proj-fim').value,
+    duracao: parseInt(document.getElementById('proj-duracao').value) || 0,
+    link: document.getElementById('proj-link').value,
+    desc: document.getElementById('proj-desc').value,
+  };
+  if (id) {
+    const i = state.projetos.findIndex(p => p.id === id);
+    if (i > -1) state.projetos[i] = data;
+  } else {
+    state.projetos.push(data);
+  }
+  saveState();
+  closeModal('project');
+  renderProjetos();
+  toast(id ? 'Projeto atualizado!' : 'Projeto criado!');
+}
+
+function renderProjetos(filterStatus = '') {
+  const tb = document.getElementById('tb-projetos');
+  tb.innerHTML = '';
+  let list = filterStatus ? state.projetos.filter(p => p.status === filterStatus) : state.projetos;
+  if (!list.length) {
+    tb.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="ph ph-kanban"></i><p>Nenhum projeto encontrado.</p></div></td></tr>`;
+    return;
+  }
+  list.forEach(p => {
+    const c = state.clientes.find(c => c.id === p.clienteId);
+    const tr = document.createElement('tr');
+    const prog = p.progresso || 0;
+    tr.innerHTML = `
+      <td>
+        <strong>${p.nome}</strong>
+        ${p.link ? `<a href="${p.link}" target="_blank" style="color:var(--primary-light);font-size:12px;margin-left:6px;"><i class="ph ph-arrow-square-out"></i></a>` : ''}
+      </td>
+      <td>${c ? c.nome : '—'}</td>
+      <td><span style="font-size:12px;color:var(--text-muted);">${p.fase || '—'}</span></td>
+      <td>${statusBadge[p.status] || p.status}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="progress-bar" style="width:80px;"><div class="progress-fill" style="width:${prog}%"></div></div>
+          <span style="font-size:11px;color:var(--text-muted);font-family:var(--font-mono);">${prog}%</span>
+        </div>
+      </td>
+      <td style="font-family:var(--font-mono);font-size:13px;">${fmt(p.valor)}</td>
+      <td>
+        <div class="table-actions">
+          <button class="act-btn act-edit" onclick="editProject('${p.id}')"><i class="ph ph-pencil-simple"></i></button>
+          <button class="act-btn act-delete" onclick="deleteProject('${p.id}')"><i class="ph ph-trash"></i></button>
+        </div>
+      </td>`;
+    tb.appendChild(tr);
+  });
 }
 
 function editProject(id) {
-    const p = db.projetos.find(p => p.id === id);
-    if (!p) return;
-    
-    const form = document.getElementById('form-projeto');
-    form['projeto-id'].value = p.id;
-    form['projeto-nome'].value = p.nome;
-    form['projeto-cliente'].value = p.clienteId;
-    form['projeto-valor'].value = p.valor;
-    form['projeto-status'].value = p.status;
-    form['projeto-fase'].value = p.fase || 'Análise';
-    form['projeto-data-inicio'].value = p.dataInicio;
-    form['projeto-data-fim'].value = p.dataFim;
-    form['projeto-descricao'].value = p.descricao;
-    form['projeto-duracao-dias'].value = p.duracaoDias || '';
-    form['projeto-progresso'].value = p.progresso || 0;
-    form['projeto-link'].value = p.link || '';
-    
-    document.getElementById('projectModalTitle').textContent = 'Editar Projeto';
-    document.getElementById('projectModal').style.display = 'block';
-    showPage('projetos');
-    window.scrollTo(0, 0);
+  const p = state.projetos.find(p => p.id === id);
+  if (!p) return;
+  document.getElementById('project-id').value = p.id;
+  document.getElementById('proj-nome').value = p.nome;
+  document.getElementById('proj-valor').value = p.valor;
+  document.getElementById('proj-status').value = p.status;
+  document.getElementById('proj-fase').value = p.fase;
+  document.getElementById('proj-progresso').value = p.progresso || 0;
+  document.getElementById('proj-inicio').value = p.dataInicio || '';
+  document.getElementById('proj-fim').value = p.dataFim || '';
+  document.getElementById('proj-duracao').value = p.duracao || '';
+  document.getElementById('proj-link').value = p.link || '';
+  document.getElementById('proj-desc').value = p.desc || '';
+  document.getElementById('modal-project-title').textContent = 'Editar Projeto';
+  openModal('project');
+  populateClientDropdown('proj-cliente');
+  setTimeout(() => { document.getElementById('proj-cliente').value = p.clienteId; }, 50);
 }
 
 function deleteProject(id) {
-    if (confirm('Tem certeza?')) {
-        db.projetos = db.projetos.filter(p => p.id !== id);
-        db.financeiro = db.financeiro.filter(f => f.projetoId !== id);
-        saveData();
-    }
+  if (!confirm('Excluir este projeto?')) return;
+  state.projetos = state.projetos.filter(p => p.id !== id);
+  state.financeiro = state.financeiro.filter(f => f.projetoId !== id);
+  saveState();
+  renderProjetos();
+  toast('Projeto removido.', 'error');
 }
 
-function renderProjectsTable() {
-    const tableBody = document.querySelector('#projetos #tabela-projetos tbody');
-    tableBody.innerHTML = '';
-    
-    db.projetos.forEach(p => {
-        const cliente = db.clientes.find(c => c.id === p.clienteId);
-        let linkHtml = 'N/A';
-        
-        if (p.link) {
-            const domain = p.link.replace(/^https?:\/\/(www\.)?/, '').split('/')[0];
-            linkHtml = `<a href="${p.link}" target="_blank" class="project-link" title="${p.link}"><i class="ph ph-link"></i> ${domain}</a>`;
-        }
-        
-        const r = tableBody.insertRow();
-        r.innerHTML = `
-            <td>${p.nome}</td>
-            <td>${cliente ? cliente.nome : 'N/A'}</td>
-            <td>${linkHtml}</td>
-            <td>${p.fase || 'N/A'}</td>
-            <td><span class="status ${p.status}">${p.status.charAt(0).toUpperCase() + p.status.slice(1)}</span></td>
-            <td class="actions">
-                <button class="edit" onclick="editProject('${p.id}')"><i class="ph ph-pencil-simple"></i></button>
-                <button class="delete" onclick="deleteProject('${p.id}')"><i class="ph ph-trash"></i></button>
-            </td>
-        `;
-    });
+function filterProjectsByStatus(s) { renderProjetos(s); }
+
+// ─── Financeiro ───────────────────────────────────────────
+function saveFinancial(e) {
+  e.preventDefault();
+  const id = document.getElementById('fin-id').value;
+  const data = {
+    id: id || uid(),
+    desc: document.getElementById('fin-desc').value,
+    valor: parseFloat(document.getElementById('fin-valor').value) || 0,
+    tipo: document.getElementById('fin-tipo').value,
+    data: document.getElementById('fin-data').value,
+    projetoId: document.getElementById('fin-projeto').value || null,
+  };
+  if (id) {
+    const i = state.financeiro.findIndex(f => f.id === id);
+    if (i > -1) state.financeiro[i] = data;
+  } else {
+    state.financeiro.push(data);
+  }
+  saveState();
+  closeModal('financial');
+  renderFin(document.getElementById('fin-period').value);
+  toast(id ? 'Lançamento atualizado!' : 'Lançamento adicionado!');
 }
 
-function handleFinancialFormSubmit(e) {
-    e.preventDefault();
-    const form = e.target;
-    if (!form.checkValidity()) { form.reportValidity(); return; }
-    
-    const id = form['lancamento-id'].value;
-    const data = {
-        descricao: form['lancamento-descricao'].value,
-        valor: parseFloat(form['lancamento-valor'].value),
-        tipo: form['lancamento-tipo'].value,
-        data: form['lancamento-data'].value,
-        projetoId: form['lancamento-projeto'].value
-    };
-    
-    if (id) {
-        const index = db.financeiro.findIndex(f => f.id === id);
-        if (index > -1) db.financeiro[index] = { ...db.financeiro[index], ...data };
-    } else {
-        db.financeiro.push({ id: 'fin_' + Date.now(), ...data });
-    }
-    
-    saveData();
-    closeFinancialModal();
+function getByPeriod(period) {
+  const now = new Date();
+  if (period === 'todoPeriodo') return state.financeiro;
+  let s, e;
+  if (period === 'esteMes') {
+    s = new Date(now.getFullYear(), now.getMonth(), 1);
+    e = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  } else if (period === 'mesPassado') {
+    s = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    e = new Date(now.getFullYear(), now.getMonth(), 0);
+  } else if (period === 'esteAno') {
+    s = new Date(now.getFullYear(), 0, 1);
+    e = new Date(now.getFullYear(), 11, 31);
+  }
+  return state.financeiro.filter(t => {
+    const d = new Date(t.data + 'T00:00:00');
+    return d >= s && d <= e;
+  });
 }
 
-function renderAllFinancialTransactionsTable() {
-    const tableBody = document.getElementById('tabela-financeiro').querySelector('tbody');
-    tableBody.innerHTML = '';
-    
-    db.financeiro.forEach(f => {
-        const projeto = db.projetos.find(p => p.id === f.projetoId);
-        const row = tableBody.insertRow();
-        row.innerHTML = `
-            <td>${f.descricao}</td>
-            <td class="valor ${f.tipo}">${formatCurrency(f.valor)}</td>
-            <td>${formatDate(f.data)}</td>
-            <td>${projeto ? projeto.nome : 'N/A'}</td>
-            <td class="actions">
-                <button class="edit" onclick="editFinancial('${f.id}')"><i class="ph ph-pencil-simple"></i></button>
-                <button class="delete" onclick="deleteFinancial('${f.id}')"><i class="ph ph-trash"></i></button>
-            </td>
-        `;
-    });
-}
+function renderFin(period = 'esteMes') {
+  const txs = getByPeriod(period);
+  const rec = txs.filter(t => t.tipo === 'receita').reduce((a, t) => a + t.valor, 0);
+  const desp = txs.filter(t => t.tipo === 'despesa').reduce((a, t) => a + t.valor, 0);
+  const saldo = rec - desp;
+  const prev = state.projetos.filter(p => ['planejamento','andamento'].includes(p.status)).reduce((a, p) => a + (p.valor || 0), 0);
 
-function editFinancial(id) {
-    const f = db.financeiro.find(f => f.id === id);
-    if (!f) return;
-    
-    const form = document.getElementById('form-financeiro');
-    form['lancamento-id'].value = f.id;
-    form['lancamento-descricao'].value = f.descricao;
-    form['lancamento-valor'].value = f.valor;
-    form['lancamento-tipo'].value = f.tipo;
-    form['lancamento-data'].value = f.data;
-    form['lancamento-projeto'].value = f.projetoId;
-    
-    document.getElementById('financialModalTitle').textContent = 'Editar Lançamento';
-    document.getElementById('financialModal').style.display = 'block';
-    showPage('financeiro');
-    window.scrollTo(0,0);
-}
+  document.getElementById('fin-receitas').textContent = fmt(rec);
+  document.getElementById('fin-despesas').textContent = fmt(desp);
+  const sEl = document.getElementById('fin-saldo');
+  sEl.textContent = fmt(saldo);
+  sEl.style.color = saldo >= 0 ? 'var(--success)' : 'var(--danger)';
+  document.getElementById('fin-previsao').textContent = fmt(prev);
 
-function deleteFinancial(id) {
-    if (confirm('Tem certeza?')) {
-        db.financeiro = db.financeiro.filter(f => f.id !== id);
-        saveData();
-    }
-}
-
-function populateClientDropdown(elementId) {
-    const select = document.getElementById(elementId);
-    const val = select.value;
-    select.innerHTML = `<option value="">Selecione um Cliente</option>`;
-    db.clientes.forEach(c => select.add(new Option(c.nome, c.id)));
-    select.value = val;
-}
-
-function populateProjectDropdown(elementId, filterByClientId = null) {
-    const select = document.getElementById(elementId);
-    const val = select.value;
-    select.innerHTML = `<option value="">Selecione um Projeto</option>`;
-    
-    let projetos = filterByClientId ? 
-        db.projetos.filter(p => p.clienteId === filterByClientId) : 
-        db.projetos;
-    
-    projetos.forEach(p => select.add(new Option(p.nome, p.id)));
-    select.value = val;
-}
-
-function updateDashboard() {
-    document.getElementById('total-clientes').textContent = db.clientes.length;
-    document.getElementById('total-projetos-geral').textContent = db.projetos.length;
-    document.getElementById('total-projetos-planejamento').textContent = db.projetos.filter(p => p.status === 'planejamento').length;
-    document.getElementById('total-projetos-andamento-dashboard').textContent = db.projetos.filter(p => p.status === 'andamento').length;
-    document.getElementById('total-projetos-concluido').textContent = db.projetos.filter(p => p.status === 'concluido').length;
-    document.getElementById('total-projetos-cancelado').textContent = db.projetos.filter(p => p.status === 'cancelado').length;
-}
-
-function updateFinancialForecast() {
-    const forecastTotal = db.projetos
-        .filter(p => p.status === 'planejamento' || p.status === 'andamento')
-        .reduce((sum, p) => sum + (p.valor || 0), 0);
-    
-    document.getElementById('previsao-receita').textContent = formatCurrency(forecastTotal);
-}
-
-function renderPhaseReport() {
-    const kanbanBoard = document.getElementById('kanban-board');
-    if(!kanbanBoard) return;
-    
-    kanbanBoard.innerHTML = '';
-    const fases = ['Análise', 'Design (UI/UX)', 'Desenvolvimento', 'Testes', 'Implantação'];
-    
-    fases.forEach(fase => {
-        const projetosNestaFase = db.projetos.filter(p => p.fase === fase && p.status !== 'concluido' && p.status !== 'cancelado');
-        const column = document.createElement('div');
-        column.className = 'kanban-column';
-        
-        let cardsHtml = '';
-        if (projetosNestaFase.length > 0) {
-            projetosNestaFase.forEach(p => {
-                const c = db.clientes.find(c => c.id === p.clienteId);
-                const duracaoHtml = p.duracaoDias ? `<p class="project-duration-clock"><i class="ph ph-hourglass"></i> ${p.duracaoDias} dias</p>` : '';
-                const progressoHtml = `<div class="project-progress-bar-container"><div class="project-progress-bar" style="width: ${p.progresso || 0}%">${p.progresso || 0}%</div></div>`;
-                
-                cardsHtml += `
-                    <div class="kanban-card" onclick="editProject('${p.id}')">
-                        <h5>${p.nome}</h5>
-                        <p><i class="ph ph-user"></i> ${c ? c.nome : 'N/A'}</p>
-                        <p><i class="ph ph-currency-circle-dollar"></i> ${formatCurrency(p.valor)}</p>
-                        ${duracaoHtml}
-                        ${progressoHtml}
-                    </div>`;
-            });
-        } else {
-            cardsHtml = '<p style="font-size: 0.8rem; color: #777; text-align: center; padding: 15px;">Nenhum projeto aqui.</p>';
-        }
-        
-        column.innerHTML = `
-            <div class="kanban-column-header"><h4>${fase}</h4><span class="count">${projetosNestaFase.length}</span></div>
-            <div class="kanban-column-body">${cardsHtml}</div>`;
-        
-        kanbanBoard.appendChild(column);
-    });
-}
-
-function renderProjectStatusChart() {
-    const ctx = document.getElementById('projectStatusChart');
-    if (projectStatusChartInstance) projectStatusChartInstance.destroy();
-    
-    const statusCounts = db.projetos.reduce((acc, p) => {
-        acc[p.status] = (acc[p.status] || 0) + 1;
-        return acc;
-    }, {});
-    
-    projectStatusChartInstance = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: ['Planejamento', 'Em Andamento', 'Concluído', 'Cancelado'],
-            datasets: [{
-                data: [
-                    statusCounts.planejamento || 0,
-                    statusCounts.andamento || 0,
-                    statusCounts.concluido || 0,
-                    statusCounts.cancelado || 0
-                ],
-                backgroundColor: [
-                    'rgba(255, 234, 0, 0.7)',
-                    'rgba(0, 230, 118, 0.7)',
-                    'rgba(0, 200, 83, 0.7)',
-                    'rgba(255, 82, 82, 0.7)'
-                ],
-                borderColor: [
-                    'rgb(255, 234, 0)',
-                    'rgb(0, 230, 118)',
-                    'rgb(0, 200, 83)',
-                    'rgb(255, 82, 82)'
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'top',
-                    labels: {
-                        color: 'var(--cor-texto)',
-                        font: { size: 14 }
-                    }
-                },
-                tooltip: {
-                    callbacks: {
-                        label: (c) => `${c.label || ''}: ${c.parsed || 0} projetos`
-                    }
-                }
-            }
-        }
-    });
-}
-
-function generateContract() {
-    const cId = document.getElementById('doc-cliente').value;
-    const pId = document.getElementById('doc-projeto').value;
-    
-    if (!cId || !pId) {
-        alert('Selecione cliente e projeto.');
-        return;
-    }
-    
-    const c = db.clientes.find(c => c.id === cId);
-    const p = db.projetos.find(p => p.id === pId);
-    const logoHtml = getLogomarca() ? `<img src="${getLogomarca()}" alt="Logomarca da Empresa" style="max-width: 150px;">` : '';
-    
-    document.getElementById('documento-preview').innerHTML = `
-        <div class="doc-header">
-            ${logoHtml}
-            <h3>CONTRATO DE PRESTAÇÃO DE SERVIÇOS</h3>
-            <p>${getRazaoSocial()} (${getNomeFantasia()}) - CNPJ: ${getSeuDocumento()}</p>
+  const tb = document.getElementById('tb-financeiro');
+  tb.innerHTML = '';
+  const list = [...state.financeiro].sort((a, b) => b.data.localeCompare(a.data));
+  list.forEach(t => {
+    const proj = state.projetos.find(p => p.id === t.projetoId);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${t.desc}</td>
+      <td><span class="badge ${t.tipo === 'receita' ? 'badge-income' : 'badge-expense'}">${t.tipo === 'receita' ? 'Receita' : 'Despesa'}</span></td>
+      <td>${proj ? proj.nome : '—'}</td>
+      <td style="font-family:var(--font-mono);font-size:12px;">${fmtDate(t.data)}</td>
+      <td style="font-family:var(--font-mono);font-weight:700;color:${t.tipo === 'receita' ? 'var(--success)' : 'var(--danger)'};">${fmt(t.valor)}</td>
+      <td>
+        <div class="table-actions">
+          <button class="act-btn act-edit" onclick="editFin('${t.id}')"><i class="ph ph-pencil-simple"></i></button>
+          <button class="act-btn act-delete" onclick="deleteFin('${t.id}')"><i class="ph ph-trash"></i></button>
         </div>
-        <div class="doc-section">
-            <h4>PARTES CONTRATANTES</h4>
-            <p><strong>CONTRATANTE:</strong> ${c.nome.toUpperCase()}, CPF/CNPJ: ${c.documento || '[não informado]'}.</p>
-            <p><strong>CONTRATADO(A):</strong> ${getNomeCompleto().toUpperCase()}, CPF/CNPJ: ${getSeuDocumento()}.</p>
-        </div>
-        <div class="doc-section">
-            <h4>CLÁUSULAS E CONDIÇÕES</h4>
-            <ol>
-                <li><strong>DO OBJETO:</strong> Prestação de serviços de desenvolvimento para o projeto <strong>"${p.nome}"</strong>. Escopo: ${p.descricao || 'Conforme proposta.'}</li>
-                <li><strong>DO VALOR:</strong> O valor total é de <strong>${formatCurrency(p.valor)}</strong>.</li>
-                <li><strong>DO PRAZO:</strong> De ${formatDate(p.dataInicio)} a ${formatDate(p.dataFim)}.</li>
-                <li><strong>DO FORO:</strong> Fica eleito o foro da comarca de Maceió/AL.</li>
-            </ol>
-        </div>
-        <p>E, por estarem justos e contratados, assinam o presente.</p>
-        <div class="doc-signatures">
-            <div class="doc-signature-block">
-                <div class="doc-signature-line"></div>
-                <div class="doc-signature-name">${getNomeCompleto()}</div>
-                <div class="doc-signature-name">CONTRATADO(A)</div>
+      </td>`;
+    tb.appendChild(tr);
+  });
+}
+
+function editFin(id) {
+  const t = state.financeiro.find(f => f.id === id);
+  if (!t) return;
+  document.getElementById('fin-id').value = t.id;
+  document.getElementById('fin-desc').value = t.desc;
+  document.getElementById('fin-valor').value = t.valor;
+  document.getElementById('fin-tipo').value = t.tipo;
+  document.getElementById('fin-data').value = t.data;
+  document.getElementById('modal-fin-title').textContent = 'Editar Lançamento';
+  populateProjDropdown('fin-projeto', '');
+  openModal('financial');
+  setTimeout(() => { document.getElementById('fin-projeto').value = t.projetoId || ''; }, 50);
+}
+
+function deleteFin(id) {
+  if (!confirm('Excluir este lançamento?')) return;
+  state.financeiro = state.financeiro.filter(f => f.id !== id);
+  saveState();
+  renderFin(document.getElementById('fin-period').value);
+  toast('Lançamento removido.', 'error');
+}
+
+// ─── Dashboard ────────────────────────────────────────────
+function renderDashboard() {
+  document.getElementById('ds-clientes').textContent = state.clientes.length;
+  document.getElementById('ds-projetos').textContent = state.projetos.length;
+  document.getElementById('ds-andamento').textContent = state.projetos.filter(p => p.status === 'andamento').length;
+  document.getElementById('ds-planejamento').textContent = state.projetos.filter(p => p.status === 'planejamento').length;
+  document.getElementById('ds-concluido').textContent = state.projetos.filter(p => p.status === 'concluido').length;
+
+  const mesRec = getByPeriod('esteMes').filter(t => t.tipo === 'receita').reduce((a, t) => a + t.valor, 0);
+  document.getElementById('ds-receita').textContent = fmt(mesRec);
+
+  // Doughnut
+  const ctx = document.getElementById('doughnut-chart');
+  const counts = ['planejamento','andamento','concluido','cancelado'].map(s => state.projetos.filter(p => p.status === s).length);
+  if (doughnutChart) doughnutChart.destroy();
+  doughnutChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Planejamento', 'Em Andamento', 'Concluído', 'Cancelado'],
+      datasets: [{
+        data: counts,
+        backgroundColor: ['rgba(245,158,11,0.8)', 'rgba(99,102,241,0.8)', 'rgba(16,185,129,0.8)', 'rgba(239,68,68,0.8)'],
+        borderColor: '#12151f',
+        borderWidth: 3,
+        hoverOffset: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '65%',
+      plugins: {
+        legend: { position: 'bottom', labels: { color: '#6b7280', font: { size: 11, family: "'Plus Jakarta Sans'" }, padding: 12, boxWidth: 10 } },
+        tooltip: { callbacks: { label: c => `${c.label}: ${c.parsed}` } }
+      }
+    }
+  });
+
+  // Bar chart (last 6 months)
+  renderBarChart('dash-bar-chart', state.financeiro);
+
+  // Recent projects
+  const tb = document.querySelector('#ds-recent-projects tbody');
+  tb.innerHTML = '';
+  const recent = [...state.projetos].sort((a, b) => (b.dataInicio || '').localeCompare(a.dataInicio || '')).slice(0, 5);
+  if (!recent.length) {
+    tb.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:24px;">Nenhum projeto ainda.</td></tr>`;
+    return;
+  }
+  recent.forEach(p => {
+    const c = state.clientes.find(cl => cl.id === p.clienteId);
+    const prog = p.progresso || 0;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${p.nome}</strong></td>
+      <td>${c ? c.nome : '—'}</td>
+      <td>${statusBadge[p.status] || p.status}</td>
+      <td><div style="display:flex;align-items:center;gap:8px;"><div class="progress-bar" style="width:70px;"><div class="progress-fill" style="width:${prog}%"></div></div><span style="font-size:11px;color:var(--text-muted);">${prog}%</span></div></td>
+      <td style="font-family:var(--font-mono);font-size:13px;">${fmt(p.valor)}</td>`;
+    tb.appendChild(tr);
+  });
+}
+
+function renderBarChart(containerId, txs) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = '';
+  const dataByMonth = {};
+  txs.forEach(t => {
+    const m = t.data ? t.data.substring(0, 7) : null;
+    if (!m) return;
+    if (!dataByMonth[m]) dataByMonth[m] = { r: 0, d: 0 };
+    if (t.tipo === 'receita') dataByMonth[m].r += t.valor;
+    else dataByMonth[m].d += t.valor;
+  });
+  const months = Object.keys(dataByMonth).sort().slice(-6);
+  if (!months.length) {
+    el.innerHTML = `<div style="color:var(--text-muted);font-size:13px;text-align:center;width:100%;padding:30px 0;">Sem dados financeiros ainda.</div>`;
+    return;
+  }
+  const maxVal = Math.max(1, ...months.flatMap(m => [dataByMonth[m].r, dataByMonth[m].d]));
+  months.forEach(m => {
+    const { r, d } = dataByMonth[m];
+    const label = new Date(m + '-02').toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
+    const rh = Math.max(2, (r / maxVal) * 100);
+    const dh = Math.max(2, (d / maxVal) * 100);
+    const g = document.createElement('div');
+    g.className = 'bar-group';
+    g.innerHTML = `
+      <div class="bar-bars">
+        <div class="bar income" style="height:${rh}%;" title="${fmt(r)}"></div>
+        <div class="bar expense" style="height:${dh}%;" title="${fmt(d)}"></div>
+      </div>
+      <div class="bar-label">${label}</div>`;
+    el.appendChild(g);
+  });
+}
+
+// ─── Kanban ───────────────────────────────────────────────
+function renderKanban() {
+  const board = document.getElementById('kanban-board');
+  board.innerHTML = '';
+  const fases = ['Análise', 'Design (UI/UX)', 'Desenvolvimento', 'Testes', 'Implantação'];
+  fases.forEach(fase => {
+    const projs = state.projetos.filter(p => p.fase === fase && !['concluido','cancelado'].includes(p.status));
+    const col = document.createElement('div');
+    col.className = 'kanban-col';
+    let cards = '';
+    if (projs.length) {
+      projs.forEach(p => {
+        const c = state.clientes.find(cl => cl.id === p.clienteId);
+        const prog = p.progresso || 0;
+        cards += `
+          <div class="kanban-card" onclick="editProject('${p.id}')">
+            <h5>${p.nome}</h5>
+            <div class="k-row"><i class="ph ph-user"></i>${c ? c.nome : '—'}</div>
+            <div class="k-row"><i class="ph ph-currency-circle-dollar"></i>${fmt(p.valor)}</div>
+            ${p.duracao ? `<div class="k-row"><i class="ph ph-hourglass"></i>${p.duracao} dias</div>` : ''}
+            <div class="k-progress">
+              <div class="k-progress-bar"><div class="k-progress-fill" style="width:${prog}%"></div></div>
+              <div class="k-progress-label">${prog}%</div>
             </div>
-            <div class="doc-signature-block">
-                <div class="doc-signature-line"></div>
-                <div class="doc-signature-name">${c.nome}</div>
-                <div class="doc-signature-name">CONTRATANTE</div>
-            </div>
-        </div>
-    `;
-    
-    document.getElementById('btn-print').style.display = 'inline-block';
-}
-
-function generateReceipt() {
-    const cId = document.getElementById('doc-cliente').value;
-    const pId = document.getElementById('doc-projeto').value;
-    
-    if (!cId || !pId) {
-        alert('Selecione cliente e projeto.');
-        return;
-    }
-    
-    const c = db.clientes.find(c => c.id === cId);
-    const p = db.projetos.find(p => p.id === pId);
-    const logoHtml = getLogomarca() ? `<img src="${getLogomarca()}" alt="Logomarca da Empresa" style="max-width: 150px;">` : '';
-    
-    document.getElementById('documento-preview').innerHTML = `
-        <div class="doc-header">
-            ${logoHtml}
-            <h3>RECIBO DE PAGAMENTO</h3>
-            <p>Recibo Nº: REC-${Date.now().toString().slice(-6)}</p>
-            <p>${getRazaoSocial()} (${getNomeFantasia()}) - CNPJ: ${getSeuDocumento()}</p>
-        </div>
-        <div class="doc-section">
-            <h4>DADOS DO PAGAMENTO</h4>
-            <p>Recebemos de <strong>${c.nome.toUpperCase()}</strong> (CPF/CNPJ: ${c.documento || '[não informado]'}) a importância descrita abaixo.</p>
-        </div>
-        <div class="doc-receipt-value">
-            <p>${formatCurrency(p.valor)}</p>
-        </div>
-        <p>Valor referente ao projeto <strong>"${p.nome}"</strong>.</p>
-        <p>Para clareza, firmamos o presente.</p>
-        <div class="doc-signatures" style="margin-top: 120px;">
-            <div class="doc-signature-block">
-                <div class="doc-signature-line"></div>
-                <div class="doc-signature-name">${getNomeCompleto()}</div>
-                <div class="doc-signature-name">Emitente</div>
-            </div>
-        </div>
-        <div style="text-align: center; margin-top: 40px;">
-            <p>Maceió, ${new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}.</p>
-        </div>
-    `;
-    
-    document.getElementById('btn-print').style.display = 'inline-block';
-}
-
-function exportBackup() {
-    const dataStr = JSON.stringify(db, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    
-    link.href = url;
-    link.download = `backup-gestorpro-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-}
-
-function importBackup() {
-    const fileInput = document.getElementById('import-file');
-    const file = fileInput.files[0];
-    
-    if (!file) {
-        alert('Selecione um arquivo.');
-        return;
-    }
-    
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        try {
-            const data = JSON.parse(e.target.result);
-            if (confirm('Isso substituirá todos os dados. Continuar?')) {
-                db = { ...defaultDB, ...data };
-                saveData();
-                alert('Backup importado!');
-            }
-        } catch (err) {
-            alert('Erro no arquivo.');
-        } finally {
-            fileInput.value = '';
-        }
-    };
-    
-    reader.readAsText(file);
-}
-
-function handleConfigFormSubmit(e) {
-    e.preventDefault();
-    const form = e.target;
-    if (!form.checkValidity()) { form.reportValidity(); return; }
-    
-    const configData = {
-        nomeCompleto: form['config-nome-completo'].value,
-        cnpj: form['config-cnpj'].value,
-        razaoSocial: form['config-razao-social'].value,
-        nomeFantasia: form['config-nome-fantasia'].value,
-        logomarca: document.getElementById('logo-preview').src.startsWith('data:image') ? 
-            document.getElementById('logo-preview').src : 
-            db.empresa.logomarca || null
-    };
-    
-    db.empresa = { ...db.empresa, ...configData };
-    saveData();
-    alert('Configurações salvas com sucesso!');
-}
-
-function loadConfigData() {
-    const form = document.getElementById('form-configuracoes');
-    form['config-nome-completo'].value = db.empresa.nomeCompleto || '';
-    form['config-cnpj'].value = db.empresa.cnpj || '';
-    form['config-razao-social'].value = db.empresa.razaoSocial || '';
-    form['config-nome-fantasia'].value = db.empresa.nomeFantasia || '';
-    
-    const logoPreview = document.getElementById('logo-preview');
-    if (db.empresa.logomarca) {
-        logoPreview.src = db.empresa.logomarca;
-        logoPreview.style.display = 'block';
+          </div>`;
+      });
     } else {
-        logoPreview.src = '#';
-        logoPreview.style.display = 'none';
+      cards = `<div style="text-align:center;padding:20px;color:var(--text-faint);font-size:12px;">Vazio</div>`;
     }
+    col.innerHTML = `
+      <div class="kanban-col-header">
+        <span class="kanban-col-title">${fase}</span>
+        <span class="kanban-count">${projs.length}</span>
+      </div>
+      <div class="kanban-col-body">${cards}</div>`;
+    board.appendChild(col);
+  });
 }
 
-function previewLogo() {
-    const fileInput = document.getElementById('config-logo');
-    const logoPreview = document.getElementById('logo-preview');
-    const file = fileInput.files[0];
-    
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            logoPreview.src = e.target.result;
-            logoPreview.style.display = 'block';
-        };
-        reader.readAsDataURL(file);
-    }
+// ─── Reports ──────────────────────────────────────────────
+function toggleReportFilters() {
+  const t = document.getElementById('report-type').value;
+  document.getElementById('rf-status').style.display = t === 'projetos' ? '' : 'none';
 }
 
-function clearAllData(isInitialClear = false) {
-    if (isInitialClear || confirm('ATENÇÃO: Tem certeza que deseja limpar TODOS os dados do sistema? Esta ação é irreversível!')) {
-        localStorage.removeItem('gestorProDB');
-        db = { ...defaultDB };
-        renderAllData();
-        if (!isInitialClear) alert('Todos os dados foram limpos!');
-        showPage('dashboard');
-    }
-}
-
-// ================================================================================= //
-// ========================= NOVAS FUNÇÕES DE RELATÓRIOS =========================== //
-// ================================================================================= //
-
-function updateReportFilters() {
-    const reportType = document.getElementById('report-type').value;
-    const projectFilters = document.getElementById('project-filters');
-    const financialFilters = document.getElementById('financial-filters');
-    
-    if (reportType === 'projetos') {
-        projectFilters.style.display = 'block';
-        financialFilters.style.display = 'none';
-    } else if (reportType === 'financeiro') {
-        projectFilters.style.display = 'none';
-        financialFilters.style.display = 'block';
-    } else {
-        projectFilters.style.display = 'none';
-        financialFilters.style.display = 'none';
-    }
-}
-
-function toggleCustomDateRange() {
-    const dateRange = document.getElementById('date-range').value;
-    const customDateRange = document.getElementById('custom-date-range');
-    
-    if (dateRange === 'customizado') {
-        customDateRange.style.display = 'flex';
-        customDateRange.style.flexWrap = 'wrap';
-        customDateRange.style.gap = '15px';
-        customDateRange.style.alignItems = 'center';
-    } else {
-        customDateRange.style.display = 'none';
-    }
+function getReportPeriodDates(period) {
+  const now = new Date();
+  if (period === 'todoPeriodo') return { s: new Date(2000, 0, 1), e: new Date(2100, 0, 1) };
+  if (period === 'esteMes') return { s: new Date(now.getFullYear(), now.getMonth(), 1), e: new Date(now.getFullYear(), now.getMonth() + 1, 0) };
+  if (period === 'ultimos3Meses') return { s: new Date(now.getFullYear(), now.getMonth() - 2, 1), e: new Date(now.getFullYear(), now.getMonth() + 1, 0) };
+  if (period === 'esteAno') return { s: new Date(now.getFullYear(), 0, 1), e: new Date(now.getFullYear(), 11, 31) };
 }
 
 function generateReport() {
-    const reportType = document.getElementById('report-type').value;
-    const dateRange = document.getElementById('date-range').value;
-    let startDate, endDate;
-    
-    // Determinar datas baseado no filtro
-    const now = new Date();
-    if (dateRange === 'esteMes') {
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    } else if (dateRange === 'ultimos3Meses') {
-        startDate = new Date(now.getFullYear(), now.getMonth() - 2, 1);
-        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    } else if (dateRange === 'esteAno') {
-        startDate = new Date(now.getFullYear(), 0, 1);
-        endDate = new Date(now.getFullYear(), 11, 31);
-    } else if (dateRange === 'customizado') {
-        const startDateInput = document.getElementById('start-date').value;
-        const endDateInput = document.getElementById('end-date').value;
-        
-        if (!startDateInput || !endDateInput) {
-            alert('Por favor, selecione ambas as datas para o período personalizado.');
-            return;
-        }
-        
-        startDate = new Date(startDateInput + 'T00:00:00');
-        endDate = new Date(endDateInput + 'T23:59:59');
-    } else {
-        // Todo o período
-        startDate = new Date('2000-01-01');
-        endDate = new Date('2100-12-31');
-    }
-    
-    // Gerar relatório baseado no tipo
-    if (reportType === 'projetos') {
-        generateProjectReport(startDate, endDate);
-    } else if (reportType === 'financeiro') {
-        generateFinancialReport(startDate, endDate);
-    } else if (reportType === 'clientes') {
-        generateClientReport(startDate, endDate);
-    }
-    
-    // Mostrar resultados e botões de exportação
-    document.getElementById('report-results').style.display = 'block';
-    document.getElementById('export-pdf-btn').style.display = 'inline-block';
-    document.getElementById('export-csv-btn').style.display = 'inline-block';
-}
+  const type = document.getElementById('report-type').value;
+  const period = document.getElementById('report-period').value;
+  const { s, e } = getReportPeriodDates(period);
+  const head = document.getElementById('rpt-head');
+  const body = document.getElementById('rpt-body');
+  const summary = document.getElementById('rpt-summary');
 
-function generateProjectReport(startDate, endDate) {
-    const statusFilter = document.getElementById('project-status-filter').value;
-    const phaseFilter = document.getElementById('project-phase-filter').value;
-    
-    // Filtrar projetos
-    let filteredProjects = db.projetos.filter(p => {
-        const projectDate = p.dataInicio ? new Date(p.dataInicio + 'T00:00:00') : new Date();
-        return projectDate >= startDate && projectDate <= endDate;
-    });
-    
-    // Aplicar filtros adicionais
-    if (statusFilter !== 'todos') {
-        filteredProjects = filteredProjects.filter(p => p.status === statusFilter);
-    }
-    
-    if (phaseFilter !== 'todos') {
-        filteredProjects = filteredProjects.filter(p => p.fase === phaseFilter);
-    }
-    
-    // Ordenar por data
-    filteredProjects.sort((a, b) => {
-        const dateA = a.dataInicio ? new Date(a.dataInicio + 'T00:00:00') : new Date(0);
-        const dateB = b.dataInicio ? new Date(b.dataInicio + 'T00:00:00') : new Date(0);
-        return dateB - dateA;
-    });
-    
-    // Preparar dados para exibição
-    currentReportData = {
-        type: 'projetos',
-        data: filteredProjects,
-        columns: ['Projeto', 'Cliente', 'Valor', 'Status', 'Fase', 'Data Início', 'Progresso']
-    };
-    
-    // Renderizar tabela
-    renderReportTable(filteredProjects.map(p => {
-        const cliente = db.clientes.find(c => c.id === p.clienteId);
-        return [
-            p.nome,
-            cliente ? cliente.nome : 'N/A',
-            formatCurrency(p.valor),
-            `<span class="status ${p.status}">${p.status.charAt(0).toUpperCase() + p.status.slice(1)}</span>`,
-            p.fase || 'N/A',
-            formatDate(p.dataInicio),
-            `${p.progresso || 0}%`
-        ];
-    }));
-    
-    // Atualizar resumo
-    const totalValor = filteredProjects.reduce((sum, p) => sum + (p.valor || 0), 0);
-    const avgProgress = filteredProjects.length > 0 ? 
-        filteredProjects.reduce((sum, p) => sum + (p.progresso || 0), 0) / filteredProjects.length : 0;
-    
-    document.getElementById('report-summary').innerHTML = `
-        <h4>Resumo do Relatório de Projetos</h4>
-        <p><strong>Total de Projetos:</strong> ${filteredProjects.length}</p>
-        <p><strong>Valor Total:</strong> ${formatCurrency(totalValor)}</p>
-        <p><strong>Progresso Médio:</strong> ${avgProgress.toFixed(1)}%</p>
-        <p><strong>Período:</strong> ${startDate.toLocaleDateString('pt-BR')} a ${endDate.toLocaleDateString('pt-BR')}</p>
-    `;
-}
+  head.innerHTML = ''; body.innerHTML = ''; summary.innerHTML = '';
 
-function generateFinancialReport(startDate, endDate) {
-    const periodFilter = document.getElementById('financial-period').value;
-    const typeFilter = document.getElementById('financial-type').value;
-    
-    // Filtrar transações
-    let filteredTransactions = db.financeiro.filter(t => {
-        const transactionDate = new Date(t.data + 'T00:00:00');
-        return transactionDate >= startDate && transactionDate <= endDate;
+  if (type === 'projetos') {
+    const status = document.getElementById('report-status').value;
+    let list = state.projetos.filter(p => {
+      const d = p.dataInicio ? new Date(p.dataInicio + 'T00:00:00') : new Date();
+      return d >= s && d <= e && (status === 'todos' || p.status === status);
     });
-    
-    // Aplicar filtro de tipo
-    if (typeFilter !== 'ambos') {
-        filteredTransactions = filteredTransactions.filter(t => t.tipo === typeFilter);
-    }
-    
-    // Ordenar por data
-    filteredTransactions.sort((a, b) => new Date(b.data + 'T00:00:00') - new Date(a.data + 'T00:00:00'));
-    
-    // Preparar dados para exibição
-    currentReportData = {
-        type: 'financeiro',
-        data: filteredTransactions,
-        columns: ['Descrição', 'Valor', 'Tipo', 'Data', 'Projeto']
-    };
-    
-    // Renderizar tabela
-    renderReportTable(filteredTransactions.map(t => {
-        const projeto = db.projetos.find(p => p.id === t.projetoId);
-        const tipoClass = t.tipo === 'receita' ? 'valor receita' : 'valor despesa';
-        const tipoLabel = t.tipo === 'receita' ? 'Receita' : 'Despesa';
-        
-        return [
-            t.descricao,
-            `<span class="${tipoClass}">${formatCurrency(t.valor)}</span>`,
-            `<span class="status ${t.tipo}">${tipoLabel}</span>`,
-            formatDate(t.data),
-            projeto ? projeto.nome : 'N/A'
-        ];
-    }));
-    
-    // Calcular totais
-    const totalReceitas = filteredTransactions
-        .filter(t => t.tipo === 'receita')
-        .reduce((sum, t) => sum + t.valor, 0);
-    
-    const totalDespesas = filteredTransactions
-        .filter(t => t.tipo === 'despesa')
-        .reduce((sum, t) => sum + t.valor, 0);
-    
-    const saldo = totalReceitas - totalDespesas;
-    
-    document.getElementById('report-summary').innerHTML = `
-        <h4>Resumo do Relatório Financeiro</h4>
-        <p><strong>Total de Lançamentos:</strong> ${filteredTransactions.length}</p>
-        <p><strong>Total Receitas:</strong> <span style="color: var(--cor-sucesso);">${formatCurrency(totalReceitas)}</span></p>
-        <p><strong>Total Despesas:</strong> <span style="color: var(--cor-perigo);">${formatCurrency(totalDespesas)}</span></p>
-        <p><strong>Saldo:</strong> <span style="color: ${saldo >= 0 ? 'var(--cor-sucesso)' : 'var(--cor-perigo)'};">${formatCurrency(saldo)}</span></p>
-        <p><strong>Período:</strong> ${startDate.toLocaleDateString('pt-BR')} a ${endDate.toLocaleDateString('pt-BR')}</p>
-    `;
-}
+    reportData = { cols: ['Projeto','Cliente','Status','Fase','Progresso','Valor'], rows: list.map(p => {
+      const c = state.clientes.find(cl => cl.id === p.clienteId);
+      return [p.nome, c ? c.nome : '—', p.status, p.fase || '—', p.progresso + '%', fmt(p.valor)];
+    })};
+    summary.innerHTML = `<strong>${list.length}</strong> projeto(s) · Total: <strong>${fmt(list.reduce((a,p)=>a+p.valor,0))}</strong>`;
+  } else if (type === 'financeiro') {
+    let txs = state.financeiro.filter(t => { const d = new Date(t.data+'T00:00:00'); return d>=s && d<=e; });
+    const rec = txs.filter(t=>t.tipo==='receita').reduce((a,t)=>a+t.valor,0);
+    const desp = txs.filter(t=>t.tipo==='despesa').reduce((a,t)=>a+t.valor,0);
+    reportData = { cols: ['Descrição','Tipo','Projeto','Data','Valor'], rows: txs.map(t => {
+      const proj = state.projetos.find(p=>p.id===t.projetoId);
+      return [t.desc, t.tipo, proj?proj.nome:'—', fmtDate(t.data), fmt(t.valor)];
+    })};
+    summary.innerHTML = `Receitas: <strong style="color:var(--success)">${fmt(rec)}</strong> · Despesas: <strong style="color:var(--danger)">${fmt(desp)}</strong> · Saldo: <strong style="color:${rec-desp>=0?'var(--success)':'var(--danger)'}">${fmt(rec-desp)}</strong>`;
+  } else if (type === 'clientes') {
+    reportData = { cols: ['Cliente','E-mail','Projetos','Valor Total'], rows: state.clientes.map(c => {
+      const projs = state.projetos.filter(p=>p.clienteId===c.id);
+      return [c.nome, c.email, projs.length, fmt(projs.reduce((a,p)=>a+p.valor,0))];
+    })};
+    summary.innerHTML = `<strong>${state.clientes.length}</strong> cliente(s) cadastrado(s)`;
+  }
 
-function generateClientReport(startDate, endDate) {
-    // Filtrar clientes com projetos no período
-    const clientProjects = db.projetos.filter(p => {
-        const projectDate = p.dataInicio ? new Date(p.dataInicio + 'T00:00:00') : new Date();
-        return projectDate >= startDate && projectDate <= endDate;
-    });
-    
-    // Agrupar por cliente
-    const clientMap = new Map();
-    
-    clientProjects.forEach(p => {
-        if (!clientMap.has(p.clienteId)) {
-            const cliente = db.clientes.find(c => c.id === p.clienteId);
-            if (cliente) {
-                clientMap.set(p.clienteId, {
-                    cliente: cliente,
-                    projetos: [],
-                    valorTotal: 0
-                });
-            }
-        }
-        
-        const clientData = clientMap.get(p.clienteId);
-        clientData.projetos.push(p);
-        clientData.valorTotal += p.valor || 0;
-    });
-    
-    const clientArray = Array.from(clientMap.values());
-    
-    // Ordenar por valor total
-    clientArray.sort((a, b) => b.valorTotal - a.valorTotal);
-    
-    // Preparar dados para exibição
-    currentReportData = {
-        type: 'clientes',
-        data: clientArray,
-        columns: ['Cliente', 'Email', 'Projetos', 'Valor Total', 'Último Projeto']
-    };
-    
-    // Renderizar tabela
-    renderReportTable(clientArray.map(c => {
-        const ultimoProjeto = c.projetos.sort((a, b) => {
-            const dateA = a.dataInicio ? new Date(a.dataInicio + 'T00:00:00') : new Date(0);
-            const dateB = b.dataInicio ? new Date(b.dataInicio + 'T00:00:00') : new Date(0);
-            return dateB - dateA;
-        })[0];
-        
-        return [
-            c.cliente.nome,
-            c.cliente.email,
-            c.projetos.length,
-            formatCurrency(c.valorTotal),
-            ultimoProjeto ? `${ultimoProjeto.nome} (${formatDate(ultimoProjeto.dataInicio)})` : 'N/A'
-        ];
-    }));
-    
-    // Atualizar resumo
-    const totalClientes = clientArray.length;
-    const totalProjetos = clientArray.reduce((sum, c) => sum + c.projetos.length, 0);
-    const valorTotal = clientArray.reduce((sum, c) => sum + c.valorTotal, 0);
-    
-    document.getElementById('report-summary').innerHTML = `
-        <h4>Resumo do Relatório de Clientes</h4>
-        <p><strong>Total de Clientes:</strong> ${totalClientes}</p>
-        <p><strong>Total de Projetos:</strong> ${totalProjetos}</p>
-        <p><strong>Valor Total:</strong> ${formatCurrency(valorTotal)}</p>
-        <p><strong>Valor Médio por Cliente:</strong> ${formatCurrency(valorTotal / totalClientes)}</p>
-        <p><strong>Período:</strong> ${startDate.toLocaleDateString('pt-BR')} a ${endDate.toLocaleDateString('pt-BR')}</p>
-    `;
-}
+  const hr = document.createElement('tr');
+  reportData.cols.forEach(col => { const th = document.createElement('th'); th.textContent = col; hr.appendChild(th); });
+  head.appendChild(hr);
+  reportData.rows.forEach(row => {
+    const tr = document.createElement('tr');
+    row.forEach(cell => { const td = document.createElement('td'); td.textContent = cell; tr.appendChild(td); });
+    body.appendChild(tr);
+  });
 
-function renderReportTable(rows) {
-    const tableHead = document.getElementById('report-table-head');
-    const tableBody = document.getElementById('report-table-body');
-    
-    // Limpar tabela
-    tableHead.innerHTML = '';
-    tableBody.innerHTML = '';
-    
-    // Adicionar cabeçalho
-    if (currentReportData && currentReportData.columns) {
-        const headerRow = document.createElement('tr');
-        currentReportData.columns.forEach(column => {
-            const th = document.createElement('th');
-            th.textContent = column;
-            headerRow.appendChild(th);
-        });
-        tableHead.appendChild(headerRow);
-    }
-    
-    // Adicionar linhas
-    rows.forEach(rowData => {
-        const row = document.createElement('tr');
-        rowData.forEach(cellData => {
-            const td = document.createElement('td');
-            
-            // Se for HTML, usar innerHTML, senão textContent
-            if (typeof cellData === 'string' && cellData.includes('<')) {
-                td.innerHTML = cellData;
-            } else {
-                td.textContent = cellData;
-            }
-            
-            row.appendChild(td);
-        });
-        tableBody.appendChild(row);
-    });
-}
-
-function exportReportToPDF() {
-    if (!currentReportData) {
-        alert('Nenhum relatório gerado para exportar.');
-        return;
-    }
-    
-    // Usar html2canvas para capturar o conteúdo
-    const element = document.getElementById('report-results');
-    
-    html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#1a1a2e'
-    }).then(canvas => {
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4');
-        const imgWidth = 190;
-        const pageHeight = 280;
-        const imgHeight = canvas.height * imgWidth / canvas.width;
-        let heightLeft = imgHeight;
-        let position = 10;
-        
-        pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-        
-        while (heightLeft >= 0) {
-            position = heightLeft - imgHeight;
-            pdf.addPage();
-            pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
-            heightLeft -= pageHeight;
-        }
-        
-        // Adicionar metadata
-        const reportType = document.getElementById('report-type').value;
-        const reportTypes = {
-            'projetos': 'Relatório de Projetos',
-            'financeiro': 'Relatório Financeiro',
-            'clientes': 'Relatório de Clientes'
-        };
-        
-        const fileName = `${reportTypes[reportType]}_${new Date().toISOString().split('T')[0]}.pdf`;
-        pdf.save(fileName);
-    }).catch(error => {
-        console.error('Erro ao gerar PDF:', error);
-        alert('Erro ao gerar PDF. Tente novamente.');
-    });
+  document.getElementById('report-results').style.display = '';
+  document.getElementById('report-pdf-btn').style.display = '';
+  document.getElementById('report-csv-btn').style.display = '';
 }
 
 function exportReportToCSV() {
-    if (!currentReportData) {
-        alert('Nenhum relatório gerado para exportar.');
-        return;
-    }
-    
-    const reportType = document.getElementById('report-type').value;
-    const reportTypes = {
-        'projetos': 'Relatório de Projetos',
-        'financeiro': 'Relatório Financeiro',
-        'clientes': 'Relatório de Clientes'
-    };
-    
-    let csvContent = '';
-    
-    // Adicionar cabeçalho
-    if (currentReportData.columns) {
-        csvContent += currentReportData.columns.join(';') + '\n';
-    }
-    
-    // Adicionar dados
-    const tableBody = document.getElementById('report-table-body');
-    const rows = tableBody.querySelectorAll('tr');
-    
-    rows.forEach(row => {
-        const cells = row.querySelectorAll('td');
-        const rowData = [];
-        
-        cells.forEach(cell => {
-            // Remover HTML e obter texto limpo
-            let cellText = cell.textContent.trim();
-            
-            // Lidar com valores monetários
-            if (cellText.includes('R$')) {
-                cellText = cellText.replace('R$', '').trim();
-            }
-            
-            // Escapar ponto e vírgula
-            cellText = cellText.replace(/;/g, ',');
-            
-            rowData.push(cellText);
-        });
-        
-        csvContent += rowData.join(';') + '\n';
-    });
-    
-    // Criar blob e baixar
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    
-    link.href = url;
-    link.download = `${reportTypes[reportType]}_${new Date().toISOString().split('T')[0]}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  if (!reportData) return;
+  let csv = reportData.cols.join(';') + '\n';
+  reportData.rows.forEach(r => { csv += r.join(';') + '\n'; });
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'relatorio_' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click();
 }
 
-// Inicializar filtros de relatório
-updateReportFilters();
+function exportReportToPDF() {
+  const el = document.getElementById('report-results');
+  html2canvas(el, { scale: 2, backgroundColor: '#12151f' }).then(canvas => {
+    const pdf = new window.jspdf.jsPDF('p','mm','a4');
+    const img = canvas.toDataURL('image/png');
+    const w = 190; const h = canvas.height * w / canvas.width;
+    pdf.addImage(img, 'PNG', 10, 10, w, h);
+    pdf.save('relatorio_' + new Date().toISOString().split('T')[0] + '.pdf');
+  });
+}
+
+// ─── Contratos ────────────────────────────────────────────
+function generateContract() {
+  const cId = document.getElementById('doc-cliente').value;
+  const pId = document.getElementById('doc-projeto').value;
+  if (!cId || !pId) { toast('Selecione cliente e projeto.', 'error'); return; }
+  const c = state.clientes.find(c=>c.id===cId);
+  const p = state.projetos.find(p=>p.id===pId);
+  const e = state.empresa;
+  const logo = e.logo ? `<img src="${e.logo}" style="max-width:140px;margin-bottom:10px;">` : '';
+  document.getElementById('documento-preview').innerHTML = `
+    <div class="doc-header">${logo}
+      <h3>Contrato de Prestação de Serviços</h3>
+      <p>${e.razao || 'Sua Empresa'} ${e.doc ? '· ' + e.doc : ''}</p>
+    </div>
+    <div class="doc-section"><h4>Partes</h4>
+      <p><strong>CONTRATANTE:</strong> ${c.nome.toUpperCase()}${c.doc ? ', CPF/CNPJ: ' + c.doc : ''}.</p>
+      <p><strong>CONTRATADO(A):</strong> ${(e.nome||'[Nome]').toUpperCase()}${e.doc ? ', CPF/CNPJ: ' + e.doc : ''}.</p>
+    </div>
+    <div class="doc-section"><h4>Cláusulas</h4>
+      <ol>
+        <li><strong>Objeto:</strong> ${p.desc || `Prestação de serviços para o projeto "${p.nome}".`}</li>
+        <li><strong>Valor:</strong> ${fmt(p.valor)}.</li>
+        <li><strong>Prazo:</strong> ${fmtDate(p.dataInicio)} a ${fmtDate(p.dataFim)}.</li>
+        <li><strong>Foro:</strong> Comarca de Maceió/AL.</li>
+      </ol>
+    </div>
+    <p style="margin-top:20px;">E, por estarem justos e contratados, assinam o presente instrumento.</p>
+    <div class="doc-signatures">
+      <div><div class="doc-signature-line"></div><div class="doc-signature-name">${e.nome||'[Seu Nome]'}</div><div class="doc-signature-name">CONTRATADO(A)</div></div>
+      <div><div class="doc-signature-line"></div><div class="doc-signature-name">${c.nome}</div><div class="doc-signature-name">CONTRATANTE</div></div>
+    </div>`;
+  document.getElementById('btn-print').style.display = '';
+}
+
+function generateReceipt() {
+  const cId = document.getElementById('doc-cliente').value;
+  const pId = document.getElementById('doc-projeto').value;
+  if (!cId || !pId) { toast('Selecione cliente e projeto.', 'error'); return; }
+  const c = state.clientes.find(c=>c.id===cId);
+  const p = state.projetos.find(p=>p.id===pId);
+  const e = state.empresa;
+  const logo = e.logo ? `<img src="${e.logo}" style="max-width:120px;margin-bottom:10px;">` : '';
+  document.getElementById('documento-preview').innerHTML = `
+    <div class="doc-header">${logo}
+      <h3>Recibo de Serviços</h3>
+    </div>
+    <div class="doc-section">
+      <p>Recebi de <strong>${c.nome}</strong>${c.doc?', CPF/CNPJ: '+c.doc:''}, a importância de <strong>${fmt(p.valor)}</strong>, referente aos serviços do projeto <strong>"${p.nome}"</strong>.</p>
+      <p style="margin-top:12px;">Maceió, ${new Date().toLocaleDateString('pt-BR',{day:'numeric',month:'long',year:'numeric'})}.</p>
+    </div>
+    <div class="doc-signatures" style="justify-content:center;margin-top:40px;">
+      <div><div class="doc-signature-line"></div><div class="doc-signature-name">${e.nome||'[Seu Nome]'}</div></div>
+    </div>`;
+  document.getElementById('btn-print').style.display = '';
+}
+
+// ─── Config ───────────────────────────────────────────────
+function saveConfig(e) {
+  e.preventDefault();
+  state.empresa = {
+    ...state.empresa,
+    nome: document.getElementById('cfg-nome').value,
+    doc: document.getElementById('cfg-doc').value,
+    razao: document.getElementById('cfg-razao').value,
+    fantasia: document.getElementById('cfg-fantasia').value,
+  };
+  document.getElementById('user-display-name').textContent = state.empresa.nome || currentUser || 'Admin';
+  document.getElementById('user-avatar').textContent = (state.empresa.nome || 'A').charAt(0).toUpperCase();
+  saveState();
+  toast('Configurações salvas!');
+}
+
+function loadConfigForm() {
+  const e = state.empresa;
+  document.getElementById('cfg-nome').value = e.nome || '';
+  document.getElementById('cfg-doc').value = e.doc || '';
+  document.getElementById('cfg-razao').value = e.razao || '';
+  document.getElementById('cfg-fantasia').value = e.fantasia || '';
+  if (e.logo) {
+    document.getElementById('logo-preview').src = e.logo;
+    document.getElementById('logo-preview').style.display = '';
+  }
+}
+
+function previewLogo(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    state.empresa.logo = ev.target.result;
+    document.getElementById('logo-preview').src = ev.target.result;
+    document.getElementById('logo-preview').style.display = '';
+    saveState();
+  };
+  reader.readAsDataURL(file);
+}
+
+// ─── Backup ───────────────────────────────────────────────
+function exportBackup() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'gestorpro_backup_' + new Date().toISOString().split('T')[0] + '.json';
+  a.click();
+  toast('Backup exportado!');
+}
+
+function importBackup(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async ev => {
+    try {
+      const imported = JSON.parse(ev.target.result);
+      state = { ...state, ...imported };
+      await saveState();
+      renderAll();
+      toast('Backup importado com sucesso!');
+    } catch { toast('Arquivo inválido.', 'error'); }
+  };
+  reader.readAsText(file);
+}
+
+function clearAllData() {
+  if (!confirm('Limpar TODOS os dados? Esta ação não pode ser desfeita.')) return;
+  state.clientes = []; state.projetos = []; state.financeiro = [];
+  saveState();
+  renderAll();
+  toast('Dados apagados.', 'error');
+}
+
+// ─── Dropdowns ────────────────────────────────────────────
+function populateClientDropdown(id) {
+  const sel = document.getElementById(id);
+  const val = sel.value;
+  sel.innerHTML = '<option value="">Selecione o cliente</option>';
+  state.clientes.forEach(c => sel.add(new Option(c.nome, c.id)));
+  sel.value = val;
+}
+
+function populateProjDropdown(id, clientId) {
+  const sel = document.getElementById(id);
+  const val = sel.value;
+  sel.innerHTML = '<option value="">Nenhum</option>';
+  const list = clientId ? state.projetos.filter(p => p.clienteId === clientId) : state.projetos;
+  list.forEach(p => sel.add(new Option(p.nome, p.id)));
+  sel.value = val;
+}
+
+// ─── Filter Table ─────────────────────────────────────────
+function filterTable(tbId, query, cols) {
+  const tb = document.getElementById(tbId);
+  const rows = tb.querySelectorAll('tr');
+  const q = query.toLowerCase();
+  rows.forEach(r => {
+    const cells = r.querySelectorAll('td');
+    const match = cols.some(i => cells[i] && cells[i].textContent.toLowerCase().includes(q));
+    r.style.display = (!q || match) ? '' : 'none';
+  });
+}
+
+// ─── Render All ───────────────────────────────────────────
+function renderAll() {
+  renderDashboard();
+  renderClientes();
+  renderProjetos();
+  renderFin('esteMes');
+  renderKanban();
+  populateClientDropdown('doc-cliente');
+  loadConfigForm();
+}
+
+// ─── Date ─────────────────────────────────────────────────
+function updateDate() {
+  const d = new Date();
+  document.getElementById('topbar-date').textContent = d.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+// ─── INIT ─────────────────────────────────────────────────
+async function init() {
+  await openIDB();
+  const saved = await idbGet('state');
+  if (saved) {
+    state = { ...state, ...saved };
+    if (!state.auth) state.auth = { user: 'admin', pass: '1234' };
+  }
+  updateDate();
+  setInterval(updateDate, 60000);
+}
+
+init();
 </script>
 </body>
 </html>
