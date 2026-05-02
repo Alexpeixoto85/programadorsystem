@@ -213,8 +213,28 @@ body {
   display: flex;
   flex-direction: column;
   z-index: 100;
-  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
   overflow: hidden;
+}
+
+/* Desktop collapsed state */
+.sidebar.collapsed {
+  transform: translateX(calc(-1 * var(--sidebar-w)));
+}
+
+/* Main expands when sidebar collapses on desktop */
+.main {
+  margin-left: var(--sidebar-w);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  max-width: 100%;
+  transition: margin-left 0.28s cubic-bezier(0.4,0,0.2,1);
+}
+
+.main.sidebar-collapsed {
+  margin-left: 0;
 }
 
 .sidebar-logo {
@@ -341,14 +361,6 @@ body {
 .btn-logout:hover { color: var(--danger); background: var(--danger-dim); }
 
 /* ─── MAIN CONTENT ───────────────────────────── */
-.main {
-  margin-left: var(--sidebar-w);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  overflow-x: hidden;
-  max-width: 100%;
-}
 
 .topbar {
   height: 60px;
@@ -1129,11 +1141,20 @@ tbody tr:last-child td { border-bottom: none; }
     transform: translateX(calc(-1 * var(--sidebar-w)));
     box-shadow: none;
   }
-  .sidebar.open {
+  /* On mobile, .collapsed is ignored — sidebar opens via .open only */
+  .sidebar.collapsed {
+    transform: translateX(calc(-1 * var(--sidebar-w)));
+  }
+  .sidebar.open,
+  .sidebar.collapsed.open {
     transform: translateX(0);
     box-shadow: 4px 0 24px rgba(0,0,0,0.5);
   }
   .sidebar-overlay.open { display: block; }
+  /* Also reset main margin on mobile regardless of sidebar-collapsed class */
+  .main.sidebar-collapsed {
+    margin-left: 0 !important;
+  }
 
   /* ── Topbar ── */
   .hamburger { display: none; }
@@ -2235,14 +2256,32 @@ function showPage(id) {
   else if (id === 'configuracoes') loadConfigForm();
 }
 
+function isMobile() {
+  return window.innerWidth <= 768;
+}
+
 function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('sidebar-overlay').classList.toggle('open');
+  if (isMobile()) {
+    // Mobile: drawer behavior
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('sidebar-overlay').classList.toggle('open');
+  } else {
+    // Desktop: collapse/expand
+    const sidebar = document.getElementById('sidebar');
+    const main = document.querySelector('.main');
+    const collapsed = sidebar.classList.toggle('collapsed');
+    main.classList.toggle('sidebar-collapsed', collapsed);
+    // Persist preference
+    localStorage.setItem('gestorpro_sidebar', collapsed ? 'collapsed' : 'open');
+  }
 }
 
 function closeSidebar() {
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('sidebar-overlay').classList.remove('open');
+  // Only close mobile drawer; never touch desktop collapse state
+  if (isMobile()) {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebar-overlay').classList.remove('open');
+  }
 }
 
 function filterProjects(status) {
@@ -2988,6 +3027,11 @@ async function init() {
   // Restore saved theme
   const savedTheme = localStorage.getItem('gestorpro_theme');
   applyTheme(savedTheme === 'light');
+  // Restore sidebar state (desktop only)
+  if (!isMobile() && localStorage.getItem('gestorpro_sidebar') === 'collapsed') {
+    document.getElementById('sidebar').classList.add('collapsed');
+    document.querySelector('.main').classList.add('sidebar-collapsed');
+  }
   updateDate();
   setInterval(updateDate, 60000);
 }
