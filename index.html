@@ -91,12 +91,13 @@ body {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 20px;
-  padding: 48px 44px;
+  padding: 40px 36px;
   width: 100%;
-  max-width: 420px;
+  max-width: 400px;
   position: relative;
   box-shadow: 0 24px 80px rgba(0,0,0,0.5);
   animation: loginIn 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  margin: 16px;
 }
 
 @keyframes loginIn {
@@ -329,7 +330,7 @@ body {
 }
 
 .hamburger {
-  display: none;
+  display: flex;
   background: none;
   border: none;
   cursor: pointer;
@@ -948,6 +949,125 @@ tbody tr:last-child td { border-bottom: none; }
   z-index: 99;
 }
 
+/* ─── BOTTOM NAV (mobile app style) ──────────── */
+.bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 64px;
+  background: var(--bg-sidebar);
+  border-top: 1px solid var(--border);
+  z-index: 100;
+  padding: 0 4px;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.bottom-nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  height: 100%;
+}
+
+.bnav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 600;
+  font-family: var(--font);
+  transition: all 0.2s;
+  min-width: 52px;
+  letter-spacing: 0.3px;
+  position: relative;
+}
+
+.bnav-item i { font-size: 22px; transition: transform 0.2s; }
+
+.bnav-item.active {
+  color: var(--primary-light);
+}
+
+.bnav-item.active i {
+  transform: scale(1.1);
+}
+
+.bnav-item.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 28px; height: 3px;
+  background: var(--primary);
+  border-radius: 0 0 4px 4px;
+}
+
+.bnav-item:active { transform: scale(0.92); }
+
+/* More menu button */
+.bnav-more {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 600;
+  font-family: var(--font);
+  min-width: 52px;
+}
+.bnav-more i { font-size: 22px; }
+
+/* ─── FAB ─────────────────────────────────────── */
+.fab {
+  display: none;
+  position: fixed;
+  right: 18px;
+  bottom: 80px;
+  width: 52px; height: 52px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  border-radius: 16px;
+  border: none;
+  cursor: pointer;
+  color: white;
+  font-size: 24px;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(99,102,241,0.5);
+  z-index: 101;
+  transition: all 0.2s;
+}
+.fab:active { transform: scale(0.92); }
+
+/* ─── MOBILE STAT CARDS (compact) ────────────── */
+@media (max-width: 768px) {
+  .stat-card {
+    padding: 14px;
+  }
+  .stat-icon {
+    width: 32px; height: 32px;
+    font-size: 15px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+  }
+  .stat-value { font-size: 22px; margin-bottom: 3px; }
+  .stat-label { font-size: 11px; }
+  .stat-footer { margin-top: 8px; font-size: 11px; }
+}
+
 /* ─── RESPONSIVE ─────────────────────────────── */
 @media (max-width: 900px) {
   .chart-grid { grid-template-columns: 1fr; }
@@ -964,19 +1084,61 @@ tbody tr:last-child td { border-bottom: none; }
   }
   .sidebar-overlay.open { display: block; }
   .main { margin-left: 0; }
-  .hamburger { display: flex; }
-  .content-area { padding: 18px; }
-  .stats-grid { grid-template-columns: repeat(2, 1fr); }
-  .topbar { padding: 0 16px; }
+  .hamburger { display: none; }
+  .content-area { padding: 16px; padding-bottom: 80px; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 18px; }
+  .topbar { padding: 0 16px; height: 54px; }
   .topbar-date { display: none; }
+  .topbar .hamburger { display: none; }
+  .bottom-nav { display: flex; }
+  .fab { display: flex; }
+  #topbar-avatar { display: flex !important; }
+  .section-title { font-size: 18px; }
+  .section-header { margin-bottom: 16px; }
+  /* hide add buttons in topbar area on mobile – use FAB instead */
+  .section-header .btn-primary { display: none; }
+  .card { padding: 16px; margin-bottom: 14px; }
+  .card-header { margin-bottom: 14px; }
+  /* Compact financial summary */
+  .fin-summary { gap: 10px; margin-bottom: 14px; }
+  .fin-card { padding: 12px 10px; }
+  .fin-card .fin-value { font-size: 16px; }
+  .fin-card .fin-label { font-size: 10px; }
+  /* Action row */
+  .action-row { gap: 8px; margin-bottom: 14px; }
+  .search-input-wrap { max-width: 100%; }
+  /* Modal bottom sheet */
+  .modal-box { padding: 20px 18px; border-radius: 20px 20px 0 0; margin: 0; align-self: flex-end; width: 100%; max-width: 100%; }
+  .modal-overlay { align-items: flex-end; padding: 0; }
+  .modal-box::before {
+    content: '';
+    display: block;
+    width: 36px; height: 4px;
+    background: var(--border);
+    border-radius: 4px;
+    margin: 0 auto 16px;
+  }
+  /* Table compact */
+  td { padding: 10px 12px; font-size: 13px; }
+  th { padding: 8px 12px; }
+  /* Topbar title bigger on mobile */
+  .page-title { font-size: 16px; }
+  /* Login */
+  .login-box { padding: 32px 24px; margin: 16px; border-radius: 20px; }
 }
 
 @media (max-width: 480px) {
-  .stats-grid { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
   .fin-summary { grid-template-columns: 1fr 1fr; }
-  .login-box { padding: 32px 24px; }
+  .login-box { padding: 28px 20px; }
   .form-grid { grid-template-columns: 1fr; }
-  #documento-preview { padding: 24px; }
+  #documento-preview { padding: 20px; }
+  .stat-value { font-size: 20px; }
+  .content-area { padding: 12px; padding-bottom: 80px; }
+  .card { padding: 14px; }
+  /* Kanban horizontal scroll hint */
+  .kanban { padding-bottom: 4px; }
+  .kanban-col { flex: 0 0 200px; }
 }
 
 /* ─── CUSTOM CHART BARS ──────────────────────── */
@@ -1048,7 +1210,18 @@ tbody tr:last-child td { border-bottom: none; }
   font-weight: 500;
   transform: translateX(120%);
   transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
-  max-width: 320px;
+  max-width: 300px;
+}
+
+@media (max-width: 768px) {
+  .toast {
+    bottom: 76px;
+    right: 16px;
+    left: 16px;
+    max-width: none;
+    transform: translateY(120px);
+  }
+  .toast.show { transform: translateY(0); }
 }
 
 .toast.show { transform: translateX(0); }
@@ -1133,6 +1306,37 @@ tbody tr:last-child td { border-bottom: none; }
   <!-- Sidebar overlay (mobile) -->
   <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
 
+  <!-- BOTTOM NAV (mobile) -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <div class="bottom-nav-inner">
+      <button class="bnav-item active" data-page="dashboard" onclick="showPage('dashboard')">
+        <i class="ph ph-squares-four"></i>
+        <span>Painel</span>
+      </button>
+      <button class="bnav-item" data-page="clientes" onclick="showPage('clientes')">
+        <i class="ph ph-users-three"></i>
+        <span>Clientes</span>
+      </button>
+      <button class="bnav-item" data-page="projetos" onclick="showPage('projetos')">
+        <i class="ph ph-kanban"></i>
+        <span>Projetos</span>
+      </button>
+      <button class="bnav-item" data-page="financeiro" onclick="showPage('financeiro')">
+        <i class="ph ph-chart-line-up"></i>
+        <span>Financeiro</span>
+      </button>
+      <button class="bnav-more" onclick="toggleSidebar()">
+        <i class="ph ph-dots-three-outline"></i>
+        <span>Mais</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- FAB (mobile add button) -->
+  <button class="fab" id="fab-btn" onclick="fabAction()">
+    <i class="ph ph-plus"></i>
+  </button>
+
   <!-- SIDEBAR -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">
@@ -1197,6 +1401,7 @@ tbody tr:last-child td { border-bottom: none; }
       </div>
       <div class="topbar-right">
         <div class="topbar-date" id="topbar-date"></div>
+        <div id="topbar-avatar" style="display:none;width:32px;height:32px;background:linear-gradient(135deg,var(--primary),#a78bfa);border-radius:50%;align-items:center;justify-content:center;font-size:13px;color:white;font-weight:700;cursor:pointer;" onclick="showPage('configuracoes')">A</div>
       </div>
     </header>
 
@@ -1815,8 +2020,12 @@ async function doLogin() {
   if (u === state.auth.user && p === state.auth.pass) {
     err.style.display = 'none';
     currentUser = u;
-    document.getElementById('user-display-name').textContent = state.empresa.nomeCompleto || u;
-    document.getElementById('user-avatar').textContent = (state.empresa.nomeCompleto || u).charAt(0).toUpperCase();
+    const displayName = state.empresa.nomeCompleto || u;
+    document.getElementById('user-display-name').textContent = displayName;
+    const avatarLetter = displayName.charAt(0).toUpperCase();
+    document.getElementById('user-avatar').textContent = avatarLetter;
+    const topbarAvatar = document.getElementById('topbar-avatar');
+    if (topbarAvatar) topbarAvatar.textContent = avatarLetter;
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app').style.display = 'block';
     renderAll();
@@ -1862,12 +2071,34 @@ const pageTitles = {
   configuracoes: 'Configurações'
 };
 
+// Pages that have an "add" action for FAB
+const fabPages = {
+  clientes: () => openModal('client'),
+  projetos: () => openModal('project'),
+  financeiro: () => openModal('financial'),
+};
+
+function fabAction() {
+  const activePage = document.querySelector('.page.active');
+  if (!activePage) return;
+  const id = activePage.id.replace('page-', '');
+  if (fabPages[id]) fabPages[id]();
+}
+
 function showPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(b => {
     b.classList.toggle('active', b.dataset.page === id);
   });
+  // Sync bottom nav
+  document.querySelectorAll('.bnav-item').forEach(b => {
+    b.classList.toggle('active', b.dataset.page === id);
+  });
+  // Show/hide FAB
+  const fab = document.getElementById('fab-btn');
+  if (fab) fab.style.display = fabPages[id] ? 'flex' : 'none';
+
   document.getElementById('topbar-title').textContent = pageTitles[id] || id;
   closeSidebar();
 
@@ -2591,6 +2822,13 @@ function renderAll() {
   renderKanban();
   populateClientDropdown('doc-cliente');
   loadConfigForm();
+  // Init FAB for current page
+  const activePage = document.querySelector('.page.active');
+  if (activePage) {
+    const id = activePage.id.replace('page-', '');
+    const fab = document.getElementById('fab-btn');
+    if (fab) fab.style.display = fabPages[id] ? 'flex' : 'none';
+  }
 }
 
 // ─── Date ─────────────────────────────────────────────────
