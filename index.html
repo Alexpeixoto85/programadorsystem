@@ -255,38 +255,49 @@ body {
 .nav-item {
   white-space: nowrap;
   overflow: hidden;
+  transition: justify-content 0.24s ease, padding 0.24s ease;
 }
 
 .nav-item span {
   display: inline-block;
   opacity: 1;
-  transition: opacity 0.16s ease;
+  max-width: 200px;
+  transition: opacity 0.18s ease, max-width 0.24s ease;
   white-space: nowrap;
+  overflow: hidden;
 }
 
 .sidebar.collapsed:not(:hover) .nav-item span {
   opacity: 0;
+  max-width: 0;
 }
 
 /* Nav sections (labels) */
 .nav-section {
   overflow: hidden;
   white-space: nowrap;
-  transition: opacity 0.16s ease;
+  transition: opacity 0.16s ease, max-height 0.24s ease, padding 0.24s ease, margin 0.24s ease;
 }
 
 .sidebar.collapsed:not(:hover) .nav-section {
   opacity: 0;
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  margin-top: 0;
 }
 
 /* Logo brand text */
 .brand {
   white-space: nowrap;
-  transition: opacity 0.16s ease;
+  overflow: hidden;
+  max-width: 200px;
+  transition: opacity 0.18s ease, max-width 0.24s ease;
 }
 
 .sidebar.collapsed:not(:hover) .brand {
   opacity: 0;
+  max-width: 0;
 }
 
 /* Logo container stays centered when collapsed */
@@ -309,7 +320,15 @@ body {
 /* Nav items center icons when collapsed */
 .sidebar.collapsed:not(:hover) .nav-item {
   justify-content: center;
-  padding: 10px 0;
+  padding: 9px 0;
+}
+
+/* Ensure icons are always visible and have fixed size */
+.nav-item i {
+  font-size: 18px !important;
+  flex-shrink: 0;
+  min-width: 18px;
+  text-align: center;
 }
 
 /* Sidebar nav padding */
@@ -322,7 +341,7 @@ body {
 }
 
 .sidebar.collapsed:not(:hover) .sidebar-nav {
-  padding: 14px 4px;
+  padding: 14px 6px;
 }
 
 /* Footer compact */
@@ -335,7 +354,7 @@ body {
 }
 
 .sidebar.collapsed:not(:hover) .sidebar-footer {
-  padding: 14px 4px;
+  padding: 14px 6px;
 }
 
 .user-card {
@@ -351,15 +370,18 @@ body {
 }
 
 .sidebar.collapsed:not(:hover) .user-card {
-  padding: 10px 4px;
+  padding: 8px 0;
   justify-content: center;
+  background: transparent;
+  border-color: transparent;
 }
 
 .user-info {
   flex: 1;
   min-width: 0;
-  transition: opacity 0.16s ease, width 0.24s ease, max-width 0.24s ease;
   overflow: hidden;
+  max-width: 200px;
+  transition: opacity 0.18s ease, max-width 0.24s ease;
 }
 
 .sidebar.collapsed:not(:hover) .user-info {
@@ -378,6 +400,7 @@ body {
   display: flex;
   flex-shrink: 0;
   overflow: hidden;
+  max-width: 40px;
 }
 
 .sidebar.collapsed:not(:hover) .btn-logout {
@@ -453,7 +476,7 @@ body {
   text-align: left;
 }
 
-.nav-item i { font-size: 17px; transition: transform 0.2s; }
+.nav-item i { font-size: 18px; transition: transform 0.2s; flex-shrink: 0; min-width: 18px; }
 
 .nav-item:hover {
   background: var(--bg-hover);
