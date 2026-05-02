@@ -40,11 +40,41 @@
   --shadow-glow: 0 0 24px rgba(99,102,241,0.2);
 }
 
+/* ─── LIGHT THEME ────────────────────────────── */
+body.light {
+  --bg: #f0f2f8;
+  --bg-card: #ffffff;
+  --bg-sidebar: #ffffff;
+  --bg-input: #f4f5fb;
+  --bg-hover: #eceef8;
+  --border: rgba(0,0,0,0.08);
+  --border-active: rgba(99,102,241,0.4);
+  --primary: #6366f1;
+  --primary-light: #4f52d4;
+  --primary-dim: rgba(99,102,241,0.1);
+  --success: #059669;
+  --success-dim: rgba(5,150,105,0.1);
+  --danger: #dc2626;
+  --danger-dim: rgba(220,38,38,0.1);
+  --warning: #d97706;
+  --warning-dim: rgba(217,119,6,0.1);
+  --text: #111827;
+  --text-muted: #6b7280;
+  --text-faint: #d1d5db;
+  --shadow: 0 4px 24px rgba(0,0,0,0.1);
+  --shadow-glow: 0 0 24px rgba(99,102,241,0.15);
+}
+
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
 html {
   overflow-x: hidden;
   max-width: 100vw;
+}
+
+/* smooth theme transition */
+body, .sidebar, .topbar, .card, .stat-card, .bottom-nav, .modal-box, .fin-card, input, select, textarea {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.15s ease;
 }
 
 body {
@@ -975,28 +1005,30 @@ tbody tr:last-child td { border-bottom: none; }
   background: var(--bg-sidebar);
   border-top: 1px solid var(--border);
   z-index: 100;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
   width: 100%;
-  max-width: 100vw;
   box-sizing: border-box;
+  /* iOS safe area */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .bottom-nav-inner {
   display: flex;
-  align-items: center;
-  justify-content: space-around;
-  height: 60px;
-  padding: 0 4px;
+  align-items: stretch;
+  justify-content: stretch;
+  height: 58px;
+  width: 100%;
+  padding: 0;
+  margin: 0;
 }
 
-.bnav-item {
+.bnav-item,
+.bnav-more {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 3px;
-  padding: 6px 10px;
-  border-radius: 12px;
   border: none;
   background: none;
   cursor: pointer;
@@ -1004,52 +1036,57 @@ tbody tr:last-child td { border-bottom: none; }
   font-size: 10px;
   font-weight: 600;
   font-family: var(--font);
-  transition: all 0.2s;
-  min-width: 52px;
   letter-spacing: 0.3px;
   position: relative;
+  padding: 6px 0 4px;
+  transition: color 0.18s;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.bnav-item i { font-size: 22px; transition: transform 0.2s; }
+.bnav-item i,
+.bnav-more i {
+  font-size: 21px;
+  line-height: 1;
+  transition: transform 0.18s;
+}
 
 .bnav-item.active {
-  color: var(--primary-light);
+  color: var(--primary);
 }
 
 .bnav-item.active i {
-  transform: scale(1.1);
+  transform: scale(1.12);
 }
 
-.bnav-item.active::before {
+.bnav-item.active::after {
   content: '';
   position: absolute;
-  top: 0;
-  width: 28px; height: 3px;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 32px; height: 3px;
   background: var(--primary);
-  border-radius: 0 0 4px 4px;
+  border-radius: 0 0 6px 6px;
 }
 
-.bnav-item:active { transform: scale(0.92); }
+.bnav-item:active,
+.bnav-more:active {
+  opacity: 0.7;
+}
 
-/* More menu button */
-.bnav-more {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  padding: 6px 10px;
-  border-radius: 12px;
-  border: none;
-  background: none;
+/* theme toggle button in topbar */
+.theme-toggle {
+  width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  border-radius: 9px;
   cursor: pointer;
   color: var(--text-muted);
-  font-size: 10px;
-  font-weight: 600;
-  font-family: var(--font);
-  min-width: 52px;
+  font-size: 17px;
+  transition: all 0.2s;
+  flex-shrink: 0;
 }
-.bnav-more i { font-size: 22px; }
+.theme-toggle:hover { color: var(--primary); border-color: var(--border-active); }
 
 /* ─── FAB ─────────────────────────────────────── */
 .fab {
@@ -1114,7 +1151,7 @@ tbody tr:last-child td { border-bottom: none; }
   /* ── Content ── */
   .content-area {
     padding: 12px;
-    padding-bottom: 82px;
+    padding-bottom: calc(58px + env(safe-area-inset-bottom, 0px) + 12px);
     width: 100%;
     max-width: 100vw;
     box-sizing: border-box;
@@ -1217,7 +1254,7 @@ tbody tr:last-child td { border-bottom: none; }
   .stats-grid { gap: 8px; }
   .stat-card { padding: 12px 10px; }
   .stat-value { font-size: 18px; }
-  .content-area { padding: 10px; padding-bottom: 82px; }
+  .content-area { padding: 10px; padding-bottom: calc(58px + env(safe-area-inset-bottom, 0px) + 10px); }
   .kanban-col { flex: 0 0 185px; }
   #documento-preview { padding: 16px; }
 }
@@ -1463,6 +1500,9 @@ tbody tr:last-child td { border-bottom: none; }
           <div class="user-name" id="user-display-name">Admin</div>
           <div class="user-role">Administrador</div>
         </div>
+        <button class="btn-logout" onclick="toggleTheme()" title="Alternar tema" id="sidebar-theme-btn" style="margin-right:2px;">
+          <i class="ph ph-sun" id="sidebar-theme-icon" style="font-size:17px;"></i>
+        </button>
         <button class="btn-logout" onclick="doLogout()" title="Sair">
           <i class="ph ph-sign-out" style="font-size:17px;"></i>
         </button>
@@ -1482,6 +1522,9 @@ tbody tr:last-child td { border-bottom: none; }
       </div>
       <div class="topbar-right">
         <div class="topbar-date" id="topbar-date"></div>
+        <button class="theme-toggle" id="theme-toggle-btn" onclick="toggleTheme()" title="Alternar tema">
+          <i class="ph ph-sun" id="theme-icon"></i>
+        </button>
         <div id="topbar-avatar" style="display:none;width:32px;height:32px;background:linear-gradient(135deg,var(--primary),#a78bfa);border-radius:50%;align-items:center;justify-content:center;font-size:13px;color:white;font-weight:700;cursor:pointer;" onclick="showPage('configuracoes')">A</div>
       </div>
     </header>
@@ -2912,6 +2955,22 @@ function renderAll() {
   }
 }
 
+// ─── Theme ────────────────────────────────────────────────
+function applyTheme(light) {
+  document.body.classList.toggle('light', light);
+  const icon = light ? 'ph-moon' : 'ph-sun';
+  const el1 = document.getElementById('theme-icon');
+  const el2 = document.getElementById('sidebar-theme-icon');
+  if (el1) el1.className = 'ph ' + icon;
+  if (el2) el2.className = 'ph ' + icon;
+  localStorage.setItem('gestorpro_theme', light ? 'light' : 'dark');
+}
+
+function toggleTheme() {
+  const isLight = !document.body.classList.contains('light');
+  applyTheme(isLight);
+}
+
 // ─── Date ─────────────────────────────────────────────────
 function updateDate() {
   const d = new Date();
@@ -2926,6 +2985,9 @@ async function init() {
     state = { ...state, ...saved };
     if (!state.auth) state.auth = { user: 'admin', pass: '1234' };
   }
+  // Restore saved theme
+  const savedTheme = localStorage.getItem('gestorpro_theme');
+  applyTheme(savedTheme === 'light');
   updateDate();
   setInterval(updateDate, 60000);
 }
