@@ -50,6 +50,7 @@ body {
   font-size: 14px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
 /* ─── SCROLLBAR ─────────────────────────────── */
@@ -307,6 +308,8 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
+  width: calc(100% - var(--sidebar-w));
 }
 
 .topbar {
@@ -321,6 +324,8 @@ body {
   top: 0;
   z-index: 50;
   flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .topbar-left {
@@ -360,7 +365,9 @@ body {
 .content-area {
   flex: 1;
   padding: 28px;
-  overflow-y: auto;
+  overflow-x: hidden;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* ─── PAGES ──────────────────────────────────── */
@@ -397,9 +404,10 @@ body {
 /* ─── STATS GRID ─────────────────────────────── */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr));
   gap: 16px;
   margin-bottom: 28px;
+  width: 100%;
 }
 
 .stat-card {
@@ -566,8 +574,9 @@ body {
 /* ─── FORMS ──────────────────────────────────── */
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr));
   gap: 16px;
+  width: 100%;
 }
 
 .form-group { display: flex; flex-direction: column; gap: 6px; }
@@ -745,9 +754,10 @@ tbody tr:last-child td { border-bottom: none; }
 /* ─── FINANCIAL SUMMARY ──────────────────────── */
 .fin-summary {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(170px, 100%), 1fr));
   gap: 14px;
   margin-bottom: 20px;
+  width: 100%;
 }
 
 .fin-card {
@@ -1083,10 +1093,10 @@ tbody tr:last-child td { border-bottom: none; }
     box-shadow: 4px 0 24px rgba(0,0,0,0.5);
   }
   .sidebar-overlay.open { display: block; }
-  .main { margin-left: 0; }
+  .main { margin-left: 0; width: 100%; overflow-x: hidden; }
   .hamburger { display: none; }
-  .content-area { padding: 16px; padding-bottom: 80px; }
-  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 18px; }
+  .content-area { padding: 14px; padding-bottom: 80px; width: 100%; box-sizing: border-box; }
+  .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; width: 100%; }
   .topbar { padding: 0 16px; height: 54px; }
   .topbar-date { display: none; }
   .topbar .hamburger { display: none; }
@@ -1128,13 +1138,13 @@ tbody tr:last-child td { border-bottom: none; }
 }
 
 @media (max-width: 480px) {
-  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
   .fin-summary { grid-template-columns: 1fr 1fr; }
   .login-box { padding: 28px 20px; }
   .form-grid { grid-template-columns: 1fr; }
   #documento-preview { padding: 20px; }
   .stat-value { font-size: 20px; }
-  .content-area { padding: 12px; padding-bottom: 80px; }
+  .content-area { padding: 10px; padding-bottom: 80px; box-sizing: border-box; }
   .card { padding: 14px; }
   /* Kanban horizontal scroll hint */
   .kanban { padding-bottom: 4px; }
