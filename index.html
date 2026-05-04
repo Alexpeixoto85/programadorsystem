@@ -2140,7 +2140,7 @@ tbody tr:last-child td { border-bottom: none; }
           </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>Nome</th><th>Versão</th><th>Preço (R$)</th><th>Licenças Vendidas</th><th>Descrição</th><th></th></tr></thead>
+              <thead><tr><th>Nome</th><th>Versão</th><th>Preço (R$)</th><th>Licenças Vendidas</th><th>Link de Acesso</th><th>Descrição</th><th></th></tr></thead>
               <tbody id="tb-produtos"></tbody>
             </table>
           </div>
@@ -2387,6 +2387,14 @@ tbody tr:last-child td { border-bottom: none; }
       <div class="form-group">
         <label>Preço de Licença (R$)</label>
         <input type="number" id="produto-preco" placeholder="0.00" step="0.01" min="0">
+      </div>
+      <div class="form-group full">
+        <label>Link de Acesso / Download</label>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="url" id="produto-link" placeholder="https://seusite.com/download/sistema" style="flex:1;">
+          <button type="button" class="btn btn-ghost btn-icon" onclick="testarLinkProduto()" title="Testar link" style="flex-shrink:0;"><i class="ph ph-arrow-square-out"></i></button>
+        </div>
+        <span style="font-size:11px;color:var(--text-muted);margin-top:4px;">Este link será enviado automaticamente ao cliente após a compra.</span>
       </div>
       <div class="form-group full">
         <label>Descrição</label>
@@ -3493,6 +3501,7 @@ function saveProduto(e) {
     nome: document.getElementById('produto-nome').value,
     versao: document.getElementById('produto-versao').value,
     preco: parseFloat(document.getElementById('produto-preco').value) || 0,
+    link: document.getElementById('produto-link').value.trim(),
     desc: document.getElementById('produto-desc').value,
   };
   if (id) {
@@ -3514,9 +3523,16 @@ function editProduto(id) {
   document.getElementById('produto-nome').value = p.nome;
   document.getElementById('produto-versao').value = p.versao || '';
   document.getElementById('produto-preco').value = p.preco || '';
+  document.getElementById('produto-link').value = p.link || '';
   document.getElementById('produto-desc').value = p.desc || '';
   document.getElementById('modal-produto-title').textContent = 'Editar Produto';
   openModal('produto');
+}
+
+function testarLinkProduto() {
+  const link = document.getElementById('produto-link').value.trim();
+  if (!link) { toast('Informe o link antes de testar.', 'error'); return; }
+  window.open(link, '_blank');
 }
 
 function deleteProduto(id) {
@@ -3544,12 +3560,16 @@ function renderProdutos() {
   }
   tb.innerHTML = state.produtos.map(p => {
     const licCount = state.licencas.filter(l => l.produtoId === p.id).length;
+    const linkCell = p.link
+      ? `<a href="${p.link}" target="_blank" style="color:var(--primary-light);display:inline-flex;align-items:center;gap:4px;font-size:12px;text-decoration:none;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${p.link}"><i class="ph ph-link"></i> ${p.link.replace(/^https?:\/\//, '')}</a>`
+      : '<span style="color:var(--text-muted);font-size:12px;">—</span>';
     return `<tr>
       <td><strong>${p.nome}</strong></td>
       <td>${p.versao ? `<span class="badge badge-active">${p.versao}</span>` : '—'}</td>
       <td>${fmt(p.preco)}</td>
       <td><span style="font-weight:600;color:var(--primary-light);">${licCount}</span></td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-muted);">${p.desc || '—'}</td>
+      <td>${linkCell}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-muted);">${p.desc || '—'}</td>
       <td>
         <div style="display:flex;gap:6px;">
           <button class="btn btn-ghost btn-icon" onclick="editProduto('${p.id}')" title="Editar"><i class="ph ph-pencil"></i></button>
@@ -3753,24 +3773,32 @@ function abrirEnvioEmail(licencaId) {
   const emailCliente = c ? c.email : '';
   const telCliente = c ? (c.tel || '') : '';
   const nomeProduto = p ? p.nome + (p.versao ? ' v' + p.versao : '') : 'Software';
+  const linkProduto = p ? (p.link || '') : '';
   const remetente = e.nome || e.razao || 'Desenvolvedor';
   const validade = { vitalicia: 'Vitalícia (sem prazo de expiração)', '1ano': '1 Ano', '2anos': '2 Anos', mensal: 'Mensal' }[l.validade] || 'Vitalícia';
 
   _envioTelCliente = telCliente;
 
-  const assunto = `Seu Código de Ativação — ${nomeProduto}`;
+  const blocoLinkEmail = linkProduto
+    ? `\n📥 LINK DE ACESSO / DOWNLOAD:\n${linkProduto}\n`
+    : '';
+  const blocoLinkWpp = linkProduto
+    ? `\n📥 *Link de acesso / download:*\n${linkProduto}\n`
+    : '';
+
+  const assunto = `Sua Licença — ${nomeProduto} · Bem-vindo(a)!`;
   const corpoEmail = `Olá, ${nomeCliente}!
 
-Aqui está o seu código de ativação para o sistema ${nomeProduto}:
-
+Obrigado pela sua compra! Seu acesso ao sistema *${nomeProduto}* está pronto.
+${blocoLinkEmail}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  CÓDIGO DE ATIVAÇÃO:  ${l.codigo}
+  🔑 CHAVE DE ATIVAÇÃO:  ${l.codigo}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ⚠️  IMPORTANTE — LEIA COM ATENÇÃO:
 
 • Este código é PESSOAL E INTRANSFERÍVEL.
-• Ele é vinculado exclusivamente à máquina onde for ativado pela primeira vez.
+• Vinculado exclusivamente à máquina onde for ativado pela primeira vez.
 • Não compartilhe este código com terceiros.
 • Em caso de troca de equipamento, entre em contato conosco.
 • Validade da licença: ${validade}
@@ -3778,16 +3806,17 @@ Aqui está o seu código de ativação para o sistema ${nomeProduto}:
 Data da compra: ${fmtDate(l.data)}
 Produto: ${nomeProduto}
 
-Caso tenha alguma dúvida, estou à disposição.
+Qualquer dúvida, estou à disposição!
 
 Atenciosamente,
 ${remetente}${e.doc ? '\nCPF/CNPJ: ' + e.doc : ''}`;
 
   const msgWhatsApp = `Olá, *${nomeCliente}*! 👋
 
-Segue seu código de ativação para o sistema *${nomeProduto}*:
-
-🔑 *CÓDIGO DE ATIVAÇÃO:*
+Muito obrigado pela sua compra! 🎉
+Seu acesso ao sistema *${nomeProduto}* está liberado.
+${blocoLinkWpp}
+🔑 *CHAVE DE ATIVAÇÃO:*
 \`${l.codigo}\`
 
 ⚠️ *ATENÇÃO:*
@@ -3796,9 +3825,9 @@ Segue seu código de ativação para o sistema *${nomeProduto}*:
 • Não repasse a terceiros
 • Validade: *${validade}*
 
-📅 Data da compra: ${fmtDate(l.data)}
+📅 Compra realizada em: ${fmtDate(l.data)}
 
-Em caso de dúvida, pode falar comigo! 😊
+Qualquer dúvida é só chamar! 😊
 — ${remetente}`;
 
   document.getElementById('envio-para').value = emailCliente ? `${nomeCliente} <${emailCliente}>` : nomeCliente;
@@ -3812,7 +3841,8 @@ Em caso de dúvida, pode falar comigo! 😊
   modal.dataset.assunto = encodeURIComponent(assunto);
   modal.dataset.corpo = encodeURIComponent(corpoEmail);
 
-  switchEnvioTab('email');
+  // Abrir direto na aba WhatsApp se tiver telefone, senão e-mail
+  switchEnvioTab(telCliente ? 'whatsapp' : 'email');
   modal.classList.add('open');
 }
 
@@ -3912,6 +3942,7 @@ function abrirHistoricoCliente(clienteId) {
         <div style="flex:1;min-width:180px;">
           <div style="font-weight:700;font-size:14px;">${p ? p.nome : 'Produto Removido'}</div>
           <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${p && p.versao ? 'v' + p.versao + ' · ' : ''}Compra: ${fmtDate(l.data)}</div>
+          ${p && p.link ? `<a href="${p.link}" target="_blank" style="font-size:11px;color:var(--primary-light);display:inline-flex;align-items:center;gap:3px;margin-top:4px;text-decoration:none;"><i class="ph ph-link"></i> Link de acesso</a>` : ''}
           <code style="font-family:var(--font-mono);font-size:11px;letter-spacing:1px;background:var(--bg);padding:2px 7px;border-radius:4px;border:1px solid var(--border);display:inline-block;margin-top:5px;">${l.codigo}</code>
         </div>
         <div style="text-align:right;flex-shrink:0;">
