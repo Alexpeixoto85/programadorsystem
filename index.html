@@ -2391,6 +2391,27 @@ tbody tr:last-child td { border-bottom: none; }
         <label>Descrição</label>
         <textarea id="proj-desc" placeholder="Descreva o escopo do projeto..."></textarea>
       </div>
+      <div class="form-group full">
+        <label>Arquivo HTML do Projeto</label>
+        <div id="proj-arquivo-area" style="border:2px dashed var(--border);border-radius:var(--radius-sm);padding:16px;text-align:center;cursor:pointer;transition:border-color 0.2s,background 0.2s;background:var(--bg-input);"
+          onclick="document.getElementById('proj-arquivo-input').click()"
+          ondragover="event.preventDefault();this.style.borderColor='var(--primary)';this.style.background='var(--primary-dim)';"
+          ondragleave="this.style.borderColor='var(--border)';this.style.background='var(--bg-input)';"
+          ondrop="handleArquivoDrop(event)">
+          <input type="file" id="proj-arquivo-input" accept=".html" style="display:none;" onchange="handleArquivoSelect(event)">
+          <div id="proj-arquivo-placeholder">
+            <i class="ph ph-file-html" style="font-size:28px;color:var(--primary-light);display:block;margin-bottom:6px;"></i>
+            <span style="font-size:13px;color:var(--text-muted);">Clique ou arraste um arquivo <strong style="color:var(--text);">.html</strong> aqui</span>
+          </div>
+          <div id="proj-arquivo-info" style="display:none;align-items:center;gap:10px;justify-content:center;flex-wrap:wrap;">
+            <i class="ph ph-file-html" style="font-size:22px;color:var(--primary-light);"></i>
+            <span id="proj-arquivo-nome" style="font-size:13px;font-weight:600;color:var(--text);font-family:var(--font-mono);"></span>
+            <button type="button" onclick="event.stopPropagation();limparArquivo()" style="background:var(--danger-dim);border:1px solid rgba(239,68,68,0.3);color:var(--danger);border-radius:6px;padding:3px 10px;font-size:12px;cursor:pointer;"><i class="ph ph-x"></i> Remover</button>
+          </div>
+        </div>
+        <input type="hidden" id="proj-arquivo-data">
+        <input type="hidden" id="proj-arquivo-filename">
+      </div>
       <div class="form-footer">
         <button type="button" class="btn btn-secondary" onclick="closeModal('project')">Cancelar</button>
         <button type="submit" class="btn btn-primary"><i class="ph ph-floppy-disk"></i> Salvar</button>
@@ -2889,6 +2910,12 @@ function closeModal(type) {
   document.getElementById('modal-' + type).classList.remove('open');
   const form = document.querySelector('#modal-' + type + ' form');
   if (form) form.reset();
+  if (type === 'project') {
+    document.getElementById('proj-arquivo-data').value = '';
+    document.getElementById('proj-arquivo-filename').value = '';
+    document.getElementById('proj-arquivo-placeholder').style.display = 'block';
+    document.getElementById('proj-arquivo-info').style.display = 'none';
+  }
 }
 
 document.querySelectorAll('.modal-overlay').forEach(m => {
@@ -3000,6 +3027,8 @@ function saveProject(e) {
     duracao: parseInt(document.getElementById('proj-duracao').value) || 0,
     link: document.getElementById('proj-link').value,
     desc: document.getElementById('proj-desc').value,
+    arquivoData: document.getElementById('proj-arquivo-data').value || (id ? (state.projetos.find(p=>p.id===id)||{}).arquivoData : ''),
+    arquivoNome: document.getElementById('proj-arquivo-filename').value || (id ? (state.projetos.find(p=>p.id===id)||{}).arquivoNome : ''),
   };
   if (id) {
     const i = state.projetos.findIndex(p => p.id === id);
@@ -3029,6 +3058,7 @@ function renderProjetos(filterStatus = '') {
       <td>
         <strong>${p.nome}</strong>
         ${p.link ? `<a href="${p.link}" target="_blank" style="color:var(--primary-light);font-size:12px;margin-left:6px;"><i class="ph ph-arrow-square-out"></i></a>` : ''}
+        ${p.arquivoData ? `<span title="${p.arquivoNome||'arquivo.html'}" style="display:inline-flex;align-items:center;gap:3px;margin-left:6px;font-size:11px;color:var(--warning);cursor:pointer;" onclick="previewArquivo('${p.id}')"><i class="ph ph-file-html"></i> HTML</span>` : ''}
       </td>
       <td>${c ? c.nome : '—'}</td>
       <td><span style="font-size:12px;color:var(--text-muted);">${p.fase || '—'}</span></td>
@@ -3042,6 +3072,8 @@ function renderProjetos(filterStatus = '') {
       <td style="font-family:var(--font-mono);font-size:13px;">${fmt(p.valor)}</td>
       <td>
         <div class="table-actions">
+          ${p.arquivoData ? `<button class="act-btn" title="Visualizar HTML" onclick="previewArquivo('${p.id}')" style="color:var(--warning);"><i class="ph ph-eye"></i></button>
+          <button class="act-btn" title="Baixar HTML" onclick="downloadArquivo('${p.id}')" style="color:var(--primary-light);"><i class="ph ph-download-simple"></i></button>` : ''}
           <button class="act-btn act-edit" onclick="editProject('${p.id}')"><i class="ph ph-pencil-simple"></i></button>
           <button class="act-btn act-delete" onclick="deleteProject('${p.id}')"><i class="ph ph-trash"></i></button>
         </div>
@@ -3064,6 +3096,18 @@ function editProject(id) {
   document.getElementById('proj-duracao').value = p.duracao || '';
   document.getElementById('proj-link').value = p.link || '';
   document.getElementById('proj-desc').value = p.desc || '';
+  // Restore arquivo
+  document.getElementById('proj-arquivo-data').value = p.arquivoData || '';
+  document.getElementById('proj-arquivo-filename').value = p.arquivoNome || '';
+  if (p.arquivoData && p.arquivoNome) {
+    document.getElementById('proj-arquivo-placeholder').style.display = 'none';
+    const info = document.getElementById('proj-arquivo-info');
+    info.style.display = 'flex';
+    document.getElementById('proj-arquivo-nome').textContent = p.arquivoNome;
+  } else {
+    document.getElementById('proj-arquivo-placeholder').style.display = 'block';
+    document.getElementById('proj-arquivo-info').style.display = 'none';
+  }
   document.getElementById('modal-project-title').textContent = 'Editar Projeto';
   openModal('project');
   populateClientDropdown('proj-cliente');
@@ -3077,6 +3121,97 @@ function deleteProject(id) {
   saveState();
   renderProjetos();
   toast('Projeto removido.', 'error');
+}
+
+function handleArquivoSelect(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  carregarArquivoHTML(file);
+}
+
+function handleArquivoDrop(event) {
+  event.preventDefault();
+  const area = document.getElementById('proj-arquivo-area');
+  area.style.borderColor = 'var(--border)';
+  area.style.background = 'var(--bg-input)';
+  const file = event.dataTransfer.files[0];
+  if (!file || !file.name.endsWith('.html')) { toast('Apenas arquivos .html são permitidos.', 'error'); return; }
+  carregarArquivoHTML(file);
+}
+
+function carregarArquivoHTML(file) {
+  if (!file.name.endsWith('.html')) { toast('Apenas arquivos .html são permitidos.', 'error'); return; }
+  if (file.size > 5 * 1024 * 1024) { toast('Arquivo muito grande. Máximo 5MB.', 'error'); return; }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    document.getElementById('proj-arquivo-data').value = e.target.result;
+    document.getElementById('proj-arquivo-filename').value = file.name;
+    document.getElementById('proj-arquivo-placeholder').style.display = 'none';
+    const info = document.getElementById('proj-arquivo-info');
+    info.style.display = 'flex';
+    document.getElementById('proj-arquivo-nome').textContent = file.name;
+    toast('Arquivo carregado: ' + file.name);
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function limparArquivo() {
+  document.getElementById('proj-arquivo-data').value = '';
+  document.getElementById('proj-arquivo-filename').value = '';
+  document.getElementById('proj-arquivo-input').value = '';
+  document.getElementById('proj-arquivo-placeholder').style.display = 'block';
+  document.getElementById('proj-arquivo-info').style.display = 'none';
+}
+
+function previewArquivo(id) {
+  const p = state.projetos.find(p => p.id === id);
+  if (!p || !p.arquivoData) return;
+  const blob = new Blob([p.arquivoData], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  // Open preview modal
+  let modal = document.getElementById('modal-html-preview');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'modal-html-preview';
+    modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;padding:16px;';
+    modal.innerHTML = `
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);width:100%;max-width:1100px;height:90vh;display:flex;flex-direction:column;box-shadow:var(--shadow);">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);flex-shrink:0;">
+          <span id="html-preview-title" style="font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px;"><i class="ph ph-file-html" style="color:var(--warning);font-size:18px;"></i></span>
+          <div style="display:flex;gap:8px;">
+            <button id="html-preview-download" class="btn btn-secondary" style="padding:6px 14px;font-size:13px;"><i class="ph ph-download-simple"></i> Baixar</button>
+            <button onclick="fecharPreviewArquivo()" class="btn btn-secondary" style="padding:6px 14px;font-size:13px;"><i class="ph ph-x"></i> Fechar</button>
+          </div>
+        </div>
+        <iframe id="html-preview-frame" style="flex:1;border:none;border-radius:0 0 var(--radius) var(--radius);background:#fff;"></iframe>
+      </div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', function(e) { if (e.target === modal) fecharPreviewArquivo(); });
+  }
+  document.getElementById('html-preview-title').innerHTML = `<i class="ph ph-file-html" style="color:var(--warning);font-size:18px;"></i> ${p.arquivoNome || p.nome}`;
+  document.getElementById('html-preview-frame').src = url;
+  document.getElementById('html-preview-download').onclick = () => downloadArquivo(id);
+  modal.style.display = 'flex';
+  modal._blobUrl = url;
+}
+
+function fecharPreviewArquivo() {
+  const modal = document.getElementById('modal-html-preview');
+  if (!modal) return;
+  modal.style.display = 'none';
+  if (modal._blobUrl) { URL.revokeObjectURL(modal._blobUrl); modal._blobUrl = null; }
+  document.getElementById('html-preview-frame').src = 'about:blank';
+}
+
+function downloadArquivo(id) {
+  const p = state.projetos.find(p => p.id === id);
+  if (!p || !p.arquivoData) return;
+  const blob = new Blob([p.arquivoData], { type: 'text/html;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = p.arquivoNome || (p.nome.replace(/\s+/g, '_') + '.html');
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
 function filterProjectsByStatus(s) { renderProjetos(s); }
