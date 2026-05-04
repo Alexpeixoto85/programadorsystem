@@ -1114,42 +1114,412 @@ tbody tr:last-child td { border-bottom: none; }
 
 /* ─── DOC PREVIEW ────────────────────────────── */
 #documento-preview {
-  background: white;
-  color: #1a1a1a;
+  background: #ffffff;
+  color: #1a1a2e;
   border-radius: var(--radius);
-  padding: 50px;
-  max-width: 800px;
+  max-width: 820px;
   margin: 0 auto;
-  box-shadow: var(--shadow);
-  font-family: 'Georgia', serif;
-  font-size: 13px;
-  line-height: 1.7;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13.5px;
+  line-height: 1.75;
+  overflow: hidden;
 }
 
-#documento-preview h3 {
-  font-size: 15px;
-  text-align: center;
+/* ── Doc shell (inner wrapper) ── */
+.doc-shell {
+  padding: 0;
+}
+
+/* ── Header band ── */
+.doc-topo {
+  background: linear-gradient(135deg, #0f1123 0%, #1a1d3a 60%, #23276b 100%);
+  padding: 32px 48px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.doc-topo-logo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+.doc-topo-logo img {
+  max-height: 52px;
+  max-width: 140px;
+  object-fit: contain;
+  filter: brightness(1.05);
+}
+
+.doc-topo-logofallback {
+  width: 48px; height: 48px;
+  background: linear-gradient(135deg, #6366f1, #818cf8);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; font-weight: 800; color: white;
+  letter-spacing: -1px;
+  box-shadow: 0 4px 14px rgba(99,102,241,0.45);
+}
+
+.doc-topo-empresa {
+  display: flex;
+  flex-direction: column;
+}
+
+.doc-topo-empresa .empresa-nome {
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.3px;
+  line-height: 1.2;
+}
+
+.doc-topo-empresa .empresa-sub {
+  font-size: 11px;
+  color: rgba(255,255,255,0.55);
+  letter-spacing: 0.3px;
+  margin-top: 2px;
+}
+
+.doc-topo-right {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.doc-tipo-badge {
+  display: inline-block;
+  background: rgba(99,102,241,0.25);
+  border: 1px solid rgba(99,102,241,0.5);
+  color: #a5b4fc;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  padding: 4px 12px;
+  border-radius: 20px;
   margin-bottom: 6px;
 }
 
-#documento-preview h4 {
-  font-size: 12px;
-  text-transform: uppercase;
+.doc-numero {
+  font-size: 11px;
+  color: rgba(255,255,255,0.45);
+  font-family: 'DM Mono', monospace;
   letter-spacing: 0.5px;
-  border-bottom: 1px solid #ddd;
-  padding-bottom: 5px;
-  margin-bottom: 10px;
 }
 
-.doc-header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #1a1a1a; }
-.doc-section { margin-bottom: 24px; }
-.doc-section ol { padding-left: 20px; }
-.doc-section li { margin-bottom: 8px; }
-.doc-signatures { display: flex; justify-content: space-around; margin-top: 50px; text-align: center; }
-.doc-signature-line { border-top: 1px solid #1a1a1a; margin-bottom: 8px; width: 200px; }
-.doc-signature-name { font-size: 12px; }
+/* ── Accent strip ── */
+.doc-accent-strip {
+  height: 4px;
+  background: linear-gradient(90deg, #6366f1 0%, #818cf8 50%, #34d399 100%);
+}
+
+/* ── Body ── */
+.doc-body {
+  padding: 40px 48px 48px;
+}
+
+/* ── Document title ── */
+.doc-titulo {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.doc-titulo h2 {
+  font-size: 18px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #0f1123;
+  margin-bottom: 4px;
+}
+
+.doc-titulo .doc-subtitulo {
+  font-size: 12px;
+  color: #6366f1;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* ── Section blocks ── */
+.doc-bloco {
+  margin-bottom: 26px;
+}
+
+.doc-bloco-titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #6366f1;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1.5px solid #ede9fe;
+}
+
+.doc-bloco-titulo .bloco-num {
+  width: 20px; height: 20px;
+  background: #ede9fe;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px;
+  font-weight: 800;
+  color: #6366f1;
+  flex-shrink: 0;
+}
+
+/* ── Partes grid ── */
+.doc-partes-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.doc-parte-card {
+  background: #f8f7ff;
+  border: 1px solid #ede9fe;
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+.doc-parte-card .parte-role {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #6366f1;
+  margin-bottom: 5px;
+}
+
+.doc-parte-card .parte-nome {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f1123;
+  margin-bottom: 3px;
+}
+
+.doc-parte-card .parte-info {
+  font-size: 11.5px;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+/* ── Clausulas ── */
+.doc-clausulas {
+  counter-reset: clausula;
+  list-style: none;
+  padding: 0;
+}
+
+.doc-clausulas li {
+  counter-increment: clausula;
+  display: flex;
+  gap: 14px;
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #f3f4f6;
+  align-items: flex-start;
+}
+
+.doc-clausulas li:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.doc-clausulas li::before {
+  content: "§ " counter(clausula, upper-roman);
+  font-size: 9.5px;
+  font-weight: 800;
+  color: #6366f1;
+  background: #ede9fe;
+  border-radius: 6px;
+  padding: 3px 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 2px;
+  letter-spacing: 0.5px;
+}
+
+.doc-clausulas li .clausula-titulo {
+  font-weight: 700;
+  color: #0f1123;
+  margin-bottom: 2px;
+}
+
+.doc-clausulas li .clausula-texto {
+  font-size: 12.5px;
+  color: #374151;
+  line-height: 1.65;
+}
+
+/* ── Valores highlight ── */
+.doc-valor-box {
+  background: linear-gradient(135deg, #ede9fe, #e0e7ff);
+  border: 1px solid #c7d2fe;
+  border-radius: 10px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 12px 0;
+}
+
+.doc-valor-box .valor-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6366f1;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.doc-valor-box .valor-num {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0f1123;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: -0.5px;
+}
+
+/* ── Recibo específico ── */
+.doc-recibo-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.doc-campo {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.doc-campo .campo-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #9ca3af;
+  margin-bottom: 3px;
+}
+
+.doc-campo .campo-valor {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.doc-campo.campo-destaque {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.doc-campo.campo-destaque .campo-label { color: #16a34a; }
+.doc-campo.campo-destaque .campo-valor { color: #14532d; }
+
+/* ── Declaração recibo ── */
+.doc-declaracao {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-left: 4px solid #f59e0b;
+  border-radius: 8px;
+  padding: 14px 16px;
+  font-size: 13px;
+  color: #78350f;
+  line-height: 1.65;
+  margin: 16px 0;
+}
+
+/* ── Assinaturas ── */
+.doc-ass-grid {
+  display: flex;
+  justify-content: space-around;
+  gap: 20px;
+  margin-top: 48px;
+  padding-top: 20px;
+  border-top: 1px dashed #e5e7eb;
+  flex-wrap: wrap;
+}
+
+.doc-ass-item {
+  text-align: center;
+  flex: 1;
+  min-width: 160px;
+  max-width: 220px;
+}
+
+.doc-ass-linha {
+  border-top: 1.5px solid #374151;
+  margin-bottom: 8px;
+}
+
+.doc-ass-nome {
+  font-size: 12px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.doc-ass-papel {
+  font-size: 10.5px;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ── Footer do doc ── */
+.doc-rodape {
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  padding: 16px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.doc-rodape .rodape-texto {
+  font-size: 10px;
+  color: #9ca3af;
+  line-height: 1.4;
+}
+
+.doc-rodape .rodape-marca {
+  font-size: 10px;
+  font-weight: 700;
+  color: #c7d2fe;
+  letter-spacing: 0.3px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: #1a1d3a;
+  padding: 5px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+/* ── Print rules ── */
+@media print {
+  body > *:not(#app) { display: none !important; }
+  #app { display: block !important; }
+  .sidebar, .topbar, .bottom-nav, .section-header, .card:not(#documento-preview), .fab, #btn-print { display: none !important; }
+  .main { margin: 0 !important; }
+  .content-area { padding: 0 !important; }
+  #documento-preview { box-shadow: none !important; max-width: 100% !important; border-radius: 0 !important; }
+  .doc-topo, .doc-accent-strip, .doc-tipo-badge, .doc-bloco-titulo .bloco-num, .doc-clausulas li::before,
+  .doc-topo-logofallback, .doc-valor-box, .doc-declaracao, .doc-parte-card, .doc-campo, .doc-campo.campo-destaque,
+  .rodape-marca, .doc-rodape { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+  .doc-bloco, .doc-secao, .doc-clausulas li, .doc-partes-grid, .doc-parte-card,
+  .doc-valor-box, .doc-declaracao, .doc-ass-grid, .doc-rodape { break-inside: avoid; page-break-inside: avoid; }
+}
 
 /* ─── SETTINGS ───────────────────────────────── */
 .settings-section { margin-bottom: 28px; }
@@ -2089,7 +2459,7 @@ tbody tr:last-child td { border-bottom: none; }
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;">
             <button class="btn btn-primary" onclick="generateContract()"><i class="ph ph-file-text"></i> Gerar Contrato</button>
             <button class="btn btn-secondary" onclick="generateReceipt()"><i class="ph ph-receipt"></i> Gerar Recibo</button>
-            <button class="btn btn-ghost" id="btn-print" style="display:none;" onclick="window.print()"><i class="ph ph-printer"></i> Imprimir / PDF</button>
+            <button class="btn btn-ghost" id="btn-print" style="display:none;" onclick="baixarDocumentoPDF()"><i class="ph ph-file-pdf"></i> Baixar PDF</button>
           </div>
         </div>
 
@@ -2390,27 +2760,6 @@ tbody tr:last-child td { border-bottom: none; }
       <div class="form-group full">
         <label>Descrição</label>
         <textarea id="proj-desc" placeholder="Descreva o escopo do projeto..."></textarea>
-      </div>
-      <div class="form-group full">
-        <label>Arquivo HTML do Projeto</label>
-        <div id="proj-arquivo-area" style="border:2px dashed var(--border);border-radius:var(--radius-sm);padding:16px;text-align:center;cursor:pointer;transition:border-color 0.2s,background 0.2s;background:var(--bg-input);"
-          onclick="document.getElementById('proj-arquivo-input').click()"
-          ondragover="event.preventDefault();this.style.borderColor='var(--primary)';this.style.background='var(--primary-dim)';"
-          ondragleave="this.style.borderColor='var(--border)';this.style.background='var(--bg-input)';"
-          ondrop="handleArquivoDrop(event)">
-          <input type="file" id="proj-arquivo-input" accept=".html" style="display:none;" onchange="handleArquivoSelect(event)">
-          <div id="proj-arquivo-placeholder">
-            <i class="ph ph-file-html" style="font-size:28px;color:var(--primary-light);display:block;margin-bottom:6px;"></i>
-            <span style="font-size:13px;color:var(--text-muted);">Clique ou arraste um arquivo <strong style="color:var(--text);">.html</strong> aqui</span>
-          </div>
-          <div id="proj-arquivo-info" style="display:none;align-items:center;gap:10px;justify-content:center;flex-wrap:wrap;">
-            <i class="ph ph-file-html" style="font-size:22px;color:var(--primary-light);"></i>
-            <span id="proj-arquivo-nome" style="font-size:13px;font-weight:600;color:var(--text);font-family:var(--font-mono);"></span>
-            <button type="button" onclick="event.stopPropagation();limparArquivo()" style="background:var(--danger-dim);border:1px solid rgba(239,68,68,0.3);color:var(--danger);border-radius:6px;padding:3px 10px;font-size:12px;cursor:pointer;"><i class="ph ph-x"></i> Remover</button>
-          </div>
-        </div>
-        <input type="hidden" id="proj-arquivo-data">
-        <input type="hidden" id="proj-arquivo-filename">
       </div>
       <div class="form-footer">
         <button type="button" class="btn btn-secondary" onclick="closeModal('project')">Cancelar</button>
@@ -2745,6 +3094,41 @@ let currentUser = null;
 // ─── Utilities ────────────────────────────────────────────
 const fmt = (v) => (v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 const fmtDate = (s) => s ? new Date(s + 'T00:00:00').toLocaleDateString('pt-BR') : '—';
+
+function valorPorExtenso(valor) {
+  if (!valor || valor === 0) return 'zero reais';
+  const n = Math.round(valor * 100);
+  const reais = Math.floor(n / 100);
+  const centavos = n % 100;
+  const unidades = ['','um','dois','três','quatro','cinco','seis','sete','oito','nove'];
+  const dezenas = ['','onze','doze','treze','quatorze','quinze','dezesseis','dezessete','dezoito','dezenove'];
+  const dezenas2 = ['','dez','vinte','trinta','quarenta','cinquenta','sessenta','setenta','oitenta','noventa'];
+  const centenas = ['','cento','duzentos','trezentos','quatrocentos','quinhentos','seiscentos','setecentos','oitocentos','novecentos'];
+  function grupo(n) {
+    let s = '';
+    if (n === 100) return 'cem';
+    if (n >= 100) { s += centenas[Math.floor(n/100)]; n %= 100; if (n) s += ' e '; }
+    if (n >= 11 && n <= 19) return s + dezenas[n - 10];
+    if (n >= 10) { s += dezenas2[Math.floor(n/10)]; n %= 10; if (n) s += ' e '; }
+    if (n > 0) s += unidades[n];
+    return s;
+  }
+  let resultado = '';
+  if (reais >= 1000000) {
+    const mi = Math.floor(reais/1000000);
+    resultado += grupo(mi) + (mi === 1 ? ' milhão' : ' milhões');
+    if (reais % 1000000) resultado += ' e ';
+  }
+  if (reais % 1000000 >= 1000) {
+    const mil = Math.floor((reais % 1000000) / 1000);
+    resultado += (mil === 1 ? 'mil' : grupo(mil) + ' mil');
+    if (reais % 1000) resultado += ' e ';
+  }
+  if (reais % 1000 > 0) resultado += grupo(reais % 1000);
+  resultado += reais === 1 ? ' real' : ' reais';
+  if (centavos > 0) resultado += ' e ' + grupo(centavos) + (centavos === 1 ? ' centavo' : ' centavos');
+  return resultado;
+}
 const uid = () => '_' + Math.random().toString(36).substr(2, 9);
 
 function toast(msg, type = 'success') {
@@ -2910,12 +3294,6 @@ function closeModal(type) {
   document.getElementById('modal-' + type).classList.remove('open');
   const form = document.querySelector('#modal-' + type + ' form');
   if (form) form.reset();
-  if (type === 'project') {
-    document.getElementById('proj-arquivo-data').value = '';
-    document.getElementById('proj-arquivo-filename').value = '';
-    document.getElementById('proj-arquivo-placeholder').style.display = 'block';
-    document.getElementById('proj-arquivo-info').style.display = 'none';
-  }
 }
 
 document.querySelectorAll('.modal-overlay').forEach(m => {
@@ -3027,8 +3405,6 @@ function saveProject(e) {
     duracao: parseInt(document.getElementById('proj-duracao').value) || 0,
     link: document.getElementById('proj-link').value,
     desc: document.getElementById('proj-desc').value,
-    arquivoData: document.getElementById('proj-arquivo-data').value || (id ? (state.projetos.find(p=>p.id===id)||{}).arquivoData : ''),
-    arquivoNome: document.getElementById('proj-arquivo-filename').value || (id ? (state.projetos.find(p=>p.id===id)||{}).arquivoNome : ''),
   };
   if (id) {
     const i = state.projetos.findIndex(p => p.id === id);
@@ -3058,7 +3434,6 @@ function renderProjetos(filterStatus = '') {
       <td>
         <strong>${p.nome}</strong>
         ${p.link ? `<a href="${p.link}" target="_blank" style="color:var(--primary-light);font-size:12px;margin-left:6px;"><i class="ph ph-arrow-square-out"></i></a>` : ''}
-        ${p.arquivoData ? `<span title="${p.arquivoNome||'arquivo.html'}" style="display:inline-flex;align-items:center;gap:3px;margin-left:6px;font-size:11px;color:var(--warning);cursor:pointer;" onclick="previewArquivo('${p.id}')"><i class="ph ph-file-html"></i> HTML</span>` : ''}
       </td>
       <td>${c ? c.nome : '—'}</td>
       <td><span style="font-size:12px;color:var(--text-muted);">${p.fase || '—'}</span></td>
@@ -3072,8 +3447,6 @@ function renderProjetos(filterStatus = '') {
       <td style="font-family:var(--font-mono);font-size:13px;">${fmt(p.valor)}</td>
       <td>
         <div class="table-actions">
-          ${p.arquivoData ? `<button class="act-btn" title="Visualizar HTML" onclick="previewArquivo('${p.id}')" style="color:var(--warning);"><i class="ph ph-eye"></i></button>
-          <button class="act-btn" title="Baixar HTML" onclick="downloadArquivo('${p.id}')" style="color:var(--primary-light);"><i class="ph ph-download-simple"></i></button>` : ''}
           <button class="act-btn act-edit" onclick="editProject('${p.id}')"><i class="ph ph-pencil-simple"></i></button>
           <button class="act-btn act-delete" onclick="deleteProject('${p.id}')"><i class="ph ph-trash"></i></button>
         </div>
@@ -3096,18 +3469,6 @@ function editProject(id) {
   document.getElementById('proj-duracao').value = p.duracao || '';
   document.getElementById('proj-link').value = p.link || '';
   document.getElementById('proj-desc').value = p.desc || '';
-  // Restore arquivo
-  document.getElementById('proj-arquivo-data').value = p.arquivoData || '';
-  document.getElementById('proj-arquivo-filename').value = p.arquivoNome || '';
-  if (p.arquivoData && p.arquivoNome) {
-    document.getElementById('proj-arquivo-placeholder').style.display = 'none';
-    const info = document.getElementById('proj-arquivo-info');
-    info.style.display = 'flex';
-    document.getElementById('proj-arquivo-nome').textContent = p.arquivoNome;
-  } else {
-    document.getElementById('proj-arquivo-placeholder').style.display = 'block';
-    document.getElementById('proj-arquivo-info').style.display = 'none';
-  }
   document.getElementById('modal-project-title').textContent = 'Editar Projeto';
   openModal('project');
   populateClientDropdown('proj-cliente');
@@ -3121,97 +3482,6 @@ function deleteProject(id) {
   saveState();
   renderProjetos();
   toast('Projeto removido.', 'error');
-}
-
-function handleArquivoSelect(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  carregarArquivoHTML(file);
-}
-
-function handleArquivoDrop(event) {
-  event.preventDefault();
-  const area = document.getElementById('proj-arquivo-area');
-  area.style.borderColor = 'var(--border)';
-  area.style.background = 'var(--bg-input)';
-  const file = event.dataTransfer.files[0];
-  if (!file || !file.name.endsWith('.html')) { toast('Apenas arquivos .html são permitidos.', 'error'); return; }
-  carregarArquivoHTML(file);
-}
-
-function carregarArquivoHTML(file) {
-  if (!file.name.endsWith('.html')) { toast('Apenas arquivos .html são permitidos.', 'error'); return; }
-  if (file.size > 5 * 1024 * 1024) { toast('Arquivo muito grande. Máximo 5MB.', 'error'); return; }
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    document.getElementById('proj-arquivo-data').value = e.target.result;
-    document.getElementById('proj-arquivo-filename').value = file.name;
-    document.getElementById('proj-arquivo-placeholder').style.display = 'none';
-    const info = document.getElementById('proj-arquivo-info');
-    info.style.display = 'flex';
-    document.getElementById('proj-arquivo-nome').textContent = file.name;
-    toast('Arquivo carregado: ' + file.name);
-  };
-  reader.readAsText(file, 'UTF-8');
-}
-
-function limparArquivo() {
-  document.getElementById('proj-arquivo-data').value = '';
-  document.getElementById('proj-arquivo-filename').value = '';
-  document.getElementById('proj-arquivo-input').value = '';
-  document.getElementById('proj-arquivo-placeholder').style.display = 'block';
-  document.getElementById('proj-arquivo-info').style.display = 'none';
-}
-
-function previewArquivo(id) {
-  const p = state.projetos.find(p => p.id === id);
-  if (!p || !p.arquivoData) return;
-  const blob = new Blob([p.arquivoData], { type: 'text/html;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  // Open preview modal
-  let modal = document.getElementById('modal-html-preview');
-  if (!modal) {
-    modal = document.createElement('div');
-    modal.id = 'modal-html-preview';
-    modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;padding:16px;';
-    modal.innerHTML = `
-      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);width:100%;max-width:1100px;height:90vh;display:flex;flex-direction:column;box-shadow:var(--shadow);">
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);flex-shrink:0;">
-          <span id="html-preview-title" style="font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px;"><i class="ph ph-file-html" style="color:var(--warning);font-size:18px;"></i></span>
-          <div style="display:flex;gap:8px;">
-            <button id="html-preview-download" class="btn btn-secondary" style="padding:6px 14px;font-size:13px;"><i class="ph ph-download-simple"></i> Baixar</button>
-            <button onclick="fecharPreviewArquivo()" class="btn btn-secondary" style="padding:6px 14px;font-size:13px;"><i class="ph ph-x"></i> Fechar</button>
-          </div>
-        </div>
-        <iframe id="html-preview-frame" style="flex:1;border:none;border-radius:0 0 var(--radius) var(--radius);background:#fff;"></iframe>
-      </div>`;
-    document.body.appendChild(modal);
-    modal.addEventListener('click', function(e) { if (e.target === modal) fecharPreviewArquivo(); });
-  }
-  document.getElementById('html-preview-title').innerHTML = `<i class="ph ph-file-html" style="color:var(--warning);font-size:18px;"></i> ${p.arquivoNome || p.nome}`;
-  document.getElementById('html-preview-frame').src = url;
-  document.getElementById('html-preview-download').onclick = () => downloadArquivo(id);
-  modal.style.display = 'flex';
-  modal._blobUrl = url;
-}
-
-function fecharPreviewArquivo() {
-  const modal = document.getElementById('modal-html-preview');
-  if (!modal) return;
-  modal.style.display = 'none';
-  if (modal._blobUrl) { URL.revokeObjectURL(modal._blobUrl); modal._blobUrl = null; }
-  document.getElementById('html-preview-frame').src = 'about:blank';
-}
-
-function downloadArquivo(id) {
-  const p = state.projetos.find(p => p.id === id);
-  if (!p || !p.arquivoData) return;
-  const blob = new Blob([p.arquivoData], { type: 'text/html;charset=utf-8' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = p.arquivoNome || (p.nome.replace(/\s+/g, '_') + '.html');
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
 function filterProjectsByStatus(s) { renderProjetos(s); }
@@ -3597,29 +3867,301 @@ function generateContract() {
   const c = state.clientes.find(c=>c.id===cId);
   const p = state.projetos.find(p=>p.id===pId);
   const e = state.empresa;
-  const logo = e.logo ? `<img src="${e.logo}" style="max-width:140px;margin-bottom:10px;">` : '';
+
+  const logoHtml = e.logo
+    ? `<img src="${e.logo}" alt="Logo">`
+    : `<div class="doc-topo-logofallback">${(e.fantasia||e.razao||'G').charAt(0).toUpperCase()}</div>`;
+
+  const numDoc = 'CONT-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random()*9000)+1000);
+  const hoje = new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+  const cidade = e.cidade || 'Maceió';
+  const estado = e.estado || 'AL';
+
+  const prazoTexto = p.dataInicio && p.dataFim
+    ? `${fmtDate(p.dataInicio)} a ${fmtDate(p.dataFim)}`
+    : p.duracao ? `${p.duracao} dias corridos a partir da assinatura deste contrato` : 'a ser definido entre as partes';
+
+  const pagamento = e.pagamento || 'transferência bancária (PIX/TED), conforme acordado entre as partes';
+
   document.getElementById('documento-preview').innerHTML = `
-    <div class="doc-header">${logo}
-      <h3>Contrato de Prestação de Serviços</h3>
-      <p>${e.razao || 'Sua Empresa'} ${e.doc ? '· ' + e.doc : ''}</p>
+<div class="doc-shell">
+  <!-- HEADER -->
+  <div class="doc-topo">
+    <div class="doc-topo-logo">
+      ${logoHtml}
+      <div class="doc-topo-empresa">
+        <span class="empresa-nome">${e.fantasia || e.razao || 'Sua Empresa'}</span>
+        <span class="empresa-sub">${e.razao && e.fantasia ? e.razao + (e.doc ? ' · ' + e.doc : '') : (e.doc || 'CNPJ/CPF não informado')}</span>
+      </div>
     </div>
-    <div class="doc-section"><h4>Partes</h4>
-      <p><strong>CONTRATANTE:</strong> ${c.nome.toUpperCase()}${c.doc ? ', CPF/CNPJ: ' + c.doc : ''}.</p>
-      <p><strong>CONTRATADO(A):</strong> ${(e.nome||'[Nome]').toUpperCase()}${e.doc ? ', CPF/CNPJ: ' + e.doc : ''}.</p>
+    <div class="doc-topo-right">
+      <div class="doc-tipo-badge">Contrato de Serviços</div>
+      <div class="doc-numero">${numDoc}</div>
     </div>
-    <div class="doc-section"><h4>Cláusulas</h4>
-      <ol>
-        <li><strong>Objeto:</strong> ${p.desc || `Prestação de serviços para o projeto "${p.nome}".`}</li>
-        <li><strong>Valor:</strong> ${fmt(p.valor)}.</li>
-        <li><strong>Prazo:</strong> ${fmtDate(p.dataInicio)} a ${fmtDate(p.dataFim)}.</li>
-        <li><strong>Foro:</strong> Comarca de Maceió/AL.</li>
-      </ol>
+  </div>
+  <div class="doc-accent-strip"></div>
+
+  <!-- BODY -->
+  <div class="doc-body">
+
+    <!-- Título -->
+    <div class="doc-titulo">
+      <h2>Contrato de Prestação de Serviços</h2>
+      <div class="doc-subtitulo">Emitido em ${hoje}</div>
     </div>
-    <p style="margin-top:20px;">E, por estarem justos e contratados, assinam o presente instrumento.</p>
-    <div class="doc-signatures">
-      <div><div class="doc-signature-line"></div><div class="doc-signature-name">${e.nome||'[Seu Nome]'}</div><div class="doc-signature-name">CONTRATADO(A)</div></div>
-      <div><div class="doc-signature-line"></div><div class="doc-signature-name">${c.nome}</div><div class="doc-signature-name">CONTRATANTE</div></div>
-    </div>`;
+
+    <!-- Partes -->
+    <div class="doc-bloco">
+      <div class="doc-bloco-titulo"><span class="bloco-num">1</span> Identificação das Partes</div>
+      <div class="doc-partes-grid">
+        <div class="doc-parte-card">
+          <div class="parte-role">Contratado(a)</div>
+          <div class="parte-nome">${(e.nome||'[Nome do Prestador]').toUpperCase()}</div>
+          <div class="parte-info">
+            ${e.razao ? e.razao + '<br>' : ''}
+            ${e.doc ? 'CPF/CNPJ: ' + e.doc + '<br>' : ''}
+            ${e.email ? e.email + '<br>' : ''}
+            ${e.tel ? e.tel : ''}
+          </div>
+        </div>
+        <div class="doc-parte-card">
+          <div class="parte-role">Contratante</div>
+          <div class="parte-nome">${c.nome.toUpperCase()}</div>
+          <div class="parte-info">
+            ${c.doc ? 'CPF/CNPJ: ' + c.doc + '<br>' : ''}
+            ${c.email ? c.email + '<br>' : ''}
+            ${c.tel ? c.tel + '<br>' : ''}
+            ${c.cep ? 'CEP: ' + c.cep : ''}
+          </div>
+        </div>
+      </div>
+      <p style="margin-top:12px;font-size:12.5px;color:#4b5563;">
+        As partes acima qualificadas celebram o presente <strong>Contrato de Prestação de Serviços</strong>, que se regerá pelas cláusulas e condições a seguir descritas, sendo mutuamente aceitas.
+      </p>
+    </div>
+
+    <!-- Objeto -->
+    <div class="doc-bloco">
+      <div class="doc-bloco-titulo"><span class="bloco-num">2</span> Objeto do Contrato</div>
+      <ul class="doc-clausulas">
+        <li>
+          <div>
+            <div class="clausula-titulo">Do Objeto</div>
+            <div class="clausula-texto">
+              O presente contrato tem por objeto a prestação de serviços técnicos especializados referentes ao projeto <strong>"${p.nome}"</strong>${p.desc ? ', cujo escopo consiste em: ' + p.desc : ', conforme especificações acordadas entre as partes'}.
+            </div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="clausula-titulo">Da Fase e Entregáveis</div>
+            <div class="clausula-texto">
+              Os serviços serão desenvolvidos na fase de <strong>${p.fase || 'Desenvolvimento'}</strong>, compreendendo todos os entregáveis acordados entre as partes, conforme briefing e especificações técnicas fornecidas pelo Contratante.
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Valor e Pagamento -->
+    <div class="doc-bloco">
+      <div class="doc-bloco-titulo"><span class="bloco-num">3</span> Valor e Condições de Pagamento</div>
+      <div class="doc-valor-box">
+        <div>
+          <div class="valor-label">Valor Total do Contrato</div>
+          <div class="valor-num">${fmt(p.valor)}</div>
+        </div>
+        <div style="font-size:11px;color:#6b7280;text-align:right;">
+          Projeto: ${p.nome}<br>
+          ${p.dataInicio ? 'Início: ' + fmtDate(p.dataInicio) : ''}
+        </div>
+      </div>
+      <ul class="doc-clausulas">
+        <li>
+          <div>
+            <div class="clausula-titulo">Do Valor</div>
+            <div class="clausula-texto">
+              Pela prestação dos serviços objeto deste contrato, o Contratante pagará ao Contratado o valor total de <strong>${fmt(p.valor)}</strong> (${valorPorExtenso(p.valor)}).
+            </div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="clausula-titulo">Da Forma de Pagamento</div>
+            <div class="clausula-texto">
+              O pagamento será realizado mediante ${pagamento}. O não pagamento no prazo acordado sujeitará o Contratante à multa de 2% (dois por cento) sobre o valor devido, acrescida de juros de mora de 1% (um por cento) ao mês.
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Prazo -->
+    <div class="doc-bloco">
+      <div class="doc-bloco-titulo"><span class="bloco-num">4</span> Prazo de Execução</div>
+      <ul class="doc-clausulas">
+        <li>
+          <div>
+            <div class="clausula-titulo">Do Prazo</div>
+            <div class="clausula-texto">
+              O prazo de execução dos serviços será de <strong>${prazoTexto}</strong>, podendo ser prorrogado mediante acordo escrito entre as partes, desde que solicitado com antecedência mínima de 5 (cinco) dias úteis.
+            </div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="clausula-titulo">Das Revisões</div>
+            <div class="clausula-texto">
+              Estão incluídas no escopo do contrato até <strong>2 (duas) rodadas de revisão</strong> por entregável. Revisões adicionais poderão ser solicitadas mediante orçamento complementar a ser aprovado pelo Contratante.
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Obrigações -->
+    <div class="doc-bloco">
+      <div class="doc-bloco-titulo"><span class="bloco-num">5</span> Obrigações das Partes</div>
+      <ul class="doc-clausulas">
+        <li>
+          <div>
+            <div class="clausula-titulo">Obrigações do Contratado(a)</div>
+            <div class="clausula-texto">
+              Executar os serviços com zelo, técnica e dentro dos prazos estipulados; manter sigilo sobre as informações confidenciais do Contratante; comunicar imediatamente qualquer impedimento à execução dos serviços; e entregar os produtos/artefatos na qualidade e formato acordados.
+            </div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="clausula-titulo">Obrigações do Contratante</div>
+            <div class="clausula-texto">
+              Efetuar os pagamentos nos prazos estipulados; fornecer ao Contratado todos os materiais, acessos e informações necessários para a execução dos serviços; realizar aprovações e feedbacks em até 5 (cinco) dias úteis após cada entrega.
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Propriedade intelectual e Conf -->
+    <div class="doc-bloco">
+      <div class="doc-bloco-titulo"><span class="bloco-num">6</span> Propriedade Intelectual e Confidencialidade</div>
+      <ul class="doc-clausulas">
+        <li>
+          <div>
+            <div class="clausula-titulo">Da Propriedade Intelectual</div>
+            <div class="clausula-texto">
+              Após a quitação integral do contrato, todos os direitos patrimoniais sobre os entregáveis produzidos serão cedidos ao Contratante. O Contratado poderá exibir os trabalhos em seu portfólio, salvo expressa proibição por escrito do Contratante.
+            </div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="clausula-titulo">Da Confidencialidade</div>
+            <div class="clausula-texto">
+              Ambas as partes comprometem-se a manter sigilo absoluto sobre as informações confidenciais trocadas durante a vigência deste contrato, por um período mínimo de 2 (dois) anos após o término do mesmo.
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Rescisão -->
+    <div class="doc-bloco">
+      <div class="doc-bloco-titulo"><span class="bloco-num">7</span> Rescisão e Penalidades</div>
+      <ul class="doc-clausulas">
+        <li>
+          <div>
+            <div class="clausula-titulo">Da Rescisão</div>
+            <div class="clausula-texto">
+              O presente contrato poderá ser rescindido por qualquer das partes mediante comunicação escrita com antecedência mínima de <strong>15 (quinze) dias corridos</strong>. Em caso de rescisão sem justa causa pelo Contratante, será devida a remuneração proporcional aos serviços já executados, acrescida de multa de 20% sobre o valor restante.
+            </div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="clausula-titulo">Das Penalidades</div>
+            <div class="clausula-texto">
+              O descumprimento de qualquer cláusula deste contrato sujeitará a parte infratora ao pagamento de multa de 10% (dez por cento) sobre o valor total do contrato, além das perdas e danos apuradas.
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Foro -->
+    <div class="doc-bloco">
+      <div class="doc-bloco-titulo"><span class="bloco-num">8</span> Disposições Gerais e Foro</div>
+      <ul class="doc-clausulas">
+        <li>
+          <div>
+            <div class="clausula-titulo">Das Disposições Gerais</div>
+            <div class="clausula-texto">
+              Este contrato representa o acordo integral entre as partes e substitui todos os entendimentos anteriores, escritos ou verbais. Qualquer alteração deverá ser feita por escrito e assinada por ambas as partes. Este instrumento é regido pelas leis brasileiras, especialmente pelo Código Civil (Lei nº 10.406/2002) e pela Lei nº 9.609/98.
+            </div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="clausula-titulo">Do Foro</div>
+            <div class="clausula-texto">
+              Fica eleito o foro da Comarca de <strong>${cidade}/${estado}</strong> para dirimir quaisquer dúvidas ou litígios oriundos deste contrato, com renúncia expressa de qualquer outro, por mais privilegiado que seja.
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Fechamento -->
+    <p style="margin-bottom:8px;font-size:12.5px;color:#374151;text-align:justify;">
+      E, por estarem justos e contratados, as partes assinam o presente instrumento em 2 (duas) vias de igual teor e forma, juntamente com 2 (duas) testemunhas.
+    </p>
+    <p style="font-size:12.5px;color:#6b7280;text-align:right;margin-bottom:0;">
+      ${cidade}/${estado}, ${hoje}.
+    </p>
+
+    <!-- Assinaturas -->
+    <div class="doc-ass-grid">
+      <div class="doc-ass-item">
+        <div class="doc-ass-linha"></div>
+        <div class="doc-ass-nome">${(e.nome||'[Nome do Prestador]').toUpperCase()}</div>
+        <div class="doc-ass-papel">Contratado(a)</div>
+        ${e.doc ? `<div style="font-size:10px;color:#9ca3af;">CPF/CNPJ: ${e.doc}</div>` : ''}
+      </div>
+      <div class="doc-ass-item">
+        <div class="doc-ass-linha"></div>
+        <div class="doc-ass-nome">${c.nome.toUpperCase()}</div>
+        <div class="doc-ass-papel">Contratante</div>
+        ${c.doc ? `<div style="font-size:10px;color:#9ca3af;">CPF/CNPJ: ${c.doc}</div>` : ''}
+      </div>
+    </div>
+
+    <div class="doc-ass-grid" style="margin-top:24px;">
+      <div class="doc-ass-item">
+        <div class="doc-ass-linha"></div>
+        <div class="doc-ass-nome">TESTEMUNHA 1</div>
+        <div class="doc-ass-papel">Nome / CPF</div>
+      </div>
+      <div class="doc-ass-item">
+        <div class="doc-ass-linha"></div>
+        <div class="doc-ass-nome">TESTEMUNHA 2</div>
+        <div class="doc-ass-papel">Nome / CPF</div>
+      </div>
+    </div>
+
+  </div><!-- /doc-body -->
+
+  <!-- RODAPÉ -->
+  <div class="doc-rodape">
+    <div class="rodape-texto">
+      Documento gerado em ${hoje} · Ref: ${numDoc}<br>
+      ${e.razao||''} ${e.doc ? '· ' + e.doc : ''}
+    </div>
+    <div class="rodape-marca">
+      <i class="ph ph-lightning" style="font-size:12px;"></i> GestorPRO
+    </div>
+  </div>
+</div>`;
+
   document.getElementById('btn-print').style.display = '';
 }
 
@@ -3630,19 +4172,338 @@ function generateReceipt() {
   const c = state.clientes.find(c=>c.id===cId);
   const p = state.projetos.find(p=>p.id===pId);
   const e = state.empresa;
-  const logo = e.logo ? `<img src="${e.logo}" style="max-width:120px;margin-bottom:10px;">` : '';
+
+  const logoHtml = e.logo
+    ? `<img src="${e.logo}" alt="Logo">`
+    : `<div class="doc-topo-logofallback">${(e.fantasia||e.razao||'G').charAt(0).toUpperCase()}</div>`;
+
+  const numDoc = 'REC-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random()*9000)+1000);
+  const hoje = new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+  const cidade = e.cidade || 'Maceió';
+  const estado = e.estado || 'AL';
+
+  // Find related financial entries for this project
+  const pagamentos = state.financeiro ? state.financeiro.filter(f => f.projetoId === p.id && f.tipo === 'receita') : [];
+  const totalPago = pagamentos.reduce((s,f) => s + (f.valor||0), 0);
+  const valorRecibo = totalPago > 0 ? totalPago : p.valor;
+
   document.getElementById('documento-preview').innerHTML = `
-    <div class="doc-header">${logo}
-      <h3>Recibo de Serviços</h3>
+<div class="doc-shell">
+  <!-- HEADER -->
+  <div class="doc-topo">
+    <div class="doc-topo-logo">
+      ${logoHtml}
+      <div class="doc-topo-empresa">
+        <span class="empresa-nome">${e.fantasia || e.razao || 'Sua Empresa'}</span>
+        <span class="empresa-sub">${e.razao && e.fantasia ? e.razao + (e.doc ? ' · ' + e.doc : '') : (e.doc || 'CNPJ/CPF não informado')}</span>
+      </div>
     </div>
-    <div class="doc-section">
-      <p>Recebi de <strong>${c.nome}</strong>${c.doc?', CPF/CNPJ: '+c.doc:''}, a importância de <strong>${fmt(p.valor)}</strong>, referente aos serviços do projeto <strong>"${p.nome}"</strong>.</p>
-      <p style="margin-top:12px;">Maceió, ${new Date().toLocaleDateString('pt-BR',{day:'numeric',month:'long',year:'numeric'})}.</p>
+    <div class="doc-topo-right">
+      <div class="doc-tipo-badge">Recibo de Pagamento</div>
+      <div class="doc-numero">${numDoc}</div>
     </div>
-    <div class="doc-signatures" style="justify-content:center;margin-top:40px;">
-      <div><div class="doc-signature-line"></div><div class="doc-signature-name">${e.nome||'[Seu Nome]'}</div></div>
-    </div>`;
+  </div>
+  <div class="doc-accent-strip"></div>
+
+  <!-- BODY -->
+  <div class="doc-body" style="padding:22px 44px 26px;">
+
+    <!-- Título -->
+    <div class="doc-titulo" style="margin-bottom:14px;">
+      <h2>Recibo de Pagamento de Serviços</h2>
+      <div class="doc-subtitulo">Emitido em ${hoje}</div>
+    </div>
+
+    <!-- Valor em destaque -->
+    <div class="doc-valor-box" style="margin-bottom:14px;">
+      <div>
+        <div class="valor-label">Valor Recebido</div>
+        <div class="valor-num">${fmt(valorRecibo)}</div>
+        <div style="font-size:11px;color:#6366f1;margin-top:3px;font-style:italic;">${valorPorExtenso(valorRecibo)}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:9px;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">Nº do Recibo</div>
+        <div style="font-size:13px;font-weight:700;color:#374151;font-family:'DM Mono',monospace;">${numDoc}</div>
+        <div style="font-size:10px;color:#9ca3af;margin-top:3px;">${hoje}</div>
+      </div>
+    </div>
+
+    <!-- Dados do Recebedor -->
+    <div class="doc-bloco" style="margin-bottom:13px;">
+      <div class="doc-bloco-titulo"><span class="bloco-num">1</span> Dados do Recebedor</div>
+      <div class="doc-recibo-grid">
+        <div class="doc-campo">
+          <div class="campo-label">Nome / Razão Social</div>
+          <div class="campo-valor">${e.nome || e.razao || '[Nome do Prestador]'}</div>
+        </div>
+        <div class="doc-campo">
+          <div class="campo-label">CPF / CNPJ</div>
+          <div class="campo-valor">${e.doc || 'Não informado'}</div>
+        </div>
+        ${e.razao ? `<div class="doc-campo">
+          <div class="campo-label">Razão Social</div>
+          <div class="campo-valor">${e.razao}</div>
+        </div>` : ''}
+        ${e.email ? `<div class="doc-campo">
+          <div class="campo-label">E-mail</div>
+          <div class="campo-valor">${e.email}</div>
+        </div>` : ''}
+        ${e.tel ? `<div class="doc-campo">
+          <div class="campo-label">Telefone</div>
+          <div class="campo-valor">${e.tel}</div>
+        </div>` : ''}
+      </div>
+    </div>
+
+    <!-- Dados do Pagador -->
+    <div class="doc-bloco" style="margin-bottom:13px;">
+      <div class="doc-bloco-titulo"><span class="bloco-num">2</span> Dados do Pagador</div>
+      <div class="doc-recibo-grid">
+        <div class="doc-campo">
+          <div class="campo-label">Nome / Razão Social</div>
+          <div class="campo-valor">${c.nome}</div>
+        </div>
+        <div class="doc-campo">
+          <div class="campo-label">CPF / CNPJ</div>
+          <div class="campo-valor">${c.doc || 'Não informado'}</div>
+        </div>
+        ${c.email ? `<div class="doc-campo">
+          <div class="campo-label">E-mail</div>
+          <div class="campo-valor">${c.email}</div>
+        </div>` : ''}
+        ${c.tel ? `<div class="doc-campo">
+          <div class="campo-label">Telefone</div>
+          <div class="campo-valor">${c.tel}</div>
+        </div>` : ''}
+        ${c.cep ? `<div class="doc-campo">
+          <div class="campo-label">CEP</div>
+          <div class="campo-valor">${c.cep}</div>
+        </div>` : ''}
+      </div>
+    </div>
+
+    <!-- Dados do Projeto / Serviço -->
+    <div class="doc-bloco" style="margin-bottom:13px;">
+      <div class="doc-bloco-titulo"><span class="bloco-num">3</span> Referência do Serviço</div>
+      <div class="doc-recibo-grid">
+        <div class="doc-campo" style="grid-column:1/-1;">
+          <div class="campo-label">Projeto / Serviço Prestado</div>
+          <div class="campo-valor">${p.nome}</div>
+        </div>
+        ${p.desc ? `<div class="doc-campo" style="grid-column:1/-1;">
+          <div class="campo-label">Descrição</div>
+          <div class="campo-valor" style="font-size:12px;font-weight:400;color:#4b5563;">${p.desc}</div>
+        </div>` : ''}
+        <div class="doc-campo">
+          <div class="campo-label">Fase</div>
+          <div class="campo-valor">${p.fase || '—'}</div>
+        </div>
+        <div class="doc-campo">
+          <div class="campo-label">Status</div>
+          <div class="campo-valor">${{planejamento:'Planejamento',andamento:'Em Andamento',concluido:'Concluído',cancelado:'Cancelado'}[p.status]||p.status}</div>
+        </div>
+        ${p.dataInicio ? `<div class="doc-campo">
+          <div class="campo-label">Data de Início</div>
+          <div class="campo-valor">${fmtDate(p.dataInicio)}</div>
+        </div>` : ''}
+        ${p.dataFim ? `<div class="doc-campo">
+          <div class="campo-label">Data de Conclusão</div>
+          <div class="campo-valor">${fmtDate(p.dataFim)}</div>
+        </div>` : ''}
+        <div class="doc-campo campo-destaque">
+          <div class="campo-label">Valor Total do Projeto</div>
+          <div class="campo-valor">${fmt(p.valor)}</div>
+        </div>
+        <div class="doc-campo campo-destaque">
+          <div class="campo-label">Valor Pago neste Recibo</div>
+          <div class="campo-valor">${fmt(valorRecibo)}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Declaração -->
+    <div class="doc-bloco" style="margin-bottom:10px;">
+      <div class="doc-bloco-titulo"><span class="bloco-num">4</span> Declaração</div>
+      <div class="doc-declaracao">
+        Declaro, para os devidos fins, que recebi de <strong>${c.nome}</strong>${c.doc ? ', portador(a) do CPF/CNPJ ' + c.doc : ''}, a importância de <strong>${fmt(valorRecibo)}</strong> (${valorPorExtenso(valorRecibo)}), referente à prestação de serviços do projeto <strong>"${p.nome}"</strong>. Dou plena, geral e irrevogável quitação pelo valor ora recebido, nada mais tendo a reclamar a este título.
+      </div>
+      <p style="font-size:12px;color:#6b7280;margin-top:10px;">
+        <strong>${cidade}/${estado}</strong>, ${hoje}.
+      </p>
+    </div>
+
+    <!-- Assinatura -->
+    <div class="doc-ass-grid">
+      <div class="doc-ass-item">
+        <div class="doc-ass-linha"></div>
+        <div class="doc-ass-nome">${(e.nome||'[Nome do Prestador]').toUpperCase()}</div>
+        <div class="doc-ass-papel">Recebedor / Prestador de Serviços</div>
+        ${e.doc ? `<div style="font-size:10px;color:#9ca3af;">CPF/CNPJ: ${e.doc}</div>` : ''}
+      </div>
+      <div class="doc-ass-item">
+        <div class="doc-ass-linha"></div>
+        <div class="doc-ass-nome">${c.nome.toUpperCase()}</div>
+        <div class="doc-ass-papel">Pagador / Contratante</div>
+        ${c.doc ? `<div style="font-size:10px;color:#9ca3af;">CPF/CNPJ: ${c.doc}</div>` : ''}
+      </div>
+    </div>
+
+  </div><!-- /doc-body -->
+
+  <!-- RODAPÉ -->
+  <div class="doc-rodape">
+    <div class="rodape-texto">
+      Recibo emitido em ${hoje} · Nº ${numDoc}<br>
+      ${e.razao||e.nome||''} ${e.doc ? '· ' + e.doc : ''}
+    </div>
+    <div class="rodape-marca">
+      <i class="ph ph-lightning" style="font-size:12px;"></i> GestorPRO
+    </div>
+  </div>
+</div>`;
+
   document.getElementById('btn-print').style.display = '';
+}
+
+// ─── Baixar Documento como PDF ────────────────────────────
+function baixarDocumentoPDF() {
+  const preview = document.getElementById('documento-preview');
+  if (!preview || !preview.querySelector('.doc-shell')) {
+    toast('Gere um documento antes de baixar.', 'error');
+    return;
+  }
+
+  // Detecta tipo do documento
+  const isBadgeEl = preview.querySelector('.doc-tipo-badge');
+  const docTipoText = isBadgeEl ? isBadgeEl.textContent.trim().toLowerCase() : '';
+  const isRecibo = docTipoText.includes('recibo');
+
+  const numEl = preview.querySelector('.doc-numero');
+  const numDoc = numEl ? numEl.textContent.trim() : new Date().toISOString().slice(0,10);
+  const docTipo = isBadgeEl ? docTipoText.replace(/\s+/g, '_') : 'documento';
+
+  const docStyles = `
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { font-family: 'Plus Jakarta Sans', sans-serif; background: #fff; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; color-adjust: exact; }
+    .doc-shell { width: 100%; }
+    .doc-topo { background: linear-gradient(135deg, #0f1123 0%, #1a1d3a 60%, #23276b 100%) !important; padding: 28px 48px 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .doc-topo-logo { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+    .doc-topo-logo img { max-height: 48px; max-width: 130px; object-fit: contain; }
+    .doc-topo-logofallback { width: 44px; height: 44px; background: linear-gradient(135deg, #6366f1, #818cf8) !important; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .doc-topo-empresa { display: flex; flex-direction: column; }
+    .doc-topo-empresa .empresa-nome { font-size: 15px; font-weight: 800; color: #ffffff !important; line-height: 1.2; }
+    .doc-topo-empresa .empresa-sub { font-size: 10.5px; color: rgba(255,255,255,0.55) !important; margin-top: 2px; }
+    .doc-topo-right { text-align: right; flex-shrink: 0; }
+    .doc-tipo-badge { display: inline-block; background: rgba(99,102,241,0.25) !important; border: 1px solid rgba(99,102,241,0.5); color: #a5b4fc !important; font-size: 9.5px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 3px 11px; border-radius: 20px; margin-bottom: 5px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .doc-numero { font-size: 10.5px; color: rgba(255,255,255,0.45) !important; font-family: 'DM Mono', monospace; }
+    .doc-accent-strip { height: 4px; background: linear-gradient(90deg, #6366f1 0%, #818cf8 50%, #34d399 100%) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .doc-body { padding: 30px 48px 36px; }
+    .doc-titulo { text-align: center; margin-bottom: 24px; }
+    .doc-titulo h2 { font-size: 17px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #0f1123; margin-bottom: 4px; }
+    .doc-titulo .doc-subtitulo { font-size: 11.5px; color: #6366f1 !important; font-weight: 600; }
+    .doc-bloco { margin-bottom: 20px; break-inside: avoid; page-break-inside: avoid; }
+    .doc-bloco-titulo { display: flex; align-items: center; gap: 8px; font-size: 9.5px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: #6366f1 !important; margin-bottom: 9px; padding-bottom: 5px; border-bottom: 1.5px solid #ede9fe; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .bloco-num { width: 18px; height: 18px; background: #ede9fe !important; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; color: #6366f1 !important; flex-shrink: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .doc-partes-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; break-inside: avoid; page-break-inside: avoid; }
+    .doc-parte-card { background: #f8f7ff !important; border: 1px solid #ede9fe; border-radius: 10px; padding: 12px 14px; -webkit-print-color-adjust: exact; print-color-adjust: exact; break-inside: avoid; }
+    .parte-role { font-size: 8.5px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: #6366f1 !important; margin-bottom: 4px; }
+    .parte-nome { font-size: 13px; font-weight: 700; color: #0f1123; margin-bottom: 3px; }
+    .parte-info { font-size: 11px; color: #6b7280; line-height: 1.5; }
+    /* Cláusulas do contrato */
+    .doc-secao { margin-bottom: 18px; break-inside: avoid; page-break-inside: avoid; }
+    .doc-secao-titulo { font-size: 10px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: #6366f1 !important; display: flex; align-items: center; gap: 7px; padding: 7px 10px; background: #f5f3ff !important; border-radius: 7px; margin-bottom: 8px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .secao-num { width: 20px; height: 20px; background: #6366f1 !important; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: white !important; flex-shrink: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .doc-clausulas { counter-reset: clausula; list-style: none; padding: 0; }
+    .doc-clausulas li { counter-increment: clausula; display: flex; gap: 12px; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #f3f4f6; align-items: flex-start; break-inside: avoid; page-break-inside: avoid; }
+    .doc-clausulas li:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .doc-clausulas li::before { content: "§ " counter(clausula, upper-roman); font-size: 9px; font-weight: 800; color: #6366f1 !important; background: #ede9fe !important; border-radius: 5px; padding: 2px 7px; white-space: nowrap; flex-shrink: 0; margin-top: 2px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .clausula-titulo { font-weight: 700; color: #0f1123; margin-bottom: 2px; font-size: 13px; }
+    .clausula-texto { font-size: 12px; color: #374151; line-height: 1.6; }
+    .doc-valor-box { background: linear-gradient(135deg, #ede9fe, #e0e7ff) !important; border: 1px solid #c7d2fe; border-radius: 10px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 10px 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; break-inside: avoid; page-break-inside: avoid; }
+    .valor-label { font-size: 10px; font-weight: 700; color: #6366f1 !important; text-transform: uppercase; }
+    .valor-num { font-size: 20px; font-weight: 800; color: #0f1123; font-family: 'DM Mono', monospace; }
+    .doc-recibo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-bottom: 14px; }
+    .doc-campo { background: #f9fafb !important; border: 1px solid #e5e7eb; border-radius: 8px; padding: 9px 12px; -webkit-print-color-adjust: exact; print-color-adjust: exact; break-inside: avoid; }
+    .campo-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #9ca3af; margin-bottom: 2px; }
+    .campo-valor { font-size: 12.5px; font-weight: 600; color: #111827; }
+    .doc-campo.campo-destaque { background: #f0fdf4 !important; border-color: #bbf7d0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .doc-campo.campo-destaque .campo-label { color: #16a34a !important; }
+    .doc-campo.campo-destaque .campo-valor { color: #14532d !important; }
+    .doc-declaracao { background: #fffbeb !important; border: 1px solid #fde68a; border-left: 4px solid #f59e0b !important; border-radius: 8px; padding: 13px 15px; font-size: 12.5px; color: #78350f !important; line-height: 1.65; margin: 14px 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; break-inside: avoid; page-break-inside: avoid; }
+    .doc-ass-grid { display: flex; justify-content: space-around; gap: 20px; margin-top: 32px; padding-top: 18px; border-top: 1px dashed #e5e7eb; flex-wrap: wrap; break-inside: avoid; page-break-inside: avoid; }
+    .doc-ass-item { text-align: center; flex: 1; min-width: 140px; max-width: 200px; }
+    .doc-ass-linha { border-top: 1.5px solid #374151; margin-bottom: 7px; }
+    .doc-ass-nome { font-size: 11.5px; font-weight: 700; color: #111827; }
+    .doc-ass-papel { font-size: 10px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; }
+    .doc-rodape { background: #f9fafb !important; border-top: 1px solid #e5e7eb; padding: 14px 48px; display: flex; align-items: center; justify-content: space-between; gap: 12px; -webkit-print-color-adjust: exact; print-color-adjust: exact; break-inside: avoid; page-break-inside: avoid; }
+    .rodape-texto { font-size: 9.5px; color: #9ca3af; line-height: 1.4; }
+    .rodape-marca { font-size: 9.5px; font-weight: 700; color: #c7d2fe !important; display: flex; align-items: center; gap: 5px; background: #1a1d3a !important; padding: 4px 11px; border-radius: 20px; white-space: nowrap; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    @page {
+      size: A4 portrait;
+      margin: 0;
+    }
+    @media print {
+      html, body { margin: 0; padding: 0; }
+      .doc-shell { width: 100%; page-break-inside: auto; }
+      .doc-bloco, .doc-secao, .doc-clausulas li, .doc-valor-box, .doc-declaracao, .doc-ass-grid, .doc-rodape, .doc-parte-card, .doc-partes-grid, .doc-campo { break-inside: avoid; page-break-inside: avoid; }
+      .doc-topo { break-after: avoid; page-break-after: avoid; }
+      .doc-rodape { break-before: avoid; page-break-before: avoid; position: running(footer); }
+    }
+    ${isRecibo ? `
+    /* RECIBO: compactar para caber em 1 folha A4 */
+    .doc-body { padding: 22px 44px 28px; }
+    .doc-titulo { margin-bottom: 16px; }
+    .doc-bloco { margin-bottom: 14px; }
+    .doc-recibo-grid { gap: 7px; margin-bottom: 10px; }
+    .doc-campo { padding: 7px 11px; }
+    .campo-valor { font-size: 12px; }
+    .doc-valor-box { padding: 11px 16px; margin: 8px 0; }
+    .valor-num { font-size: 18px; }
+    .doc-declaracao { padding: 11px 14px; margin: 11px 0; font-size: 12px; }
+    .doc-ass-grid { margin-top: 20px; padding-top: 14px; }
+    ` : ''}
+  `;
+
+  const docHTML = preview.innerHTML;
+
+  const iframe = document.createElement('iframe');
+  iframe.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:210mm;height:297mm;border:none;visibility:hidden;';
+  document.body.appendChild(iframe);
+
+  const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+  iframeDoc.open();
+  iframeDoc.write(`<!DOCTYPE html><html><head>
+    <meta charset="UTF-8">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>${docStyles}</style>
+  </head><body>${docHTML}</body></html>`);
+  iframeDoc.close();
+
+  // Aguarda fontes carregarem, depois imprime
+  setTimeout(function() {
+    try {
+      const iframeWin = iframe.contentWindow;
+
+      // Nomeia o arquivo via título da página do iframe
+      iframeDoc.title = docTipo + '_' + numDoc;
+
+      iframeWin.focus();
+      iframeWin.print();
+
+      // Remove iframe após um breve delay
+      setTimeout(function() {
+        try { document.body.removeChild(iframe); } catch(e) {}
+      }, 2000);
+
+      toast('Documento enviado para impressão/PDF! Use "Salvar como PDF" no diálogo.');
+    } catch(err) {
+      try { document.body.removeChild(iframe); } catch(e) {}
+      toast('Erro ao gerar PDF.', 'error');
+      console.error(err);
+    }
+  }, 1400);
 }
 
 // ─── Config ───────────────────────────────────────────────
