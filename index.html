@@ -1638,6 +1638,10 @@ tbody tr:last-child td { border-bottom: none; }
         <i class="ph ph-chart-line-up"></i>
         <span>Financeiro</span>
       </button>
+      <button class="bnav-item" data-page="licencas" onclick="showPage('licencas')">
+        <i class="ph ph-key"></i>
+        <span>Licenças</span>
+      </button>
       <button class="bnav-more" onclick="toggleSidebar()">
         <i class="ph ph-dots-three-outline"></i>
         <span>Mais</span>
@@ -1680,6 +1684,14 @@ tbody tr:last-child td { border-bottom: none; }
       </button>
       <button class="nav-item" data-page="contratos" onclick="showPage('contratos')">
         <i class="ph ph-seal-check"></i><span>Documentos</span>
+      </button>
+
+      <div class="nav-section" style="margin-top:14px;">Licenciamento</div>
+      <button class="nav-item" data-page="produtos" onclick="showPage('produtos')">
+        <i class="ph ph-package"></i><span>Produtos</span>
+      </button>
+      <button class="nav-item" data-page="licencas" onclick="showPage('licencas')">
+        <i class="ph ph-key"></i><span>Licenças</span>
       </button>
 
       <div class="nav-section" style="margin-top:14px;">Sistema</div>
@@ -1772,6 +1784,12 @@ tbody tr:last-child td { border-bottom: none; }
             <div class="stat-value" id="ds-concluido">0</div>
             <div class="stat-label">Concluídos</div>
             <div class="stat-footer"><i class="ph ph-arrow-right"></i> Ver projetos</div>
+          </div>
+          <div class="stat-card" onclick="showPage('licencas')" style="--accent:#a78bfa;--icon-bg:rgba(167,139,250,0.12);--icon-color:#a78bfa;">
+            <div class="stat-icon"><i class="ph ph-key"></i></div>
+            <div class="stat-value" id="ds-licencas">0</div>
+            <div class="stat-label">Licenças Ativas</div>
+            <div class="stat-footer"><i class="ph ph-arrow-right"></i> Ver licenças</div>
           </div>
         </div>
 
@@ -2102,6 +2120,90 @@ tbody tr:last-child td { border-bottom: none; }
         </div>
       </section>
 
+      <!-- ── PRODUTOS ───────────────────────────────── -->
+      <section id="page-produtos" class="page">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Produtos de Software</div>
+            <div class="section-sub">Sistemas prontos para licenciar a múltiplos clientes</div>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('produto')">
+            <i class="ph ph-plus"></i> Novo Produto
+          </button>
+        </div>
+        <div class="card">
+          <div class="action-row" style="margin-bottom:16px;">
+            <div class="search-input-wrap">
+              <i class="ph ph-magnifying-glass"></i>
+              <input type="text" placeholder="Buscar produto..." oninput="filterTable('tb-produtos', this.value, [0,1])">
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Nome</th><th>Versão</th><th>Preço (R$)</th><th>Licenças Vendidas</th><th>Descrição</th><th></th></tr></thead>
+              <tbody id="tb-produtos"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── LICENÇAS ───────────────────────────────── -->
+      <section id="page-licencas" class="page">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Licenças Vendidas</div>
+            <div class="section-sub">Gerencie as licenças individuais — cada código é único, pessoal e intransferível</div>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('licenca')">
+            <i class="ph ph-plus"></i> Nova Venda de Licença
+          </button>
+        </div>
+
+        <div class="stats-grid" style="grid-template-columns:repeat(auto-fill,minmax(min(180px,100%),1fr));margin-bottom:24px;">
+          <div class="stat-card" style="--accent:#6366f1;--icon-bg:rgba(99,102,241,0.12);--icon-color:#818cf8;">
+            <div class="stat-icon"><i class="ph ph-key"></i></div>
+            <div class="stat-value" id="lic-total">0</div>
+            <div class="stat-label">Total de Licenças</div>
+          </div>
+          <div class="stat-card" style="--accent:#10b981;--icon-bg:rgba(16,185,129,0.12);--icon-color:#34d399;">
+            <div class="stat-icon"><i class="ph ph-check-circle"></i></div>
+            <div class="stat-value" id="lic-ativas">0</div>
+            <div class="stat-label">Ativas</div>
+          </div>
+          <div class="stat-card" style="--accent:#f59e0b;--icon-bg:rgba(245,158,11,0.12);--icon-color:#fbbf24;">
+            <div class="stat-icon"><i class="ph ph-clock"></i></div>
+            <div class="stat-value" id="lic-pendentes">0</div>
+            <div class="stat-label">Pendentes</div>
+          </div>
+          <div class="stat-card" style="--accent:#10b981;--icon-bg:rgba(16,185,129,0.12);--icon-color:#34d399;">
+            <div class="stat-icon"><i class="ph ph-currency-dollar"></i></div>
+            <div class="stat-value" id="lic-receita" style="font-size:18px;">R$ 0</div>
+            <div class="stat-label">Receita Licenças</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="action-row" style="margin-bottom:16px;">
+            <div class="search-input-wrap">
+              <i class="ph ph-magnifying-glass"></i>
+              <input type="text" placeholder="Buscar por cliente, produto ou código..." oninput="filterTable('tb-licencas', this.value, [0,1,2])">
+            </div>
+            <select onchange="filterLicencasByStatus(this.value)" style="max-width:180px;">
+              <option value="">Todos os status</option>
+              <option value="pendente">Pendente</option>
+              <option value="ativa">Ativa</option>
+              <option value="revogada">Revogada</option>
+            </select>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Cliente</th><th>Produto</th><th>Código de Ativação</th><th>Data Venda</th><th>Valor</th><th>Status</th><th></th></tr></thead>
+              <tbody id="tb-licencas"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
     </div><!-- /content-area -->
   </div><!-- /main -->
 </div><!-- /app -->
@@ -2261,6 +2363,141 @@ tbody tr:last-child td { border-bottom: none; }
   <span id="toast-msg">Salvo com sucesso!</span>
 </div>
 
+<!-- Produto Modal -->
+<div class="modal-overlay" id="modal-produto">
+  <div class="modal-box" style="max-width:520px;">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-produto-title">Novo Produto</span>
+      <button class="modal-close" onclick="closeModal('produto')"><i class="ph ph-x"></i></button>
+    </div>
+    <form class="form-grid" id="form-produto" onsubmit="saveProduto(event)">
+      <input type="hidden" id="produto-id">
+      <div class="form-group">
+        <label>Nome do Software *</label>
+        <input type="text" id="produto-nome" placeholder="Ex: SistemaERP Pro" required>
+      </div>
+      <div class="form-group">
+        <label>Versão</label>
+        <input type="text" id="produto-versao" placeholder="Ex: 2.1.0">
+      </div>
+      <div class="form-group">
+        <label>Preço de Licença (R$)</label>
+        <input type="number" id="produto-preco" placeholder="0.00" step="0.01" min="0">
+      </div>
+      <div class="form-group full">
+        <label>Descrição</label>
+        <textarea id="produto-desc" placeholder="Descreva o produto..."></textarea>
+      </div>
+      <div class="form-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('produto')">Cancelar</button>
+        <button type="submit" class="btn btn-primary"><i class="ph ph-floppy-disk"></i> Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Licença Modal -->
+<div class="modal-overlay" id="modal-licenca">
+  <div class="modal-box" style="max-width:580px;">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-licenca-title">Nova Venda de Licença</span>
+      <button class="modal-close" onclick="closeModal('licenca')"><i class="ph ph-x"></i></button>
+    </div>
+    <form class="form-grid" id="form-licenca" onsubmit="saveLicenca(event)">
+      <input type="hidden" id="licenca-id">
+      <div class="form-group">
+        <label>Cliente *</label>
+        <select id="licenca-cliente" required><option value="">Selecione o cliente</option></select>
+      </div>
+      <div class="form-group">
+        <label>Produto *</label>
+        <select id="licenca-produto" required onchange="autoFillLicencaPreco()"><option value="">Selecione o produto</option></select>
+      </div>
+      <div class="form-group">
+        <label>Valor Cobrado (R$)</label>
+        <input type="number" id="licenca-valor" placeholder="0.00" step="0.01" min="0">
+      </div>
+      <div class="form-group">
+        <label>Data da Venda *</label>
+        <input type="date" id="licenca-data" required>
+      </div>
+      <div class="form-group">
+        <label>Validade da Licença</label>
+        <select id="licenca-validade">
+          <option value="vitalicia">Vitalícia</option>
+          <option value="1ano">1 Ano</option>
+          <option value="2anos">2 Anos</option>
+          <option value="mensal">Mensal</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="licenca-status">
+          <option value="pendente">Pendente</option>
+          <option value="ativa">Ativa</option>
+          <option value="revogada">Revogada</option>
+        </select>
+      </div>
+      <div class="form-group full" id="licenca-codigo-group">
+        <label>Código de Ativação (gerado automaticamente)</label>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="text" id="licenca-codigo" readonly style="font-family:var(--font-mono);font-size:13px;letter-spacing:1px;background:var(--bg-input);cursor:default;" placeholder="Clique em Gerar">
+          <button type="button" class="btn btn-secondary" onclick="gerarCodigo()" style="white-space:nowrap;flex-shrink:0;">
+            <i class="ph ph-arrows-clockwise"></i> Gerar
+          </button>
+        </div>
+        <span style="font-size:11px;color:var(--text-muted);margin-top:4px;">O código é único, vinculado a uma máquina e intransferível.</span>
+      </div>
+      <div class="form-group full">
+        <label>Observações</label>
+        <textarea id="licenca-obs" placeholder="Observações internas..."></textarea>
+      </div>
+      <div class="form-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('licenca')">Cancelar</button>
+        <button type="submit" class="btn btn-primary"><i class="ph ph-floppy-disk"></i> Salvar Licença</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Enviar Código Modal -->
+<div class="modal-overlay" id="modal-enviar-codigo">
+  <div class="modal-box" style="max-width:600px;">
+    <div class="modal-header">
+      <span class="modal-title">Enviar Código de Ativação</span>
+      <button class="modal-close" onclick="closeModal('enviar-codigo')"><i class="ph ph-x"></i></button>
+    </div>
+    <div style="padding:4px 0 12px;">
+      <div style="background:var(--primary-dim);border:1px solid rgba(99,102,241,0.3);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:18px;display:flex;gap:10px;align-items:flex-start;">
+        <i class="ph ph-info" style="color:var(--primary-light);font-size:18px;flex-shrink:0;margin-top:1px;"></i>
+        <span style="font-size:13px;color:var(--text-muted);">Este código é <strong style="color:var(--text);">pessoal e intransferível</strong> — vinculado a uma única máquina. Não deve ser compartilhado ou repassado a terceiros.</span>
+      </div>
+
+      <div class="form-group" style="margin-bottom:14px;">
+        <label>Para</label>
+        <input type="text" id="envio-para" readonly style="background:var(--bg-input);">
+      </div>
+      <div class="form-group" style="margin-bottom:14px;">
+        <label>Assunto</label>
+        <input type="text" id="envio-assunto" style="background:var(--bg-input);">
+      </div>
+      <div class="form-group" style="margin-bottom:18px;">
+        <label>Corpo do E-mail</label>
+        <textarea id="envio-corpo" style="min-height:220px;font-family:var(--font-mono);font-size:12px;line-height:1.7;"></textarea>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
+        <button class="btn btn-secondary" onclick="closeModal('enviar-codigo')">Fechar</button>
+        <button class="btn btn-ghost" onclick="copiarEmailCompleto()">
+          <i class="ph ph-copy"></i> Copiar Mensagem
+        </button>
+        <button class="btn btn-primary" onclick="abrirEmailCliente()">
+          <i class="ph ph-envelope-simple"></i> Abrir no E-mail
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ═══════════════════════════════════════════════════════════
      JAVASCRIPT
 ═══════════════════════════════════════════════════════════ -->
@@ -2309,6 +2546,8 @@ let state = {
   clientes: [],
   projetos: [],
   financeiro: [],
+  produtos: [],
+  licencas: [],
   empresa: {},
   auth: { user: 'admin', pass: '1234' }
 };
@@ -2387,6 +2626,8 @@ const pageTitles = {
   financeiro: 'Financeiro',
   relatorios: 'Relatórios',
   contratos: 'Documentos',
+  produtos: 'Produtos de Software',
+  licencas: 'Licenças',
   configuracoes: 'Configurações'
 };
 
@@ -2427,6 +2668,8 @@ function showPage(id) {
   else if (id === 'financeiro') renderFin(document.getElementById('fin-period').value);
   else if (id === 'relatorios') { renderKanban(); }
   else if (id === 'contratos') { populateClientDropdown('doc-cliente'); }
+  else if (id === 'produtos') renderProdutos();
+  else if (id === 'licencas') renderLicencas();
   else if (id === 'configuracoes') loadConfigForm();
 }
 
@@ -2465,6 +2708,16 @@ function openModal(type) {
   document.getElementById('modal-' + type).classList.add('open');
   if (type === 'project') populateClientDropdown('proj-cliente');
   if (type === 'financial') { populateProjDropdown('fin-projeto', ''); }
+  if (type === 'licenca') {
+    populateClientDropdown('licenca-cliente');
+    populateProdutoDropdown('licenca-produto');
+    // Auto set today's date
+    const today = new Date().toISOString().split('T')[0];
+    const dataEl = document.getElementById('licenca-data');
+    if (!dataEl.value) dataEl.value = today;
+    // Auto generate code if empty
+    if (!document.getElementById('licenca-codigo').value) gerarCodigo();
+  }
 }
 
 function closeModal(type) {
@@ -2767,6 +3020,8 @@ function renderDashboard() {
   document.getElementById('ds-andamento').textContent = state.projetos.filter(p => p.status === 'andamento').length;
   document.getElementById('ds-planejamento').textContent = state.projetos.filter(p => p.status === 'planejamento').length;
   document.getElementById('ds-concluido').textContent = state.projetos.filter(p => p.status === 'concluido').length;
+  const dsLic = document.getElementById('ds-licencas');
+  if (dsLic) dsLic.textContent = state.licencas.filter(l => l.status === 'ativa').length;
 
   const mesRec = getByPeriod('esteMes').filter(t => t.tipo === 'receita').reduce((a, t) => a + t.valor, 0);
   document.getElementById('ds-receita').textContent = fmt(mesRec);
@@ -3107,7 +3362,7 @@ function importBackup(input) {
 
 function clearAllData() {
   if (!confirm('Limpar TODOS os dados? Esta ação não pode ser desfeita.')) return;
-  state.clientes = []; state.projetos = []; state.financeiro = [];
+  state.clientes = []; state.projetos = []; state.financeiro = []; state.produtos = []; state.licencas = [];
   saveState();
   renderAll();
   toast('Dados apagados.', 'error');
@@ -3143,13 +3398,332 @@ function filterTable(tbId, query, cols) {
   });
 }
 
-// ─── Render All ───────────────────────────────────────────
+// ─── Gerador de Código de Ativação ───────────────────────
+function gerarCodigo() {
+  // Gera código no formato: XXXX-XXXX-XXXX-XXXX (hex uppercase)
+  const seg = () => Math.random().toString(16).substr(2, 4).toUpperCase().padEnd(4,'0');
+  const code = `${seg()}-${seg()}-${seg()}-${seg()}`;
+  document.getElementById('licenca-codigo').value = code;
+}
+
+// ─── Produtos ─────────────────────────────────────────────
+function saveProduto(e) {
+  e.preventDefault();
+  const id = document.getElementById('produto-id').value;
+  const data = {
+    id: id || uid(),
+    nome: document.getElementById('produto-nome').value,
+    versao: document.getElementById('produto-versao').value,
+    preco: parseFloat(document.getElementById('produto-preco').value) || 0,
+    desc: document.getElementById('produto-desc').value,
+  };
+  if (id) {
+    const i = state.produtos.findIndex(p => p.id === id);
+    if (i > -1) state.produtos[i] = data;
+  } else {
+    state.produtos.push(data);
+  }
+  saveState();
+  renderProdutos();
+  closeModal('produto');
+  toast('Produto salvo!');
+}
+
+function editProduto(id) {
+  const p = state.produtos.find(p => p.id === id);
+  if (!p) return;
+  document.getElementById('produto-id').value = p.id;
+  document.getElementById('produto-nome').value = p.nome;
+  document.getElementById('produto-versao').value = p.versao || '';
+  document.getElementById('produto-preco').value = p.preco || '';
+  document.getElementById('produto-desc').value = p.desc || '';
+  document.getElementById('modal-produto-title').textContent = 'Editar Produto';
+  openModal('produto');
+}
+
+function deleteProduto(id) {
+  const licHasProduto = state.licencas.some(l => l.produtoId === id);
+  if (licHasProduto) {
+    toast('Não é possível excluir: existem licenças vinculadas a este produto.', 'error');
+    return;
+  }
+  if (!confirm('Excluir este produto?')) return;
+  state.produtos = state.produtos.filter(p => p.id !== id);
+  saveState();
+  renderProdutos();
+  toast('Produto excluído.', 'error');
+}
+
+function renderProdutos() {
+  const tb = document.getElementById('tb-produtos');
+  if (!tb) return;
+  if (!state.produtos.length) {
+    tb.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted);">
+      <i class="ph ph-package" style="font-size:32px;display:block;margin-bottom:8px;opacity:0.4;"></i>
+      Nenhum produto cadastrado. Clique em "Novo Produto" para começar.
+    </td></tr>`;
+    return;
+  }
+  tb.innerHTML = state.produtos.map(p => {
+    const licCount = state.licencas.filter(l => l.produtoId === p.id).length;
+    return `<tr>
+      <td><strong>${p.nome}</strong></td>
+      <td>${p.versao ? `<span class="badge badge-active">${p.versao}</span>` : '—'}</td>
+      <td>${fmt(p.preco)}</td>
+      <td><span style="font-weight:600;color:var(--primary-light);">${licCount}</span></td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-muted);">${p.desc || '—'}</td>
+      <td>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-ghost btn-icon" onclick="editProduto('${p.id}')" title="Editar"><i class="ph ph-pencil"></i></button>
+          <button class="btn btn-ghost btn-icon" style="color:var(--danger);" onclick="deleteProduto('${p.id}')" title="Excluir"><i class="ph ph-trash"></i></button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function populateProdutoDropdown(id) {
+  const sel = document.getElementById(id);
+  const val = sel.value;
+  sel.innerHTML = '<option value="">Selecione o produto</option>';
+  state.produtos.forEach(p => sel.add(new Option(`${p.nome}${p.versao ? ' v' + p.versao : ''}`, p.id)));
+  sel.value = val;
+}
+
+// ─── Licenças ─────────────────────────────────────────────
+function autoFillLicencaPreco() {
+  const pId = document.getElementById('licenca-produto').value;
+  if (!pId) return;
+  const p = state.produtos.find(p => p.id === pId);
+  if (p && p.preco) document.getElementById('licenca-valor').value = p.preco;
+}
+
+function saveLicenca(e) {
+  e.preventDefault();
+  const id = document.getElementById('licenca-id').value;
+  const codigo = document.getElementById('licenca-codigo').value;
+  if (!codigo) { toast('Gere um código de ativação.', 'error'); return; }
+
+  // Verificar código duplicado
+  const dup = state.licencas.find(l => l.codigo === codigo && l.id !== id);
+  if (dup) { toast('Código já existente. Gere um novo.', 'error'); return; }
+
+  const data = {
+    id: id || uid(),
+    clienteId: document.getElementById('licenca-cliente').value,
+    produtoId: document.getElementById('licenca-produto').value,
+    codigo: codigo,
+    valor: parseFloat(document.getElementById('licenca-valor').value) || 0,
+    data: document.getElementById('licenca-data').value,
+    validade: document.getElementById('licenca-validade').value,
+    status: document.getElementById('licenca-status').value,
+    obs: document.getElementById('licenca-obs').value,
+    createdAt: id ? (state.licencas.find(l => l.id === id)?.createdAt || new Date().toISOString()) : new Date().toISOString(),
+  };
+  if (id) {
+    const i = state.licencas.findIndex(l => l.id === id);
+    if (i > -1) state.licencas[i] = data;
+  } else {
+    state.licencas.push(data);
+    // Registrar como receita automaticamente
+    if (data.valor > 0) {
+      const p = state.produtos.find(p => p.id === data.produtoId);
+      const c = state.clientes.find(c => c.id === data.clienteId);
+      state.financeiro.push({
+        id: uid(),
+        desc: `Licença ${p ? p.nome : 'Software'} — ${c ? c.nome : 'Cliente'}`,
+        valor: data.valor,
+        tipo: 'receita',
+        data: data.data,
+        projetoId: '',
+        licencaId: data.id,
+      });
+    }
+  }
+  saveState();
+  renderLicencas();
+  renderDashboard();
+  closeModal('licenca');
+  toast('Licença salva!');
+}
+
+function editLicenca(id) {
+  const l = state.licencas.find(l => l.id === id);
+  if (!l) return;
+  populateClientDropdown('licenca-cliente');
+  populateProdutoDropdown('licenca-produto');
+  document.getElementById('licenca-id').value = l.id;
+  document.getElementById('licenca-cliente').value = l.clienteId;
+  document.getElementById('licenca-produto').value = l.produtoId;
+  document.getElementById('licenca-codigo').value = l.codigo;
+  document.getElementById('licenca-valor').value = l.valor;
+  document.getElementById('licenca-data').value = l.data;
+  document.getElementById('licenca-validade').value = l.validade;
+  document.getElementById('licenca-status').value = l.status;
+  document.getElementById('licenca-obs').value = l.obs || '';
+  document.getElementById('modal-licenca-title').textContent = 'Editar Licença';
+  document.getElementById('modal-licenca').classList.add('open');
+}
+
+function deleteLicenca(id) {
+  if (!confirm('Excluir esta licença?')) return;
+  state.licencas = state.licencas.filter(l => l.id !== id);
+  saveState();
+  renderLicencas();
+  renderDashboard();
+  toast('Licença excluída.', 'error');
+}
+
+function revogarLicenca(id) {
+  if (!confirm('Revogar esta licença? O cliente perderá o acesso.')) return;
+  const i = state.licencas.findIndex(l => l.id === id);
+  if (i > -1) { state.licencas[i].status = 'revogada'; saveState(); renderLicencas(); toast('Licença revogada.', 'error'); }
+}
+
+function ativarLicenca(id) {
+  const i = state.licencas.findIndex(l => l.id === id);
+  if (i > -1) { state.licencas[i].status = 'ativa'; saveState(); renderLicencas(); toast('Licença ativada!'); }
+}
+
+function filterLicencasByStatus(status) {
+  const rows = document.querySelectorAll('#tb-licencas tr');
+  rows.forEach(r => {
+    if (!status) { r.style.display = ''; return; }
+    const statusCell = r.querySelector('td:nth-child(6)');
+    r.style.display = (statusCell && statusCell.textContent.toLowerCase().includes(status)) ? '' : 'none';
+  });
+}
+
+function renderLicencas() {
+  const tb = document.getElementById('tb-licencas');
+  if (!tb) return;
+
+  // Stats
+  const total = state.licencas.length;
+  const ativas = state.licencas.filter(l => l.status === 'ativa').length;
+  const pendentes = state.licencas.filter(l => l.status === 'pendente').length;
+  const receita = state.licencas.reduce((s, l) => s + (l.valor || 0), 0);
+  const elTotal = document.getElementById('lic-total'); if (elTotal) elTotal.textContent = total;
+  const elAtivas = document.getElementById('lic-ativas'); if (elAtivas) elAtivas.textContent = ativas;
+  const elPend = document.getElementById('lic-pendentes'); if (elPend) elPend.textContent = pendentes;
+  const elRec = document.getElementById('lic-receita'); if (elRec) elRec.textContent = fmt(receita);
+
+  if (!state.licencas.length) {
+    tb.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-muted);">
+      <i class="ph ph-key" style="font-size:32px;display:block;margin-bottom:8px;opacity:0.4;"></i>
+      Nenhuma licença registrada. Clique em "Nova Venda de Licença".
+    </td></tr>`;
+    return;
+  }
+
+  const statusBadge = s => {
+    if (s === 'ativa') return `<span class="badge badge-done"><i class="ph ph-check-circle"></i> Ativa</span>`;
+    if (s === 'pendente') return `<span class="badge badge-planning"><i class="ph ph-clock"></i> Pendente</span>`;
+    return `<span class="badge badge-cancelled"><i class="ph ph-x-circle"></i> Revogada</span>`;
+  };
+
+  tb.innerHTML = [...state.licencas].reverse().map(l => {
+    const c = state.clientes.find(c => c.id === l.clienteId);
+    const p = state.produtos.find(p => p.id === l.produtoId);
+    return `<tr>
+      <td>${c ? c.nome : '<span style="color:var(--text-muted);">—</span>'}</td>
+      <td>${p ? p.nome : '<span style="color:var(--text-muted);">—</span>'}</td>
+      <td><code style="font-family:var(--font-mono);font-size:12px;letter-spacing:1px;background:var(--bg-input);padding:3px 8px;border-radius:5px;">${l.codigo}</code></td>
+      <td>${fmtDate(l.data)}</td>
+      <td>${fmt(l.valor)}</td>
+      <td>${statusBadge(l.status)}</td>
+      <td>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;">
+          <button class="btn btn-ghost btn-icon" onclick="abrirEnvioEmail('${l.id}')" title="Enviar código por e-mail"><i class="ph ph-envelope-simple" style="color:var(--primary-light);"></i></button>
+          <button class="btn btn-ghost btn-icon" onclick="copiarCodigo('${l.codigo}')" title="Copiar código"><i class="ph ph-copy"></i></button>
+          <button class="btn btn-ghost btn-icon" onclick="editLicenca('${l.id}')" title="Editar"><i class="ph ph-pencil"></i></button>
+          ${l.status === 'ativa' ? `<button class="btn btn-ghost btn-icon" onclick="revogarLicenca('${l.id}')" title="Revogar" style="color:var(--danger);"><i class="ph ph-prohibit"></i></button>` : ''}
+          ${l.status !== 'ativa' ? `<button class="btn btn-ghost btn-icon" onclick="ativarLicenca('${l.id}')" title="Ativar" style="color:var(--success);"><i class="ph ph-check-circle"></i></button>` : ''}
+          <button class="btn btn-ghost btn-icon" onclick="deleteLicenca('${l.id}')" title="Excluir" style="color:var(--danger);"><i class="ph ph-trash"></i></button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function copiarCodigo(codigo) {
+  navigator.clipboard.writeText(codigo).then(() => toast('Código copiado!'));
+}
+
+// ─── Envio do Código de Ativação ──────────────────────────
+function abrirEnvioEmail(licencaId) {
+  const l = state.licencas.find(l => l.id === licencaId);
+  if (!l) return;
+  const c = state.clientes.find(c => c.id === l.clienteId);
+  const p = state.produtos.find(p => p.id === l.produtoId);
+  const e = state.empresa;
+
+  const nomeCliente = c ? c.nome : 'Cliente';
+  const emailCliente = c ? c.email : '';
+  const nomeProduto = p ? p.nome + (p.versao ? ' v' + p.versao : '') : 'Software';
+  const remetente = e.nome || e.razao || 'Desenvolvedor';
+  const validade = { vitalicia: 'Vitalícia (sem prazo de expiração)', '1ano': '1 Ano', '2anos': '2 Anos', mensal: 'Mensal' }[l.validade] || 'Vitalícia';
+
+  const assunto = `Seu Código de Ativação — ${nomeProduto}`;
+  const corpo = `Olá, ${nomeCliente}!
+
+Aqui está o seu código de ativação para o sistema ${nomeProduto}:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  CÓDIGO DE ATIVAÇÃO:  ${l.codigo}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚠️  IMPORTANTE — LEIA COM ATENÇÃO:
+
+• Este código é PESSOAL E INTRANSFERÍVEL.
+• Ele é vinculado exclusivamente à máquina onde for ativado pela primeira vez.
+• Não compartilhe este código com terceiros.
+• Em caso de troca de equipamento, entre em contato conosco.
+• Validade da licença: ${validade}
+
+Data da compra: ${fmtDate(l.data)}
+Produto: ${nomeProduto}
+
+Caso tenha alguma dúvida, estou à disposição.
+
+Atenciosamente,
+${remetente}${e.doc ? '\nCPF/CNPJ: ' + e.doc : ''}`;
+
+  document.getElementById('envio-para').value = emailCliente ? `${nomeCliente} <${emailCliente}>` : nomeCliente;
+  document.getElementById('envio-assunto').value = assunto;
+  document.getElementById('envio-corpo').value = corpo;
+
+  // Guardar dados para uso nos botões
+  document.getElementById('modal-enviar-codigo').dataset.email = emailCliente;
+  document.getElementById('modal-enviar-codigo').dataset.assunto = encodeURIComponent(assunto);
+  document.getElementById('modal-enviar-codigo').dataset.corpo = encodeURIComponent(corpo);
+
+  document.getElementById('modal-enviar-codigo').classList.add('open');
+}
+
+function copiarEmailCompleto() {
+  const corpo = document.getElementById('envio-corpo').value;
+  navigator.clipboard.writeText(corpo).then(() => toast('Mensagem copiada!'));
+}
+
+function abrirEmailCliente() {
+  const modal = document.getElementById('modal-enviar-codigo');
+  const email = modal.dataset.email;
+  const assunto = modal.dataset.assunto;
+  const corpo = modal.dataset.corpo;
+  const mailto = `mailto:${email}?subject=${assunto}&body=${corpo}`;
+  window.open(mailto, '_blank');
+}
+
+
 function renderAll() {
   renderDashboard();
   renderClientes();
   renderProjetos();
   renderFin('esteMes');
   renderKanban();
+  renderProdutos();
+  renderLicencas();
   populateClientDropdown('doc-cliente');
   loadConfigForm();
   // Init FAB for current page
@@ -3190,6 +3764,8 @@ async function init() {
   if (saved) {
     state = { ...state, ...saved };
     if (!state.auth) state.auth = { user: 'admin', pass: '1234' };
+    if (!state.produtos) state.produtos = [];
+    if (!state.licencas) state.licencas = [];
   }
   // Restore saved theme
   const savedTheme = localStorage.getItem('gestorpro_theme');
