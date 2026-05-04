@@ -1849,7 +1849,7 @@ tbody tr:last-child td { border-bottom: none; }
           </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>Nome</th><th>E-mail</th><th>Telefone</th><th>Projetos</th><th></th></tr></thead>
+              <thead><tr><th>Nome</th><th>E-mail</th><th>Telefone</th><th>Projetos</th><th>Licenças</th><th></th></tr></thead>
               <tbody id="tb-clientes"></tbody>
             </table>
           </div>
@@ -2226,8 +2226,8 @@ tbody tr:last-child td { border-bottom: none; }
         <input type="text" id="client-nome" placeholder="João Silva" required>
       </div>
       <div class="form-group">
-        <label>E-mail *</label>
-        <input type="email" id="client-email" placeholder="joao@email.com" required>
+        <label>E-mail</label>
+        <input type="email" id="client-email" placeholder="joao@email.com">
       </div>
       <div class="form-group">
         <label>Telefone</label>
@@ -2236,6 +2236,10 @@ tbody tr:last-child td { border-bottom: none; }
       <div class="form-group">
         <label>CPF / CNPJ</label>
         <input type="text" id="client-doc" placeholder="000.000.000-00">
+      </div>
+      <div class="form-group">
+        <label>CEP</label>
+        <input type="text" id="client-cep" placeholder="57000-000" maxlength="9">
       </div>
       <div class="form-footer">
         <button type="button" class="btn btn-secondary" onclick="closeModal('client')">Cancelar</button>
@@ -2462,7 +2466,7 @@ tbody tr:last-child td { border-bottom: none; }
 
 <!-- Enviar Código Modal -->
 <div class="modal-overlay" id="modal-enviar-codigo">
-  <div class="modal-box" style="max-width:600px;">
+  <div class="modal-box" style="max-width:620px;">
     <div class="modal-header">
       <span class="modal-title">Enviar Código de Ativação</span>
       <button class="modal-close" onclick="closeModal('enviar-codigo')"><i class="ph ph-x"></i></button>
@@ -2473,27 +2477,96 @@ tbody tr:last-child td { border-bottom: none; }
         <span style="font-size:13px;color:var(--text-muted);">Este código é <strong style="color:var(--text);">pessoal e intransferível</strong> — vinculado a uma única máquina. Não deve ser compartilhado ou repassado a terceiros.</span>
       </div>
 
-      <div class="form-group" style="margin-bottom:14px;">
-        <label>Para</label>
-        <input type="text" id="envio-para" readonly style="background:var(--bg-input);">
-      </div>
-      <div class="form-group" style="margin-bottom:14px;">
-        <label>Assunto</label>
-        <input type="text" id="envio-assunto" style="background:var(--bg-input);">
-      </div>
-      <div class="form-group" style="margin-bottom:18px;">
-        <label>Corpo do E-mail</label>
-        <textarea id="envio-corpo" style="min-height:220px;font-family:var(--font-mono);font-size:12px;line-height:1.7;"></textarea>
-      </div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
-        <button class="btn btn-secondary" onclick="closeModal('enviar-codigo')">Fechar</button>
-        <button class="btn btn-ghost" onclick="copiarEmailCompleto()">
-          <i class="ph ph-copy"></i> Copiar Mensagem
+      <!-- Tabs de canal -->
+      <div style="display:flex;gap:0;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;margin-bottom:18px;">
+        <button id="tab-email-btn" onclick="switchEnvioTab('email')" style="flex:1;padding:9px 0;border:none;cursor:pointer;font-family:var(--font);font-size:13px;font-weight:600;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;gap:6px;">
+          <i class="ph ph-envelope-simple"></i> E-mail
         </button>
-        <button class="btn btn-primary" onclick="abrirEmailCliente()">
-          <i class="ph ph-envelope-simple"></i> Abrir no E-mail
+        <button id="tab-whatsapp-btn" onclick="switchEnvioTab('whatsapp')" style="flex:1;padding:9px 0;border:none;cursor:pointer;font-family:var(--font);font-size:13px;font-weight:600;background:var(--bg-input);color:var(--text-muted);display:flex;align-items:center;justify-content:center;gap:6px;">
+          <i class="ph ph-whatsapp-logo"></i> WhatsApp
         </button>
       </div>
+
+      <!-- Painel E-mail -->
+      <div id="painel-email">
+        <div class="form-group" style="margin-bottom:14px;">
+          <label>Para</label>
+          <input type="text" id="envio-para" readonly style="background:var(--bg-input);">
+        </div>
+        <div class="form-group" style="margin-bottom:14px;">
+          <label>Assunto</label>
+          <input type="text" id="envio-assunto">
+        </div>
+        <div class="form-group" style="margin-bottom:18px;">
+          <label>Corpo do E-mail</label>
+          <textarea id="envio-corpo" style="min-height:200px;font-family:var(--font-mono);font-size:12px;line-height:1.7;"></textarea>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
+          <button class="btn btn-secondary" onclick="closeModal('enviar-codigo')">Fechar</button>
+          <button class="btn btn-ghost" onclick="copiarEmailCompleto()"><i class="ph ph-copy"></i> Copiar</button>
+          <button class="btn btn-primary" onclick="abrirEmailCliente()"><i class="ph ph-envelope-simple"></i> Abrir no E-mail</button>
+        </div>
+      </div>
+
+      <!-- Painel WhatsApp -->
+      <div id="painel-whatsapp" style="display:none;">
+        <div class="form-group" style="margin-bottom:14px;">
+          <label>Número do WhatsApp (com DDD)</label>
+          <div style="display:flex;gap:8px;">
+            <input type="tel" id="envio-whatsapp" placeholder="(82) 99999-0000" style="flex:1;">
+            <button class="btn btn-secondary" onclick="usarTelefoneCliente()" title="Usar telefone do cadastro" style="flex-shrink:0;white-space:nowrap;">
+              <i class="ph ph-address-book"></i> Do cadastro
+            </button>
+          </div>
+          <span style="font-size:11px;color:var(--text-muted);margin-top:4px;">Será aberto o WhatsApp Web ou app com a mensagem pronta.</span>
+        </div>
+        <div class="form-group" style="margin-bottom:18px;">
+          <label>Mensagem WhatsApp</label>
+          <textarea id="envio-whatsapp-msg" style="min-height:200px;font-family:var(--font-mono);font-size:12px;line-height:1.7;"></textarea>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
+          <button class="btn btn-secondary" onclick="closeModal('enviar-codigo')">Fechar</button>
+          <button class="btn btn-ghost" onclick="copiarMsgWhatsApp()"><i class="ph ph-copy"></i> Copiar</button>
+          <button class="btn btn-success" onclick="abrirWhatsApp()" style="background:#25d366;">
+            <i class="ph ph-whatsapp-logo"></i> Abrir no WhatsApp
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Histórico do Cliente -->
+<div class="modal-overlay" id="modal-historico-cliente">
+  <div class="modal-box" style="max-width:780px;max-height:85vh;overflow-y:auto;">
+    <div class="modal-header" style="position:sticky;top:0;background:var(--bg-card);z-index:1;border-radius:var(--radius) var(--radius) 0 0;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div id="hist-avatar" style="width:38px;height:38px;background:linear-gradient(135deg,var(--primary),#a78bfa);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;font-weight:700;flex-shrink:0;">C</div>
+        <div>
+          <span class="modal-title" id="hist-nome">Histórico do Cliente</span>
+          <div id="hist-contato" style="font-size:12px;color:var(--text-muted);margin-top:1px;"></div>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeModal('historico-cliente')"><i class="ph ph-x"></i></button>
+    </div>
+
+    <!-- Stats rápidos -->
+    <div id="hist-stats" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;padding:20px 24px 0;"></div>
+
+    <!-- Licenças -->
+    <div style="padding:20px 24px 0;">
+      <div style="font-size:14px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+        <i class="ph ph-key" style="color:var(--primary-light);"></i> Licenças de Software
+      </div>
+      <div id="hist-licencas-content"></div>
+    </div>
+
+    <!-- Projetos -->
+    <div style="padding:16px 24px 20px;">
+      <div style="font-size:14px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+        <i class="ph ph-kanban" style="color:var(--success);"></i> Projetos
+      </div>
+      <div id="hist-projetos-content"></div>
     </div>
   </div>
 </div>
@@ -2745,6 +2818,7 @@ function saveClient(e) {
     email: document.getElementById('client-email').value,
     tel: document.getElementById('client-tel').value,
     doc: document.getElementById('client-doc').value,
+    cep: document.getElementById('client-cep').value,
   };
   if (id) {
     const i = state.clientes.findIndex(c => c.id === id);
@@ -2762,19 +2836,22 @@ function renderClientes() {
   const tb = document.getElementById('tb-clientes');
   tb.innerHTML = '';
   if (!state.clientes.length) {
-    tb.innerHTML = `<tr><td colspan="5"><div class="empty-state"><i class="ph ph-users-three"></i><p>Nenhum cliente cadastrado.</p></div></td></tr>`;
+    tb.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="ph ph-users-three"></i><p>Nenhum cliente cadastrado.</p></div></td></tr>`;
     return;
   }
   state.clientes.forEach(c => {
     const projCount = state.projetos.filter(p => p.clienteId === c.id).length;
+    const licCount = state.licencas.filter(l => l.clienteId === c.id).length;
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td><strong>${c.nome}</strong></td>
       <td>${c.email}</td>
       <td>${c.tel || '—'}</td>
       <td><span class="badge badge-active">${projCount} projeto${projCount !== 1 ? 's' : ''}</span></td>
+      <td>${licCount > 0 ? `<span class="badge badge-done"><i class="ph ph-key"></i> ${licCount} licença${licCount !== 1 ? 's' : ''}</span>` : '<span style="color:var(--text-muted);font-size:12px;">—</span>'}</td>
       <td>
         <div class="table-actions">
+          <button class="act-btn" onclick="abrirHistoricoCliente('${c.id}')" title="Histórico" style="color:var(--primary-light);"><i class="ph ph-clock-counter-clockwise"></i></button>
           <button class="act-btn act-edit" onclick="editClient('${c.id}')"><i class="ph ph-pencil-simple"></i></button>
           <button class="act-btn act-delete" onclick="deleteClient('${c.id}')"><i class="ph ph-trash"></i></button>
         </div>
@@ -2791,6 +2868,7 @@ function editClient(id) {
   document.getElementById('client-email').value = c.email;
   document.getElementById('client-tel').value = c.tel || '';
   document.getElementById('client-doc').value = c.doc || '';
+  document.getElementById('client-cep').value = c.cep || '';
   document.getElementById('modal-client-title').textContent = 'Editar Cliente';
   openModal('client');
 }
@@ -3651,6 +3729,19 @@ function copiarCodigo(codigo) {
 }
 
 // ─── Envio do Código de Ativação ──────────────────────────
+// ─── Envio do Código de Ativação ──────────────────────────
+let _envioTelCliente = '';
+
+function switchEnvioTab(tab) {
+  const isEmail = tab === 'email';
+  document.getElementById('painel-email').style.display = isEmail ? '' : 'none';
+  document.getElementById('painel-whatsapp').style.display = isEmail ? 'none' : '';
+  document.getElementById('tab-email-btn').style.background = isEmail ? 'var(--primary)' : 'var(--bg-input)';
+  document.getElementById('tab-email-btn').style.color = isEmail ? '#fff' : 'var(--text-muted)';
+  document.getElementById('tab-whatsapp-btn').style.background = isEmail ? 'var(--bg-input)' : '#25d366';
+  document.getElementById('tab-whatsapp-btn').style.color = isEmail ? 'var(--text-muted)' : '#fff';
+}
+
 function abrirEnvioEmail(licencaId) {
   const l = state.licencas.find(l => l.id === licencaId);
   if (!l) return;
@@ -3660,12 +3751,15 @@ function abrirEnvioEmail(licencaId) {
 
   const nomeCliente = c ? c.nome : 'Cliente';
   const emailCliente = c ? c.email : '';
+  const telCliente = c ? (c.tel || '') : '';
   const nomeProduto = p ? p.nome + (p.versao ? ' v' + p.versao : '') : 'Software';
   const remetente = e.nome || e.razao || 'Desenvolvedor';
   const validade = { vitalicia: 'Vitalícia (sem prazo de expiração)', '1ano': '1 Ano', '2anos': '2 Anos', mensal: 'Mensal' }[l.validade] || 'Vitalícia';
 
+  _envioTelCliente = telCliente;
+
   const assunto = `Seu Código de Ativação — ${nomeProduto}`;
-  const corpo = `Olá, ${nomeCliente}!
+  const corpoEmail = `Olá, ${nomeCliente}!
 
 Aqui está o seu código de ativação para o sistema ${nomeProduto}:
 
@@ -3689,21 +3783,56 @@ Caso tenha alguma dúvida, estou à disposição.
 Atenciosamente,
 ${remetente}${e.doc ? '\nCPF/CNPJ: ' + e.doc : ''}`;
 
+  const msgWhatsApp = `Olá, *${nomeCliente}*! 👋
+
+Segue seu código de ativação para o sistema *${nomeProduto}*:
+
+🔑 *CÓDIGO DE ATIVAÇÃO:*
+\`${l.codigo}\`
+
+⚠️ *ATENÇÃO:*
+• Este código é *pessoal e intransferível*
+• Vinculado à sua máquina no primeiro uso
+• Não repasse a terceiros
+• Validade: *${validade}*
+
+📅 Data da compra: ${fmtDate(l.data)}
+
+Em caso de dúvida, pode falar comigo! 😊
+— ${remetente}`;
+
   document.getElementById('envio-para').value = emailCliente ? `${nomeCliente} <${emailCliente}>` : nomeCliente;
   document.getElementById('envio-assunto').value = assunto;
-  document.getElementById('envio-corpo').value = corpo;
+  document.getElementById('envio-corpo').value = corpoEmail;
+  document.getElementById('envio-whatsapp-msg').value = msgWhatsApp;
+  if (telCliente) document.getElementById('envio-whatsapp').value = telCliente;
 
-  // Guardar dados para uso nos botões
-  document.getElementById('modal-enviar-codigo').dataset.email = emailCliente;
-  document.getElementById('modal-enviar-codigo').dataset.assunto = encodeURIComponent(assunto);
-  document.getElementById('modal-enviar-codigo').dataset.corpo = encodeURIComponent(corpo);
+  const modal = document.getElementById('modal-enviar-codigo');
+  modal.dataset.email = emailCliente;
+  modal.dataset.assunto = encodeURIComponent(assunto);
+  modal.dataset.corpo = encodeURIComponent(corpoEmail);
 
-  document.getElementById('modal-enviar-codigo').classList.add('open');
+  switchEnvioTab('email');
+  modal.classList.add('open');
+}
+
+function usarTelefoneCliente() {
+  if (_envioTelCliente) {
+    document.getElementById('envio-whatsapp').value = _envioTelCliente;
+    toast('Telefone preenchido!');
+  } else {
+    toast('Cliente sem telefone cadastrado.', 'error');
+  }
 }
 
 function copiarEmailCompleto() {
   const corpo = document.getElementById('envio-corpo').value;
   navigator.clipboard.writeText(corpo).then(() => toast('Mensagem copiada!'));
+}
+
+function copiarMsgWhatsApp() {
+  const msg = document.getElementById('envio-whatsapp-msg').value;
+  navigator.clipboard.writeText(msg).then(() => toast('Mensagem copiada!'));
 }
 
 function abrirEmailCliente() {
@@ -3715,6 +3844,114 @@ function abrirEmailCliente() {
   window.open(mailto, '_blank');
 }
 
+function abrirWhatsApp() {
+  let tel = document.getElementById('envio-whatsapp').value.trim();
+  if (!tel) { toast('Informe o número do WhatsApp.', 'error'); return; }
+  // Normaliza para só números, adiciona 55 se não tiver código de país
+  tel = tel.replace(/\D/g, '');
+  if (tel.length <= 11) tel = '55' + tel;
+  const msg = document.getElementById('envio-whatsapp-msg').value;
+  const url = `https://wa.me/${tel}?text=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank');
+}
+
+// ─── Histórico do Cliente ─────────────────────────────────
+function abrirHistoricoCliente(clienteId) {
+  const c = state.clientes.find(c => c.id === clienteId);
+  if (!c) return;
+
+  const licencas = state.licencas.filter(l => l.clienteId === clienteId);
+  const projetos = state.projetos.filter(p => p.clienteId === clienteId);
+  const totalGasto = licencas.reduce((s, l) => s + (l.valor || 0), 0)
+    + projetos.reduce((s, p) => s + (p.valor || 0), 0);
+
+  // Header
+  document.getElementById('hist-avatar').textContent = c.nome.charAt(0).toUpperCase();
+  document.getElementById('hist-nome').textContent = c.nome;
+  document.getElementById('hist-contato').innerHTML = [
+    c.email ? `<i class="ph ph-envelope-simple"></i> ${c.email}` : '',
+    c.tel ? `<i class="ph ph-phone"></i> ${c.tel}` : '',
+    c.doc ? `<i class="ph ph-identification-card"></i> ${c.doc}` : '',
+    c.cep ? `<i class="ph ph-map-pin"></i> CEP ${c.cep}` : '',
+  ].filter(Boolean).join('&nbsp;&nbsp;·&nbsp;&nbsp;');
+
+  // Stats
+  document.getElementById('hist-stats').innerHTML = `
+    <div style="background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;">
+      <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Licenças</div>
+      <div style="font-size:24px;font-weight:800;font-family:var(--font-mono);color:var(--primary-light);">${licencas.length}</div>
+    </div>
+    <div style="background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;">
+      <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Ativas</div>
+      <div style="font-size:24px;font-weight:800;font-family:var(--font-mono);color:var(--success);">${licencas.filter(l => l.status === 'ativa').length}</div>
+    </div>
+    <div style="background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;">
+      <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Projetos</div>
+      <div style="font-size:24px;font-weight:800;font-family:var(--font-mono);color:var(--warning);">${projetos.length}</div>
+    </div>
+    <div style="background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;">
+      <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Total Gasto</div>
+      <div style="font-size:18px;font-weight:800;font-family:var(--font-mono);color:var(--text);">${fmt(totalGasto)}</div>
+    </div>`;
+
+  // Licenças
+  const licEl = document.getElementById('hist-licencas-content');
+  if (!licencas.length) {
+    licEl.innerHTML = `<div style="text-align:center;padding:24px;color:var(--text-muted);background:var(--bg-input);border-radius:var(--radius-sm);">
+      <i class="ph ph-key" style="font-size:28px;display:block;margin-bottom:6px;opacity:.4;"></i>Nenhuma licença adquirida.
+    </div>`;
+  } else {
+    licEl.innerHTML = licencas.map(l => {
+      const p = state.produtos.find(p => p.id === l.produtoId);
+      const statusColor = { ativa: 'var(--success)', pendente: 'var(--warning)', revogada: 'var(--danger)' }[l.status];
+      const statusLabel = { ativa: 'Ativa', pendente: 'Pendente', revogada: 'Revogada' }[l.status];
+      return `<div style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:10px;background:var(--bg-input);display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+        <div style="width:40px;height:40px;background:var(--primary-dim);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="ph ph-package" style="font-size:20px;color:var(--primary-light);"></i>
+        </div>
+        <div style="flex:1;min-width:180px;">
+          <div style="font-weight:700;font-size:14px;">${p ? p.nome : 'Produto Removido'}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${p && p.versao ? 'v' + p.versao + ' · ' : ''}Compra: ${fmtDate(l.data)}</div>
+          <code style="font-family:var(--font-mono);font-size:11px;letter-spacing:1px;background:var(--bg);padding:2px 7px;border-radius:4px;border:1px solid var(--border);display:inline-block;margin-top:5px;">${l.codigo}</code>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-size:13px;font-weight:700;color:${statusColor};margin-bottom:4px;">${statusLabel}</div>
+          <div style="font-size:13px;font-weight:600;">${fmt(l.valor)}</div>
+          <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;margin-top:6px;" onclick="abrirEnvioEmail('${l.id}');closeModal('historico-cliente');">
+            <i class="ph ph-paper-plane-tilt"></i> Reenviar
+          </button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Projetos
+  const projEl = document.getElementById('hist-projetos-content');
+  if (!projetos.length) {
+    projEl.innerHTML = `<div style="text-align:center;padding:24px;color:var(--text-muted);background:var(--bg-input);border-radius:var(--radius-sm);">
+      <i class="ph ph-kanban" style="font-size:28px;display:block;margin-bottom:6px;opacity:.4;"></i>Nenhum projeto vinculado.
+    </div>`;
+  } else {
+    const statusColors = { planejamento: 'var(--warning)', andamento: 'var(--primary-light)', concluido: 'var(--success)', cancelado: 'var(--danger)' };
+    const statusLabels = { planejamento: 'Planejamento', andamento: 'Em Andamento', concluido: 'Concluído', cancelado: 'Cancelado' };
+    projEl.innerHTML = projetos.map(p => `
+      <div style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:10px;background:var(--bg-input);display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+        <div style="width:40px;height:40px;background:var(--success-dim);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="ph ph-kanban" style="font-size:20px;color:var(--success);"></i>
+        </div>
+        <div style="flex:1;min-width:160px;">
+          <div style="font-weight:700;font-size:14px;">${p.nome}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${p.fase || ''} · ${fmtDate(p.dataInicio)}${p.dataFim ? ' → ' + fmtDate(p.dataFim) : ''}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-size:12px;font-weight:600;color:${statusColors[p.status] || 'var(--text-muted)'};">${statusLabels[p.status] || p.status}</div>
+          <div style="font-size:13px;font-weight:700;margin-top:2px;">${fmt(p.valor)}</div>
+        </div>
+      </div>`).join('');
+  }
+
+  document.getElementById('modal-historico-cliente').classList.add('open');
+}
 
 function renderAll() {
   renderDashboard();
