@@ -1565,6 +1565,45 @@ tbody tr:last-child td { border-bottom: none; }
   padding-left: 36px;
 }
 
+/* ─── LICENSE ALERT CARDS ───────────────────── */
+.alerta-licenca-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(245,158,11,0.25);
+  background: rgba(245,158,11,0.06);
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.alerta-licenca-card:last-child { margin-bottom: 0; }
+.alerta-licenca-card.urgente {
+  border-color: rgba(239,68,68,0.35);
+  background: rgba(239,68,68,0.07);
+}
+.alerta-licenca-avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--warning), #f97316);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 700; color: #0c0e14;
+  flex-shrink: 0;
+}
+.alerta-licenca-card.urgente .alerta-licenca-avatar {
+  background: linear-gradient(135deg, var(--danger), #f97316);
+  color: #fff;
+}
+.alerta-licenca-info { flex: 1; min-width: 160px; }
+.alerta-licenca-nome { font-size: 14px; font-weight: 700; }
+.alerta-licenca-detalhe { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.alerta-licenca-prazo {
+  font-size: 12px; font-weight: 700;
+  color: var(--warning);
+  white-space: nowrap;
+}
+.alerta-licenca-card.urgente .alerta-licenca-prazo { color: var(--danger); }
+
 /* ─── PRINT ──────────────────────────────────── */
 @media print {
   .sidebar, .main .topbar, .action-row, .btn, #app > * { display: none !important; }
@@ -1790,6 +1829,19 @@ tbody tr:last-child td { border-bottom: none; }
             <div class="stat-value" id="ds-licencas">0</div>
             <div class="stat-label">Licenças Ativas</div>
             <div class="stat-footer"><i class="ph ph-arrow-right"></i> Ver licenças</div>
+          </div>
+        </div>
+
+        <div id="card-alertas-licencas" style="display:none;margin-bottom:20px;">
+          <div class="card" style="border-color:rgba(245,158,11,0.4);background:linear-gradient(135deg,var(--bg-card) 0%,rgba(245,158,11,0.04) 100%);">
+            <div class="card-header" style="margin-bottom:14px;">
+              <span class="card-title" style="display:flex;align-items:center;gap:8px;">
+                <i class="ph ph-warning" style="color:var(--warning);font-size:18px;"></i>
+                Licenças a Vencer
+              </span>
+              <button class="btn btn-ghost btn-icon" onclick="showPage('licencas')" title="Ver todas as licenças"><i class="ph ph-arrow-right"></i></button>
+            </div>
+            <div id="lista-alertas-licencas"></div>
           </div>
         </div>
 
@@ -2223,7 +2275,7 @@ tbody tr:last-child td { border-bottom: none; }
           </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>Cliente</th><th>Produto</th><th>Código de Ativação</th><th>Data Venda</th><th>Valor</th><th>Status</th><th></th></tr></thead>
+              <thead><tr><th>Cliente</th><th>Produto</th><th>Código de Ativação</th><th>Data Venda</th><th>Expira em</th><th>Valor</th><th>Status</th><th></th></tr></thead>
               <tbody id="tb-licencas"></tbody>
             </table>
           </div>
@@ -2461,12 +2513,20 @@ tbody tr:last-child td { border-bottom: none; }
       </div>
       <div class="form-group">
         <label>Validade da Licença</label>
-        <select id="licenca-validade">
+        <select id="licenca-validade" onchange="toggleValidadeCustom()">
           <option value="vitalicia">Vitalícia</option>
+          <option value="30dias">30 Dias</option>
+          <option value="60dias">60 Dias</option>
+          <option value="90dias">90 Dias</option>
+          <option value="6meses">6 Meses</option>
           <option value="1ano">1 Ano</option>
           <option value="2anos">2 Anos</option>
-          <option value="mensal">Mensal</option>
+          <option value="custom">Personalizado...</option>
         </select>
+      </div>
+      <div class="form-group" id="licenca-expira-group" style="display:none;">
+        <label>Data de Expiração *</label>
+        <input type="date" id="licenca-expira">
       </div>
       <div class="form-group">
         <label>Status</label>
@@ -3133,6 +3193,52 @@ function renderDashboard() {
   const dsLic = document.getElementById('ds-licencas');
   if (dsLic) dsLic.textContent = state.licencas.filter(l => l.status === 'ativa').length;
 
+  // ── Alertas de licenças a vencer ──────────────────────
+  const aVencer = getLicencasAVencer(2);
+  const cardAlertas = document.getElementById('card-alertas-licencas');
+  const listaAlertas = document.getElementById('lista-alertas-licencas');
+  if (cardAlertas && listaAlertas) {
+    if (aVencer.length) {
+      cardAlertas.style.display = '';
+      const validadeLabel = { '30dias':'30 Dias','60dias':'60 Dias','90dias':'90 Dias','6meses':'6 Meses','1ano':'1 Ano','2anos':'2 Anos','custom':'Personalizada','vitalicia':'Vitalícia' };
+      listaAlertas.innerHTML = aVencer.map(l => {
+        const c = state.clientes.find(c => c.id === l.clienteId);
+        const p = state.produtos.find(p => p.id === l.produtoId);
+        const dias = diasParaVencer(l.dataExpira);
+        const urgente = dias === 0;
+        const prazoTxt = dias === 0 ? '⚠️ Vence HOJE!' : dias === 1 ? '⚠️ Vence amanhã' : `Vence em ${dias} dias`;
+        const nome = c ? c.nome : 'Cliente';
+        const inicial = nome.charAt(0).toUpperCase();
+        const tel = c ? (c.tel || '') : '';
+        const nomeProduto = p ? p.nome : 'Produto';
+        const remetente = state.empresa.nome || state.empresa.razao || 'Desenvolvedor';
+
+        const msgWpp = encodeURIComponent(`Olá, *${nome}*! 👋\n\nPassando para avisar que sua licença do sistema *${nomeProduto}* está prestes a vencer em *${fmtDate(l.dataExpira)}*.\n\nPara garantir a continuidade do seu acesso sem interrupções, entre em contato para renovação.\n\nAtenciosamente,\n${remetente}`);
+
+        let telNorm = tel.replace(/\D/g, '');
+        if (telNorm && telNorm.length <= 11) telNorm = '55' + telNorm;
+        const wppUrl = telNorm ? `https://wa.me/${telNorm}?text=${msgWpp}` : '';
+
+        return `<div class="alerta-licenca-card ${urgente ? 'urgente' : ''}">
+          <div class="alerta-licenca-avatar">${inicial}</div>
+          <div class="alerta-licenca-info">
+            <div class="alerta-licenca-nome">${nome}</div>
+            <div class="alerta-licenca-detalhe">${nomeProduto} · Expira: ${fmtDate(l.dataExpira)}</div>
+          </div>
+          <div class="alerta-licenca-prazo">${prazoTxt}</div>
+          <div style="display:flex;gap:8px;flex-shrink:0;">
+            ${wppUrl ? `<a href="${wppUrl}" target="_blank" class="btn btn-success" style="background:#25d366;padding:7px 12px;font-size:12px;text-decoration:none;display:inline-flex;align-items:center;gap:5px;">
+              <i class="ph ph-whatsapp-logo"></i> Contatar
+            </a>` : `<span style="font-size:12px;color:var(--text-muted);">Sem WhatsApp cadastrado</span>`}
+            <button class="btn btn-ghost btn-icon" onclick="editLicenca('${l.id}')" title="Editar licença"><i class="ph ph-pencil"></i></button>
+          </div>
+        </div>`;
+      }).join('');
+    } else {
+      cardAlertas.style.display = 'none';
+    }
+  }
+
   const mesRec = getByPeriod('esteMes').filter(t => t.tipo === 'receita').reduce((a, t) => a + t.valor, 0);
   document.getElementById('ds-receita').textContent = fmt(mesRec);
 
@@ -3712,6 +3818,39 @@ function populateProdutoDropdown(id) {
 }
 
 // ─── Licenças ─────────────────────────────────────────────
+function toggleValidadeCustom() {
+  const val = document.getElementById('licenca-validade').value;
+  document.getElementById('licenca-expira-group').style.display = val === 'custom' ? '' : 'none';
+}
+
+function calcDataExpiracao(dataVenda, validade) {
+  if (!dataVenda || validade === 'vitalicia') return null;
+  const d = new Date(dataVenda + 'T12:00:00');
+  const map = { '30dias': [30,'d'], '60dias': [60,'d'], '90dias': [90,'d'], '6meses': [6,'m'], '1ano': [12,'m'], '2anos': [24,'m'] };
+  const v = map[validade];
+  if (!v) return null;
+  if (v[1] === 'd') d.setDate(d.getDate() + v[0]);
+  else d.setMonth(d.getMonth() + v[0]);
+  return d.toISOString().split('T')[0];
+}
+
+function diasParaVencer(dataExpira) {
+  if (!dataExpira) return null;
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const exp = new Date(dataExpira + 'T00:00:00');
+  return Math.round((exp - hoje) / 86400000);
+}
+
+function getLicencasAVencer(dias = 2) {
+  return state.licencas.filter(l => {
+    if (l.status !== 'ativa') return false;
+    if (!l.dataExpira) return false;
+    const d = diasParaVencer(l.dataExpira);
+    return d !== null && d >= 0 && d <= dias;
+  });
+}
+
+
 function autoFillLicencaPreco() {
   const pId = document.getElementById('licenca-produto').value;
   if (!pId) return;
@@ -3725,9 +3864,20 @@ function saveLicenca(e) {
   const codigo = document.getElementById('licenca-codigo').value;
   if (!codigo) { toast('Gere um código de ativação.', 'error'); return; }
 
-  // Verificar código duplicado
   const dup = state.licencas.find(l => l.codigo === codigo && l.id !== id);
   if (dup) { toast('Código já existente. Gere um novo.', 'error'); return; }
+
+  const validade = document.getElementById('licenca-validade').value;
+  const dataVenda = document.getElementById('licenca-data').value;
+
+  // Calcular data de expiração
+  let dataExpira = null;
+  if (validade === 'custom') {
+    dataExpira = document.getElementById('licenca-expira').value;
+    if (!dataExpira) { toast('Informe a data de expiração personalizada.', 'error'); return; }
+  } else if (validade !== 'vitalicia') {
+    dataExpira = calcDataExpiracao(dataVenda, validade);
+  }
 
   const data = {
     id: id || uid(),
@@ -3735,8 +3885,9 @@ function saveLicenca(e) {
     produtoId: document.getElementById('licenca-produto').value,
     codigo: codigo,
     valor: parseFloat(document.getElementById('licenca-valor').value) || 0,
-    data: document.getElementById('licenca-data').value,
-    validade: document.getElementById('licenca-validade').value,
+    data: dataVenda,
+    validade: validade,
+    dataExpira: dataExpira,
     status: document.getElementById('licenca-status').value,
     obs: document.getElementById('licenca-obs').value,
     createdAt: id ? (state.licencas.find(l => l.id === id)?.createdAt || new Date().toISOString()) : new Date().toISOString(),
@@ -3780,6 +3931,8 @@ function editLicenca(id) {
   document.getElementById('licenca-valor').value = l.valor;
   document.getElementById('licenca-data').value = l.data;
   document.getElementById('licenca-validade').value = l.validade;
+  document.getElementById('licenca-expira').value = l.dataExpira || '';
+  toggleValidadeCustom();
   document.getElementById('licenca-status').value = l.status;
   document.getElementById('licenca-obs').value = l.obs || '';
   document.getElementById('modal-licenca-title').textContent = 'Editar Licença';
@@ -3846,11 +3999,26 @@ function renderLicencas() {
   tb.innerHTML = [...state.licencas].reverse().map(l => {
     const c = state.clientes.find(c => c.id === l.clienteId);
     const p = state.produtos.find(p => p.id === l.produtoId);
+    const validadeLabel = { '30dias':'30 Dias','60dias':'60 Dias','90dias':'90 Dias','6meses':'6 Meses','1ano':'1 Ano','2anos':'2 Anos','custom':'Personalizada','vitalicia':'Vitalícia' };
+
+    let expiraCell = '<span style="color:var(--text-muted);font-size:12px;">Vitalícia</span>';
+    if (l.dataExpira) {
+      const dias = diasParaVencer(l.dataExpira);
+      let cor = 'var(--text-muted)';
+      let extra = '';
+      if (dias !== null && dias <= 2 && l.status === 'ativa') {
+        cor = dias === 0 ? 'var(--danger)' : 'var(--warning)';
+        extra = dias === 0 ? ' ⚠️ HOJE' : ` ⚠️ ${dias}d`;
+      }
+      expiraCell = `<span style="font-size:12px;color:${cor};font-weight:${dias !== null && dias <= 2 ? '700' : '400'};">${fmtDate(l.dataExpira)}${extra}</span>`;
+    }
+
     return `<tr>
       <td>${c ? c.nome : '<span style="color:var(--text-muted);">—</span>'}</td>
       <td>${p ? p.nome : '<span style="color:var(--text-muted);">—</span>'}</td>
       <td><code style="font-family:var(--font-mono);font-size:12px;letter-spacing:1px;background:var(--bg-input);padding:3px 8px;border-radius:5px;">${l.codigo}</code></td>
       <td>${fmtDate(l.data)}</td>
+      <td>${expiraCell}</td>
       <td>${fmt(l.valor)}</td>
       <td>${statusBadge(l.status)}</td>
       <td>
@@ -3898,7 +4066,9 @@ function abrirEnvioEmail(licencaId) {
   const nomeProduto = p ? p.nome + (p.versao ? ' v' + p.versao : '') : 'Software';
   const linkProduto = p ? (p.link || '') : '';
   const remetente = e.nome || e.razao || 'Desenvolvedor';
-  const validade = { vitalicia: 'Vitalícia (sem prazo de expiração)', '1ano': '1 Ano', '2anos': '2 Anos', mensal: 'Mensal' }[l.validade] || 'Vitalícia';
+  const validadeLabels = { vitalicia:'Vitalícia (sem prazo de expiração)', '30dias':'30 Dias', '60dias':'60 Dias', '90dias':'90 Dias', '6meses':'6 Meses', '1ano':'1 Ano', '2anos':'2 Anos', custom:'Personalizada' };
+  const validadeBase = validadeLabels[l.validade] || 'Vitalícia';
+  const validade = l.dataExpira ? `${validadeBase} · Expira em ${fmtDate(l.dataExpira)}` : validadeBase;
 
   _envioTelCliente = telCliente;
 
@@ -4064,7 +4234,7 @@ function abrirHistoricoCliente(clienteId) {
         </div>
         <div style="flex:1;min-width:180px;">
           <div style="font-weight:700;font-size:14px;">${p ? p.nome : 'Produto Removido'}</div>
-          <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${p && p.versao ? 'v' + p.versao + ' · ' : ''}Compra: ${fmtDate(l.data)}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${p && p.versao ? 'v' + p.versao + ' · ' : ''}Compra: ${fmtDate(l.data)}${l.dataExpira ? ' · Expira: ' + fmtDate(l.dataExpira) : ' · Vitalícia'}</div>
           ${p && p.link ? `<a href="${p.link}" target="_blank" style="font-size:11px;color:var(--primary-light);display:inline-flex;align-items:center;gap:3px;margin-top:4px;text-decoration:none;"><i class="ph ph-link"></i> Link de acesso</a>` : ''}
           <code style="font-family:var(--font-mono);font-size:11px;letter-spacing:1px;background:var(--bg);padding:2px 7px;border-radius:4px;border:1px solid var(--border);display:inline-block;margin-top:5px;">${l.codigo}</code>
         </div>
