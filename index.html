@@ -2106,6 +2106,32 @@ tbody tr:last-child td { border-bottom: none; }
         </div>
 
         <div class="card">
+          <div class="settings-section-title" style="display:flex;align-items:center;gap:8px;">
+            <i class="ph ph-key" style="color:var(--primary-light);"></i> JSONBin — Geração de Licenças
+          </div>
+          <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;line-height:1.6;">
+            O GestorPRO usa o <strong style="color:var(--text);">JSONBin.io</strong> para gerar um Bin ID único como código de ativação de cada licença.
+            Crie uma conta gratuita em <a href="https://jsonbin.io" target="_blank" style="color:var(--primary-light);">jsonbin.io</a>,
+            acesse <strong>API Keys</strong> e cole sua <strong>Master Key</strong> abaixo.
+          </p>
+          <div class="form-grid" style="max-width:560px;">
+            <div class="form-group full">
+              <label>Master Key do JSONBin</label>
+              <div style="display:flex;gap:8px;">
+                <input type="password" id="cfg-jsonbin-key" placeholder="$2a$10$..." style="flex:1;font-family:var(--font-mono);font-size:13px;">
+                <button class="btn btn-secondary" onclick="testarJsonBinKey()" style="flex-shrink:0;white-space:nowrap;">
+                  <i class="ph ph-plug"></i> Testar
+                </button>
+              </div>
+              <span style="font-size:11px;color:var(--text-muted);margin-top:4px;">A chave fica salva localmente no seu navegador e nunca é enviada a terceiros.</span>
+            </div>
+            <div class="form-footer" style="padding-top:12px;border-top:1px solid var(--border);">
+              <button class="btn btn-primary" onclick="saveJsonBinKey()"><i class="ph ph-floppy-disk"></i> Salvar Chave</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
           <div class="settings-section-title">Backup e Restauração</div>
           <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
             <button class="btn btn-secondary" onclick="exportBackup()"><i class="ph ph-download-simple"></i> Exportar Backup</button>
@@ -2451,14 +2477,14 @@ tbody tr:last-child td { border-bottom: none; }
         </select>
       </div>
       <div class="form-group full" id="licenca-codigo-group">
-        <label>Código de Ativação (gerado automaticamente)</label>
+        <label>Código de Ativação</label>
         <div style="display:flex;gap:8px;align-items:center;">
-          <input type="text" id="licenca-codigo" readonly style="font-family:var(--font-mono);font-size:13px;letter-spacing:1px;background:var(--bg-input);cursor:default;" placeholder="Clique em Gerar">
-          <button type="button" class="btn btn-secondary" onclick="gerarCodigo()" style="white-space:nowrap;flex-shrink:0;">
-            <i class="ph ph-arrows-clockwise"></i> Gerar
+          <input type="text" id="licenca-codigo" style="font-family:var(--font-mono);font-size:13px;letter-spacing:1px;" placeholder="Clique em Gerar ou digite manualmente">
+          <button type="button" id="btn-gerar-codigo" class="btn btn-primary" onclick="gerarCodigo()" style="white-space:nowrap;flex-shrink:0;">
+            <i class="ph ph-sparkle"></i> Gerar via JSONBin
           </button>
         </div>
-        <span style="font-size:11px;color:var(--text-muted);margin-top:4px;">O código é único, vinculado a uma máquina e intransferível.</span>
+        <span id="licenca-codigo-hint" style="font-size:11px;color:var(--text-muted);margin-top:4px;">O código é único, vinculado a uma máquina e intransferível. Configure sua Master Key do JSONBin em <strong>Configurações</strong>.</span>
       </div>
       <div class="form-group full">
         <label>Observações</label>
@@ -2796,8 +2822,6 @@ function openModal(type) {
     const today = new Date().toISOString().split('T')[0];
     const dataEl = document.getElementById('licenca-data');
     if (!dataEl.value) dataEl.value = today;
-    // Auto generate code if empty
-    if (!document.getElementById('licenca-codigo').value) gerarCodigo();
   }
 }
 
@@ -3402,6 +3426,9 @@ function loadConfigForm() {
   document.getElementById('cfg-doc').value = e.doc || '';
   document.getElementById('cfg-razao').value = e.razao || '';
   document.getElementById('cfg-fantasia').value = e.fantasia || '';
+  // JSONBin key — prefer localStorage, fall back to state
+  const jbKey = localStorage.getItem('gestorpro_jsonbin_key') || e.jsonbinKey || '$2a$10$xxIvXXIjG7A86QLIGEifv.jhyYGb3oxNTy37NWXJwY4/PDwozFjvK';
+  document.getElementById('cfg-jsonbin-key').value = jbKey;
   if (e.logo) {
     document.getElementById('logo-preview').src = e.logo;
     document.getElementById('logo-preview').style.display = '';
@@ -3484,12 +3511,108 @@ function filterTable(tbId, query, cols) {
   });
 }
 
-// ─── Gerador de Código de Ativação ───────────────────────
-function gerarCodigo() {
-  // Gera código no formato: XXXX-XXXX-XXXX-XXXX (hex uppercase)
-  const seg = () => Math.random().toString(16).substr(2, 4).toUpperCase().padEnd(4,'0');
-  const code = `${seg()}-${seg()}-${seg()}-${seg()}`;
-  document.getElementById('licenca-codigo').value = code;
+// ─── JSONBin Key (salva em localStorage separado por segurança) ───
+function getJsonBinKey() {
+  return localStorage.getItem('gestorpro_jsonbin_key') || state.empresa.jsonbinKey || '$2a$10$xxIvXXIjG7A86QLIGEifv.jhyYGb3oxNTy37NWXJwY4/PDwozFjvK';
+}
+
+function saveJsonBinKey() {
+  const key = document.getElementById('cfg-jsonbin-key').value.trim();
+  if (!key) { toast('Informe a Master Key antes de salvar.', 'error'); return; }
+  localStorage.setItem('gestorpro_jsonbin_key', key);
+  state.empresa.jsonbinKey = key;
+  saveState();
+  toast('Chave JSONBin salva!');
+}
+
+async function testarJsonBinKey() {
+  const key = document.getElementById('cfg-jsonbin-key').value.trim();
+  if (!key) { toast('Informe a Master Key para testar.', 'error'); return; }
+  const btn = document.querySelector('[onclick="testarJsonBinKey()"]');
+  const orig = btn.innerHTML;
+  btn.innerHTML = '<i class="ph ph-spinner"></i> Testando...';
+  btn.disabled = true;
+  try {
+    const res = await fetch('https://api.jsonbin.io/v3/b', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': key,
+        'X-Bin-Name': 'gestorpro-teste',
+        'X-Bin-Private': 'true',
+      },
+      body: JSON.stringify({ test: true }),
+    });
+    const data = await res.json();
+    if (res.ok && data.metadata && data.metadata.id) {
+      toast(`✓ Conexão OK! Bin de teste: ${data.metadata.id}`);
+    } else {
+      toast(data.message || 'Chave inválida ou sem permissão.', 'error');
+    }
+  } catch {
+    toast('Erro de conexão com JSONBin.', 'error');
+  } finally {
+    btn.innerHTML = orig;
+    btn.disabled = false;
+  }
+}
+
+// ─── Gerador de Código via JSONBin ────────────────────────
+async function gerarCodigo() {
+  const key = getJsonBinKey();
+  if (!key) {
+    toast('Configure a Master Key do JSONBin em Configurações → JSONBin.', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('btn-gerar-codigo');
+  const hint = document.getElementById('licenca-codigo-hint');
+  btn.innerHTML = '<i class="ph ph-spinner"></i> Gerando...';
+  btn.disabled = true;
+  if (hint) hint.textContent = 'Criando Bin no JSONBin.io...';
+
+  // Dados do cliente e produto para nomear o Bin
+  const clienteId = document.getElementById('licenca-cliente').value;
+  const produtoId = document.getElementById('licenca-produto').value;
+  const c = state.clientes.find(c => c.id === clienteId);
+  const p = state.produtos.find(p => p.id === produtoId);
+  const binName = [
+    'lic',
+    p ? p.nome.substring(0, 20).replace(/[^a-zA-Z0-9]/g, '') : 'produto',
+    c ? c.nome.substring(0, 12).replace(/[^a-zA-Z0-9]/g, '') : 'cliente',
+    new Date().toISOString().split('T')[0],
+  ].join('-').substring(0, 128);
+
+  try {
+    const res = await fetch('https://api.jsonbin.io/v3/b', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': key,
+        'X-Bin-Name': binName,
+        'X-Bin-Private': 'true',
+      },
+      body: JSON.stringify({ licenses: {} }),
+    });
+    const data = await res.json();
+
+    if (res.ok && data.metadata && data.metadata.id) {
+      const binId = data.metadata.id;
+      document.getElementById('licenca-codigo').value = binId;
+      if (hint) hint.innerHTML = `✓ Bin criado com sucesso! ID: <strong style="color:var(--success);">${binId}</strong> · Código vinculado a esta licença.`;
+      toast(`Código gerado: ${binId}`);
+    } else {
+      const msg = data.message || 'Erro desconhecido';
+      if (hint) hint.textContent = `Erro: ${msg}`;
+      toast(`Erro JSONBin: ${msg}`, 'error');
+    }
+  } catch (err) {
+    if (hint) hint.textContent = 'Erro de conexão com JSONBin.io. Verifique sua internet.';
+    toast('Erro de conexão com JSONBin.', 'error');
+  } finally {
+    btn.innerHTML = '<i class="ph ph-sparkle"></i> Gerar via JSONBin';
+    btn.disabled = false;
+  }
 }
 
 // ─── Produtos ─────────────────────────────────────────────
