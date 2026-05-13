@@ -2867,7 +2867,12 @@ tbody tr:last-child td { border-bottom: none; }
       <input type="hidden" id="licenca-id">
       <div class="form-group">
         <label>Cliente *</label>
-        <select id="licenca-cliente" required><option value="">Selecione o cliente</option></select>
+        <div style="display:flex;gap:8px;align-items:flex-end;">
+          <select id="licenca-cliente" required style="flex:1;"><option value="">Selecione o cliente</option></select>
+          <button type="button" class="btn btn-primary" onclick="openCadastroClienteRapido()" title="Cadastrar novo cliente" style="white-space:nowrap;flex-shrink:0;padding:10px 12px;">
+            <i class="ph ph-plus"></i> Novo
+          </button>
+        </div>
       </div>
       <div class="form-group">
         <label>Produto *</label>
@@ -2885,6 +2890,7 @@ tbody tr:last-child td { border-bottom: none; }
         <label>Validade da Licença</label>
         <select id="licenca-validade" onchange="toggleValidadeCustom()">
           <option value="vitalicia">Vitalícia</option>
+          <option value="mensal">Mensal (Assinatura)</option>
           <option value="30dias">30 Dias</option>
           <option value="60dias">60 Dias</option>
           <option value="90dias">90 Dias</option>
@@ -2897,6 +2903,10 @@ tbody tr:last-child td { border-bottom: none; }
       <div class="form-group" id="licenca-expira-group" style="display:none;">
         <label>Data de Expiração *</label>
         <input type="date" id="licenca-expira">
+      </div>
+      <div class="form-group" id="licenca-proxima-cobranca-group" style="display:none;">
+        <label>Próxima Data de Cobrança *</label>
+        <input type="date" id="licenca-proxima-cobranca">
       </div>
       <div class="form-group">
         <label>Status</label>
@@ -2923,6 +2933,38 @@ tbody tr:last-child td { border-bottom: none; }
       <div class="form-footer">
         <button type="button" class="btn btn-secondary" onclick="closeModal('licenca')">Cancelar</button>
         <button type="submit" class="btn btn-primary"><i class="ph ph-floppy-disk"></i> Salvar Licença</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Mini Modal: Cadastro Rápido de Cliente -->
+<div id="mini-modal-cliente-rapido" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;">
+  <div class="modal-box" style="max-width:400px;">
+    <div class="modal-header">
+      <span class="modal-title">Cadastrar Novo Cliente</span>
+      <button class="modal-close" onclick="closeCadastroClienteRapido()"><i class="ph ph-x"></i></button>
+    </div>
+    <form class="form-grid" id="form-cliente-rapido" onsubmit="saveClienteRapido(event)">
+      <div class="form-group">
+        <label>Nome Completo *</label>
+        <input type="text" id="cliente-rapido-nome" placeholder="João Silva" required>
+      </div>
+      <div class="form-group">
+        <label>E-mail</label>
+        <input type="email" id="cliente-rapido-email" placeholder="joao@email.com">
+      </div>
+      <div class="form-group">
+        <label>Telefone / WhatsApp</label>
+        <input type="tel" id="cliente-rapido-tel" placeholder="(82) 99999-0000">
+      </div>
+      <div class="form-group">
+        <label>CPF / CNPJ</label>
+        <input type="text" id="cliente-rapido-doc" placeholder="000.000.000-00">
+      </div>
+      <div class="form-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeCadastroClienteRapido()">Cancelar</button>
+        <button type="submit" class="btn btn-primary"><i class="ph ph-floppy-disk"></i> Salvar e Usar</button>
       </div>
     </form>
   </div>
@@ -4814,37 +4856,7 @@ function populateProdutoDropdown(id) {
 }
 
 // ─── Licenças ─────────────────────────────────────────────
-function toggleValidadeCustom() {
-  const val = document.getElementById('licenca-validade').value;
-  document.getElementById('licenca-expira-group').style.display = val === 'custom' ? '' : 'none';
-}
 
-function calcDataExpiracao(dataVenda, validade) {
-  if (!dataVenda || validade === 'vitalicia') return null;
-  const d = new Date(dataVenda + 'T12:00:00');
-  const map = { '30dias': [30,'d'], '60dias': [60,'d'], '90dias': [90,'d'], '6meses': [6,'m'], '1ano': [12,'m'], '2anos': [24,'m'] };
-  const v = map[validade];
-  if (!v) return null;
-  if (v[1] === 'd') d.setDate(d.getDate() + v[0]);
-  else d.setMonth(d.getMonth() + v[0]);
-  return d.toISOString().split('T')[0];
-}
-
-function diasParaVencer(dataExpira) {
-  if (!dataExpira) return null;
-  const hoje = new Date(); hoje.setHours(0,0,0,0);
-  const exp = new Date(dataExpira + 'T00:00:00');
-  return Math.round((exp - hoje) / 86400000);
-}
-
-function getLicencasAVencer(dias = 2) {
-  return state.licencas.filter(l => {
-    if (l.status !== 'ativa') return false;
-    if (!l.dataExpira) return false;
-    const d = diasParaVencer(l.dataExpira);
-    return d !== null && d >= 0 && d <= dias;
-  });
-}
 
 
 function autoFillLicencaPreco() {
@@ -4868,9 +4880,16 @@ function saveLicenca(e) {
 
   // Calcular data de expiração
   let dataExpira = null;
+  let proximaCobranca = null;
+  
   if (validade === 'custom') {
     dataExpira = document.getElementById('licenca-expira').value;
     if (!dataExpira) { toast('Informe a data de expiração personalizada.', 'error'); return; }
+  } else if (validade === 'mensal') {
+    proximaCobranca = document.getElementById('licenca-proxima-cobranca').value;
+    if (!proximaCobranca) { toast('Informe a próxima data de cobrança.', 'error'); return; }
+    // Para assinatura mensal, a expiração é sempre um mês a partir da próxima cobrança
+    dataExpira = proximaCobranca;
   } else if (validade !== 'vitalicia') {
     dataExpira = calcDataExpiracao(dataVenda, validade);
   }
@@ -4884,6 +4903,7 @@ function saveLicenca(e) {
     data: dataVenda,
     validade: validade,
     dataExpira: dataExpira,
+    proximaCobranca: proximaCobranca,
     status: document.getElementById('licenca-status').value,
     obs: document.getElementById('licenca-obs').value,
     createdAt: id ? (state.licencas.find(l => l.id === id)?.createdAt || new Date().toISOString()) : new Date().toISOString(),
@@ -4928,6 +4948,7 @@ function editLicenca(id) {
   document.getElementById('licenca-data').value = l.data;
   document.getElementById('licenca-validade').value = l.validade;
   document.getElementById('licenca-expira').value = l.dataExpira || '';
+  document.getElementById('licenca-proxima-cobranca').value = l.proximaCobranca || '';
   toggleValidadeCustom();
   document.getElementById('licenca-status').value = l.status;
   document.getElementById('licenca-obs').value = l.obs || '';
@@ -5312,6 +5333,169 @@ function toggleTheme() {
 function updateDate() {
   const d = new Date();
   document.getElementById('topbar-date').textContent = d.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+
+// ─── Cadastro Rápido de Cliente ─────────────────────────────
+function openCadastroClienteRapido() {
+  document.getElementById('mini-modal-cliente-rapido').style.display = 'flex';
+  document.getElementById('form-cliente-rapido').reset();
+}
+
+function closeCadastroClienteRapido() {
+  document.getElementById('mini-modal-cliente-rapido').style.display = 'none';
+}
+
+function saveClienteRapido(e) {
+  e.preventDefault();
+  const data = {
+    id: uid(),
+    nome: document.getElementById('cliente-rapido-nome').value,
+    email: document.getElementById('cliente-rapido-email').value,
+    tel: document.getElementById('cliente-rapido-tel').value,
+    doc: document.getElementById('cliente-rapido-doc').value,
+    cep: '',
+  };
+  state.clientes.push(data);
+  saveState();
+  
+  // Atualizar dropdown de clientes no modal de licença
+  populateClientDropdown('licenca-cliente');
+  
+  // Selecionar o cliente recém criado
+  document.getElementById('licenca-cliente').value = data.id;
+  
+  // Fechar o mini-modal
+  closeCadastroClienteRapido();
+  toast('Cliente cadastrado e selecionado!');
+}
+
+// ─── Assinatura Mensal ─────────────────────────────────────
+function toggleValidadeCustom() {
+  const val = document.getElementById('licenca-validade').value;
+  const expiraGroup = document.getElementById('licenca-expira-group');
+  const proximaCobrancaGroup = document.getElementById('licenca-proxima-cobranca-group');
+  
+  if (val === 'custom') {
+    expiraGroup.style.display = '';
+    proximaCobrancaGroup.style.display = 'none';
+  } else if (val === 'mensal') {
+    expiraGroup.style.display = 'none';
+    proximaCobrancaGroup.style.display = '';
+    // Definir a próxima data de cobrança como 30 dias a partir de hoje
+    const dataVenda = document.getElementById('licenca-data').value;
+    if (dataVenda) {
+      const d = new Date(dataVenda + 'T12:00:00');
+      d.setMonth(d.getMonth() + 1);
+      document.getElementById('licenca-proxima-cobranca').value = d.toISOString().split('T')[0];
+    }
+  } else {
+    expiraGroup.style.display = 'none';
+    proximaCobrancaGroup.style.display = 'none';
+  }
+}
+
+function calcDataExpiracao(dataVenda, validade) {
+  if (!dataVenda || validade === 'vitalicia') return null;
+  const d = new Date(dataVenda + 'T12:00:00');
+  const map = { 'mensal': [1,'m'], '30dias': [30,'d'], '60dias': [60,'d'], '90dias': [90,'d'], '6meses': [6,'m'], '1ano': [12,'m'], '2anos': [24,'m'] };
+  const v = map[validade];
+  if (!v) return null;
+  if (v[1] === 'd') d.setDate(d.getDate() + v[0]);
+  else d.setMonth(d.getMonth() + v[0]);
+  return d.toISOString().split('T')[0];
+}
+
+// ─── Alertas de Vencimento com WhatsApp ─────────────────────
+function getLicencasAVencer(dias = 1) {
+  return state.licencas.filter(l => {
+    if (l.status !== 'ativa') return false;
+    if (!l.dataExpira && !l.proximaCobranca) return false;
+    
+    // Verificar data de expiração
+    if (l.dataExpira) {
+      const d = diasParaVencer(l.dataExpira);
+      if (d !== null && d >= 0 && d <= dias) return true;
+    }
+    
+    // Verificar próxima data de cobrança (assinatura mensal)
+    if (l.proximaCobranca) {
+      const d = diasParaVencer(l.proximaCobranca);
+      if (d !== null && d === 1) return true; // Um dia antes do vencimento
+    }
+    
+    return false;
+  });
+}
+
+function diasParaVencer(dataExpira) {
+  if (!dataExpira) return null;
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const exp = new Date(dataExpira + 'T00:00:00');
+  return Math.round((exp - hoje) / 86400000);
+}
+
+// ─── Renderizar Alertas no Dashboard ─────────────────────────
+function renderDashboard() {
+  document.getElementById('ds-clientes').textContent = state.clientes.length;
+  document.getElementById('ds-projetos').textContent = state.projetos.length;
+  document.getElementById('ds-andamento').textContent = state.projetos.filter(p => p.status === 'andamento').length;
+  document.getElementById('ds-planejamento').textContent = state.projetos.filter(p => p.status === 'planejamento').length;
+  document.getElementById('ds-concluido').textContent = state.projetos.filter(p => p.status === 'concluido').length;
+  const dsLic = document.getElementById('ds-licencas');
+  if (dsLic) dsLic.textContent = state.licencas.filter(l => l.status === 'ativa').length;
+
+  // ── Alertas de licenças a vencer ──────────────────────
+  const aVencer = getLicencasAVencer(2);
+  const cardAlertas = document.getElementById('card-alertas-licencas');
+  const listaAlertas = document.getElementById('lista-alertas-licencas');
+  if (cardAlertas && listaAlertas) {
+    if (aVencer.length) {
+      cardAlertas.style.display = '';
+      const validadeLabel = { '30dias':'30 Dias','60dias':'60 Dias','90dias':'90 Dias','6meses':'6 Meses','1ano':'1 Ano','2anos':'2 Anos','mensal':'Mensal','custom':'Personalizada','vitalicia':'Vitalícia' };
+      listaAlertas.innerHTML = aVencer.map(l => {
+        const c = state.clientes.find(c => c.id === l.clienteId);
+        const p = state.produtos.find(p => p.id === l.produtoId);
+        
+        // Determinar qual data usar (expiração ou próxima cobrança)
+        const dataAlerta = l.proximaCobranca || l.dataExpira;
+        const dias = diasParaVencer(dataAlerta);
+        const urgente = dias === 0;
+        const prazoTxt = dias === 0 ? '⚠️ Vence HOJE!' : dias === 1 ? '⚠️ Vence amanhã' : `Vence em ${dias} dias`;
+        const nome = c ? c.nome : 'Cliente';
+        const inicial = nome.charAt(0).toUpperCase();
+        const tel = c ? (c.tel || '') : '';
+        const nomeProduto = p ? p.nome : 'Produto';
+        const remetente = state.empresa.nome || state.empresa.razao || 'Desenvolvedor';
+
+        const msgWpp = encodeURIComponent(`Olá, *${nome}*! 👋\n\nPassando para avisar que sua licença do sistema *${nomeProduto}* está prestes a vencer em *${fmtDate(dataAlerta)}*.\n\nPara garantir a continuidade do seu acesso sem interrupções, entre em contato para renovação.\n\nAtenciosamente,\n${remetente}`);
+
+        let telNorm = tel.replace(/\D/g, '');
+        if (telNorm && telNorm.length <= 11) telNorm = '55' + telNorm;
+        const wppUrl = telNorm ? `https://wa.me/${telNorm}?text=${msgWpp}` : '';
+
+        return `<div class="alerta-licenca-card ${urgente ? 'urgente' : ''}">
+          <div class="alerta-licenca-avatar">${inicial}</div>
+          <div class="alerta-licenca-info">
+            <div class="alerta-licenca-nome">${nome}</div>
+            <div class="alerta-licenca-detalhe">${nomeProduto} · Expira: ${fmtDate(dataAlerta)}</div>
+          </div>
+          <div class="alerta-licenca-prazo">${prazoTxt}</div>
+          <div style="display:flex;gap:8px;flex-shrink:0;">
+            ${wppUrl ? `<a href="${wppUrl}" target="_blank" class="btn btn-success" style="background:#25d366;padding:7px 12px;font-size:12px;text-decoration:none;display:inline-flex;align-items:center;gap:5px;">
+              <i class="ph ph-whatsapp-logo"></i> Contatar
+            </a>` : `<span style="font-size:12px;color:var(--text-muted);">Sem WhatsApp cadastrado</span>`}
+            <button class="btn btn-ghost btn-icon" onclick="editLicenca('${l.id}')" title="Editar licença"><i class="ph ph-pencil"></i></button>
+          </div>
+        </div>`;
+      }).join('');
+    } else {
+      cardAlertas.style.display = 'none';
+    }
+  }
+
+  const mesRec = getByPeriod('esteMes').filter(t => t.tipo === 'receita').reduce((a, t) => a + t.valor, 0);
+  document.getElementById('ds-receita').textContent = fmt(mesRec);
 }
 
 // ─── INIT ─────────────────────────────────────────────────
