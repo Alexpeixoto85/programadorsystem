@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>GestorPRO · Sistema de Gestão</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2758,6 +2759,11 @@ tbody tr:last-child td { border-bottom: none; }
         <input type="url" id="proj-link" placeholder="https://exemplo.com">
       </div>
       <div class="form-group full">
+        <label>Anexar Arquivo HTML (Projeto em Desenvolvimento)</label>
+        <input type="file" id="proj-arquivo-html" accept=".html" onchange="previewProjectHTML(this)">
+        <div id="proj-arquivo-preview" style="margin-top:10px;font-size:12px;color:var(--text-muted);"></div>
+      </div>
+      <div class="form-group full">
         <label>Descrição</label>
         <textarea id="proj-desc" placeholder="Descreva o escopo do projeto..."></textarea>
       </div>
@@ -3320,7 +3326,14 @@ function filterProjects(status) {
 // ─── Modals ───────────────────────────────────────────────
 function openModal(type) {
   document.getElementById('modal-' + type).classList.add('open');
-  if (type === 'project') populateClientDropdown('proj-cliente');
+  if (type === 'project') {
+    populateClientDropdown('proj-cliente');
+    window.projArquivoHTML = null;
+    document.getElementById('proj-arquivo-html').value = '';
+    updateProjectHTMLPreview();
+    document.getElementById('project-id').value = '';
+    document.getElementById('modal-project-title').textContent = 'Novo Projeto';
+  }
   if (type === 'financial') { populateProjDropdown('fin-projeto', ''); }
   if (type === 'licenca') {
     populateClientDropdown('licenca-cliente');
@@ -3447,6 +3460,7 @@ function saveProject(e) {
     duracao: parseInt(document.getElementById('proj-duracao').value) || 0,
     link: document.getElementById('proj-link').value,
     desc: document.getElementById('proj-desc').value,
+    arquivoHTML: window.projArquivoHTML || null,
   };
   if (id) {
     const i = state.projetos.findIndex(p => p.id === id);
@@ -3475,7 +3489,8 @@ function renderProjetos(filterStatus = '') {
     tr.innerHTML = `
       <td>
         <strong>${p.nome}</strong>
-        ${p.link ? `<a href="${p.link}" target="_blank" style="color:var(--primary-light);font-size:12px;margin-left:6px;"><i class="ph ph-arrow-square-out"></i></a>` : ''}
+        ${p.link ? `<a href="${p.link}" target="_blank" style="color:var(--primary-light);font-size:12px;margin-left:6px;" title="Abrir link"><i class="ph ph-arrow-square-out"></i></a>` : ''}
+        ${p.arquivoHTML ? `<button class="act-btn" onclick="viewProjectHTML('${p.id}')" style="background:none;border:none;color:var(--primary-light);cursor:pointer;font-size:12px;margin-left:6px;padding:0;" title="Visualizar HTML"><i class="ph ph-file-html"></i></button>` : ''}
       </td>
       <td>${c ? c.nome : '—'}</td>
       <td><span style="font-size:12px;color:var(--text-muted);">${p.fase || '—'}</span></td>
@@ -3511,6 +3526,8 @@ function editProject(id) {
   document.getElementById('proj-duracao').value = p.duracao || '';
   document.getElementById('proj-link').value = p.link || '';
   document.getElementById('proj-desc').value = p.desc || '';
+  window.projArquivoHTML = p.arquivoHTML || null;
+  updateProjectHTMLPreview();
   document.getElementById('modal-project-title').textContent = 'Editar Projeto';
   openModal('project');
   populateClientDropdown('proj-cliente');
@@ -4623,6 +4640,38 @@ function clearAllData() {
   saveState();
   renderAll();
   toast('Dados apagados.', 'error');
+}
+
+// ─── Arquivo HTML do Projeto ──────────────────────────────
+function previewProjectHTML(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    window.projArquivoHTML = ev.target.result;
+    updateProjectHTMLPreview();
+  };
+  reader.readAsDataURL(file);
+}
+
+function updateProjectHTMLPreview() {
+  const preview = document.getElementById('proj-arquivo-preview');
+  if (window.projArquivoHTML) {
+    preview.innerHTML = '<i class="ph ph-check-circle" style="color:var(--success);"></i> Arquivo HTML anexado';
+  } else {
+    preview.innerHTML = '';
+  }
+}
+
+function viewProjectHTML(projectId) {
+  const p = state.projetos.find(proj => proj.id === projectId);
+  if (!p || !p.arquivoHTML) {
+    toast('Arquivo HTML não encontrado.', 'error');
+    return;
+  }
+  const newWindow = window.open();
+  newWindow.document.write(p.arquivoHTML);
+  newWindow.document.close();
 }
 
 // ─── Dropdowns ────────────────────────────────────────────
