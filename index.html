@@ -975,6 +975,68 @@ tbody tr:last-child td { border-bottom: none; }
 
 .modal-close:hover { background: var(--danger-dim); color: var(--danger); }
 
+/* ─── HTML VIEWER (embutido) ─────────────────── */
+.modal-overlay.viewer { padding: 0; }
+.viewer-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  width: 100%;
+  max-width: 1100px;
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.5), var(--shadow-glow);
+  animation: modalIn 0.25s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  margin: auto;
+}
+.viewer-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.viewer-header .viewer-title {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.viewer-header .viewer-title i { color: var(--primary-light); font-size: 18px; flex-shrink: 0; }
+.viewer-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.viewer-btn:hover { background: var(--bg-hover); border-color: var(--border-active); }
+.viewer-btn i { font-size: 15px; }
+.viewer-body { flex: 1; min-height: 0; background: #fff; }
+.viewer-body iframe { width: 100%; height: 100%; border: 0; display: block; background: #fff; }
+@media (max-width: 768px) {
+  .modal-overlay.viewer { align-items: stretch; }
+  .viewer-box { height: 100vh; max-width: 100%; border-radius: 0; }
+  .viewer-btn span { display: none; }
+  .viewer-btn { padding: 8px; }
+}
+
 /* ─── FINANCIAL SUMMARY ──────────────────────── */
 .fin-summary {
   display: grid;
@@ -2774,6 +2836,22 @@ tbody tr:last-child td { border-bottom: none; }
   </div>
 </div>
 
+<!-- HTML Viewer Modal (abre o arquivo dentro do próprio sistema) -->
+<div class="modal-overlay viewer" id="modal-html-viewer">
+  <div class="viewer-box">
+    <div class="viewer-header">
+      <span class="viewer-title"><i class="ph ph-file-html"></i><span id="html-viewer-title">Visualizar arquivo HTML</span></span>
+      <button class="viewer-btn" onclick="htmlViewerNewTab()" title="Abrir em nova aba"><i class="ph ph-arrow-square-out"></i><span>Nova aba</span></button>
+      <button class="viewer-btn" onclick="htmlViewerDownload()" title="Baixar arquivo"><i class="ph ph-download-simple"></i><span>Baixar</span></button>
+      <button class="modal-close" onclick="closeHtmlViewer()" title="Fechar"><i class="ph ph-x"></i></button>
+    </div>
+    <div class="viewer-body">
+      <iframe id="html-viewer-frame" title="Conteúdo do arquivo"
+        sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals allow-downloads allow-popups-to-escape-sandbox"></iframe>
+    </div>
+  </div>
+</div>
+
 <!-- Financial Modal -->
 <div class="modal-overlay" id="modal-financial">
   <div class="modal-box" style="max-width:500px;">
@@ -3353,6 +3431,17 @@ function closeModal(type) {
 document.querySelectorAll('.modal-overlay').forEach(m => {
   m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
 });
+
+// Visualizador de HTML: limpar iframe ao fechar pelo fundo ou pela tecla Esc
+(function () {
+  const v = document.getElementById('modal-html-viewer');
+  if (v) v.addEventListener('click', e => { if (e.target === v) closeHtmlViewer(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && document.getElementById('modal-html-viewer').classList.contains('open')) {
+      closeHtmlViewer();
+    }
+  });
+})();
 
 // ─── Save State ───────────────────────────────────────────
 async function saveState() {
@@ -4662,15 +4751,81 @@ function updateProjectHTMLPreview() {
   }
 }
 
+// Converte o valor armazenado (data URL base64 OU HTML puro) em texto HTML
+function storedToHTML(stored) {
+  if (!stored) return '';
+  if (typeof stored !== 'string') return '';
+  if (stored.startsWith('data:')) {
+    try {
+      const base64 = stored.split(',')[1] || '';
+      // decodifica respeitando UTF-8 (acentos)
+      const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+      return new TextDecoder('utf-8').decode(bytes);
+    } catch (err) {
+      return '';
+    }
+  }
+  return stored; // já é HTML puro
+}
+
+// Guarda o conteúdo atual do visualizador para os botões de nova aba / download
+let _htmlViewerCurrent = { html: '', nome: 'arquivo' };
+
+// Abre o visualizador embutido com um HTML qualquer
+function openHtmlViewer(html, nome) {
+  if (!html) { toast('Arquivo HTML vazio ou inválido.', 'error'); return; }
+  _htmlViewerCurrent = { html, nome: nome || 'arquivo' };
+  document.getElementById('html-viewer-title').textContent = nome || 'Visualizar arquivo HTML';
+  const frame = document.getElementById('html-viewer-frame');
+  frame.removeAttribute('src');
+  frame.srcdoc = html; // renderiza DENTRO do sistema
+  document.getElementById('modal-html-viewer').classList.add('open');
+}
+
+function closeHtmlViewer() {
+  const frame = document.getElementById('html-viewer-frame');
+  // limpa para parar scripts/áudio que estejam rodando no arquivo
+  frame.removeAttribute('srcdoc');
+  frame.removeAttribute('src');
+  document.getElementById('modal-html-viewer').classList.remove('open');
+}
+
+// Abre o arquivo atual numa aba nova de verdade (Blob URL) — útil p/ apps que usam armazenamento
+function htmlViewerNewTab() {
+  const html = _htmlViewerCurrent.html;
+  if (!html) return;
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  window.open(url, '_blank');
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
+// Baixa o arquivo atual
+function htmlViewerDownload() {
+  const html = _htmlViewerCurrent.html;
+  if (!html) return;
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  let nome = (_htmlViewerCurrent.nome || 'arquivo').replace(/[\\/:*?"<>|]+/g, '_');
+  if (!/\.html?$/i.test(nome)) nome += '.html';
+  a.download = nome;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 function viewProjectHTML(projectId) {
   const p = state.projetos.find(proj => proj.id === projectId);
   if (!p || !p.arquivoHTML) {
     toast('Arquivo HTML não encontrado.', 'error');
     return;
   }
-  const newWindow = window.open();
-  newWindow.document.write(p.arquivoHTML);
-  newWindow.document.close();
+  const html = storedToHTML(p.arquivoHTML);
+  if (!html) { toast('Não foi possível ler o arquivo HTML.', 'error'); return; }
+  openHtmlViewer(html, p.nome ? `${p.nome}.html` : 'projeto.html');
 }
 
 // ─── Dropdowns ────────────────────────────────────────────
