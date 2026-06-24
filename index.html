@@ -2156,34 +2156,49 @@ tbody tr:last-child td { border-bottom: none; }
      LOGIN SCREEN
 ═══════════════════════════════════════════════════════════ -->
 <div id="login-screen">
+  <div id="auth-loading" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:inherit;z-index:5;">
+    <div style="width:38px;height:38px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+    <span style="font-size:13px;color:var(--text-muted);">Verificando sessão...</span>
+  </div>
   <div class="login-box">
     <div class="login-logo">
       <div class="logo-icon"><i class="ph ph-lightning"></i></div>
       <span>Gestor<em>PRO</em></span>
     </div>
-    <h2>Bem-vindo de volta</h2>
-    <p>Faça login para acessar seu painel de gestão</p>
+    <h2 id="login-title">Bem-vindo de volta</h2>
+    <p id="login-subtitle">Faça login para acessar seu painel de gestão</p>
 
     <div class="login-error" id="login-error">
-      <i class="ph ph-warning-circle"></i> Usuário ou senha incorretos.
+      <i class="ph ph-warning-circle"></i> <span id="login-error-msg">E-mail ou senha incorretos.</span>
     </div>
 
     <div style="display:flex;flex-direction:column;gap:14px;">
       <div class="form-group">
-        <label>Usuário</label>
-        <input type="text" id="login-user" placeholder="admin" autocomplete="username">
+        <label>E-mail</label>
+        <input type="email" id="login-email" placeholder="voce@email.com" autocomplete="username">
       </div>
       <div class="form-group">
         <label>Senha</label>
         <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
       </div>
-      <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:4px;padding:12px;" onclick="doLogin()">
-        <i class="ph ph-sign-in"></i> Entrar
+      <div class="form-group" id="login-confirm-group" style="display:none;">
+        <label>Confirmar senha</label>
+        <input type="password" id="login-pass2" placeholder="••••••••" autocomplete="new-password">
+      </div>
+      <button class="btn btn-primary" id="login-submit" style="width:100%;justify-content:center;margin-top:4px;padding:12px;" onclick="authSubmit()">
+        <i class="ph ph-sign-in"></i> <span id="login-submit-label">Entrar</span>
       </button>
     </div>
 
-    <p style="font-size:12px;color:var(--text-muted);text-align:center;margin-top:20px;">
-      Padrão: <code style="font-family:var(--font-mono);color:var(--primary-light);">admin</code> / <code style="font-family:var(--font-mono);color:var(--primary-light);">1234</code>
+    <p style="font-size:13px;color:var(--text-muted);text-align:center;margin-top:18px;">
+      <span id="login-toggle-text">Ainda não tem conta?</span>
+      <a href="#" onclick="toggleAuthMode(event)" style="color:var(--primary-light);font-weight:600;text-decoration:none;" id="login-toggle-link">Criar conta</a>
+    </p>
+    <p style="font-size:12px;text-align:center;margin-top:6px;">
+      <a href="#" onclick="resetPassword(event)" style="color:var(--text-muted);text-decoration:none;" id="login-forgot">Esqueci minha senha</a>
+    </p>
+    <p id="login-cloud-warning" style="display:none;font-size:12px;color:var(--warning);text-align:center;margin-top:14px;line-height:1.5;">
+      <i class="ph ph-warning"></i> Conexão com a nuvem indisponível. Verifique sua internet.
     </p>
   </div>
 </div>
@@ -2661,8 +2676,9 @@ tbody tr:last-child td { border-bottom: none; }
             <i class="ph ph-cloud" style="color:var(--primary-light);"></i> Sincronização em Nuvem
           </div>
           <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;line-height:1.6;">
-            Conecte-se com um e-mail e senha para acessar seus dados de <strong style="color:var(--text);">qualquer aparelho ou computador</strong>.
-            Os dados ficam protegidos no Firebase e só você (com sua conta) consegue acessá-los.
+            Seus dados ficam salvos na nuvem, vinculados à conta com que você entrou. Faça login com o
+            <strong style="color:var(--text);">mesmo e-mail e senha</strong> em qualquer aparelho para acessar tudo.
+            Cada conta só enxerga os próprios dados.
           </p>
 
           <!-- Aviso: Firebase ainda não configurado -->
@@ -2700,7 +2716,7 @@ tbody tr:last-child td { border-bottom: none; }
             </div>
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
               <button class="btn btn-secondary" onclick="cloudForcePush()"><i class="ph ph-cloud-arrow-up"></i> Enviar dados agora</button>
-              <button class="btn btn-ghost" onclick="cloudDisconnect()" style="color:var(--danger);"><i class="ph ph-sign-out"></i> Desconectar</button>
+              <button class="btn btn-ghost" onclick="doLogout()" style="color:var(--danger);"><i class="ph ph-sign-out"></i> Sair da conta</button>
             </div>
           </div>
         </div>
@@ -3558,53 +3574,165 @@ function toast(msg, type = 'success') {
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// ─── Auth ─────────────────────────────────────────────────
-async function doLogin() {
-  const u = document.getElementById('login-user').value.trim();
-  const p = document.getElementById('login-pass').value;
-  const err = document.getElementById('login-error');
+// ─── Auth (Firebase) ──────────────────────────────────────
+let authMode = 'login'; // 'login' | 'register'
 
-  if (u === state.auth.user && p === state.auth.pass) {
-    err.style.display = 'none';
-    currentUser = u;
-    const displayName = state.empresa.nomeCompleto || u;
-    document.getElementById('user-display-name').textContent = displayName;
-    const avatarLetter = displayName.charAt(0).toUpperCase();
-    document.getElementById('user-avatar').textContent = avatarLetter;
-    const topbarAvatar = document.getElementById('topbar-avatar');
-    if (topbarAvatar) topbarAvatar.textContent = avatarLetter;
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
-    renderAll();
-  } else {
-    err.style.display = 'flex';
-    err.style.gap = '8px';
-    err.style.alignItems = 'center';
+function showLoginError(msg) {
+  const err = document.getElementById('login-error');
+  document.getElementById('login-error-msg').textContent = msg;
+  err.style.display = 'flex';
+  err.style.gap = '8px';
+  err.style.alignItems = 'center';
+}
+function hideLoginError() {
+  document.getElementById('login-error').style.display = 'none';
+}
+
+function toggleAuthMode(e) {
+  if (e) e.preventDefault();
+  authMode = authMode === 'login' ? 'register' : 'login';
+  hideLoginError();
+  const isReg = authMode === 'register';
+  document.getElementById('login-title').textContent = isReg ? 'Criar sua conta' : 'Bem-vindo de volta';
+  document.getElementById('login-subtitle').textContent = isReg
+    ? 'Cadastre-se para começar a usar o sistema'
+    : 'Faça login para acessar seu painel de gestão';
+  document.getElementById('login-confirm-group').style.display = isReg ? '' : 'none';
+  document.getElementById('login-submit-label').textContent = isReg ? 'Criar conta' : 'Entrar';
+  document.getElementById('login-toggle-text').textContent = isReg ? 'Já tem conta?' : 'Ainda não tem conta?';
+  document.getElementById('login-toggle-link').textContent = isReg ? 'Fazer login' : 'Criar conta';
+  document.getElementById('login-forgot').parentElement.style.display = isReg ? 'none' : '';
+  document.getElementById('login-pass').setAttribute('autocomplete', isReg ? 'new-password' : 'current-password');
+}
+
+async function authSubmit() {
+  hideLoginError();
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value;
+
+  if (!cloudConfigured()) { showLoginError('Sistema sem nuvem configurada. Contate o administrador.'); return; }
+  if (typeof firebase === 'undefined' || !cloudInit()) {
+    document.getElementById('login-cloud-warning').style.display = '';
+    showLoginError('Não foi possível conectar à nuvem.'); return;
+  }
+  if (!email) { showLoginError('Informe seu e-mail.'); return; }
+  if (!pass) { showLoginError('Informe sua senha.'); return; }
+
+  const btn = document.getElementById('login-submit');
+  btn.disabled = true;
+  const labelEl = document.getElementById('login-submit-label');
+  const original = labelEl.textContent;
+  labelEl.textContent = authMode === 'register' ? 'Criando...' : 'Entrando...';
+
+  try {
+    if (authMode === 'register') {
+      const pass2 = document.getElementById('login-pass2').value;
+      if (pass.length < 6) throw { code: 'auth/weak-password' };
+      if (pass !== pass2) throw { code: 'custom/pass-mismatch' };
+      await Cloud.auth.createUserWithEmailAndPassword(email, pass);
+      toast('Conta criada com sucesso!');
+    } else {
+      await Cloud.auth.signInWithEmailAndPassword(email, pass);
+    }
+    // O onAuthStateChanged cuida de abrir o app.
+  } catch (err) {
+    showLoginError(authErrorMessage(err));
     document.getElementById('login-pass').value = '';
+    if (authMode === 'register') document.getElementById('login-pass2').value = '';
+  } finally {
+    btn.disabled = false;
+    labelEl.textContent = original;
   }
 }
 
-function doLogout() {
-  currentUser = null;
-  document.getElementById('login-user').value = '';
-  document.getElementById('login-pass').value = '';
-  document.getElementById('login-screen').style.display = 'flex';
-  document.getElementById('app').style.display = 'none';
+function authErrorMessage(err) {
+  const map = {
+    'auth/invalid-email': 'E-mail inválido.',
+    'auth/missing-password': 'Informe a senha.',
+    'auth/weak-password': 'A senha precisa ter pelo menos 6 caracteres.',
+    'auth/email-already-in-use': 'Este e-mail já tem conta. Faça login.',
+    'auth/wrong-password': 'E-mail ou senha incorretos.',
+    'auth/invalid-credential': 'E-mail ou senha incorretos.',
+    'auth/user-not-found': 'Nenhuma conta com este e-mail. Crie uma conta.',
+    'auth/too-many-requests': 'Muitas tentativas. Aguarde um momento.',
+    'auth/network-request-failed': 'Sem conexão com a internet.',
+    'auth/operation-not-allowed': 'Login por e-mail não ativado no Firebase.',
+    'custom/pass-mismatch': 'As senhas não coincidem.',
+  };
+  return map[err && err.code] || ('Erro: ' + ((err && err.message) || 'tente novamente.'));
 }
 
-document.getElementById('login-pass').addEventListener('keypress', e => { if (e.key === 'Enter') doLogin(); });
-document.getElementById('login-user').addEventListener('keypress', e => { if (e.key === 'Enter') document.getElementById('login-pass').focus(); });
+async function resetPassword(e) {
+  if (e) e.preventDefault();
+  const email = document.getElementById('login-email').value.trim();
+  if (!email) { showLoginError('Digite seu e-mail acima para receber o link de redefinição.'); return; }
+  if (!cloudInit()) { showLoginError('Nuvem indisponível.'); return; }
+  try {
+    await Cloud.auth.sendPasswordResetEmail(email);
+    hideLoginError();
+    toast('Enviamos um link de redefinição para seu e-mail.');
+  } catch (err) {
+    showLoginError(authErrorMessage(err));
+  }
+}
+
+// Chamado pelo onAuthStateChanged quando há usuário logado
+function enterApp(user) {
+  currentUser = (user && user.email) || null;
+  const displayName = state.empresa.nomeCompleto || state.empresa.nome || (user.email || '').split('@')[0];
+  document.getElementById('user-display-name').textContent = displayName;
+  const avatarLetter = (displayName || 'U').charAt(0).toUpperCase();
+  document.getElementById('user-avatar').textContent = avatarLetter;
+  const topbarAvatar = document.getElementById('topbar-avatar');
+  if (topbarAvatar) topbarAvatar.textContent = avatarLetter;
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  renderAll();
+}
+
+function showLoginScreen() {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-pass').value = '';
+  const p2 = document.getElementById('login-pass2'); if (p2) p2.value = '';
+  if (authMode === 'register') toggleAuthMode();
+  hideLoginError();
+}
+
+async function doLogout() {
+  currentUser = null;
+  if (Cloud.unsub) { Cloud.unsub(); Cloud.unsub = null; }
+  if (Cloud.auth && Cloud.user) {
+    try { await Cloud.auth.signOut(); } catch (e) {}
+  }
+  toast('Você saiu da sua conta.');
+  // onAuthStateChanged exibirá a tela de login
+}
+
+document.getElementById('login-pass').addEventListener('keypress', e => {
+  if (e.key === 'Enter') { if (authMode === 'register') document.getElementById('login-pass2').focus(); else authSubmit(); }
+});
+document.getElementById('login-email').addEventListener('keypress', e => { if (e.key === 'Enter') document.getElementById('login-pass').focus(); });
+(function(){ const p2 = document.getElementById('login-pass2'); if (p2) p2.addEventListener('keypress', e => { if (e.key === 'Enter') authSubmit(); }); })();
 
 function changePassword() {
   const np = document.getElementById('cfg-new-pass').value;
   const cp = document.getElementById('cfg-confirm-pass').value;
   if (!np) { toast('Informe a nova senha.', 'error'); return; }
+  if (np.length < 6) { toast('A senha precisa ter ao menos 6 caracteres.', 'error'); return; }
   if (np !== cp) { toast('As senhas não coincidem.', 'error'); return; }
-  state.auth.pass = np;
-  saveState();
-  document.getElementById('cfg-new-pass').value = '';
-  document.getElementById('cfg-confirm-pass').value = '';
-  toast('Senha alterada com sucesso!');
+  if (!Cloud.user) { toast('Você precisa estar conectado à nuvem.', 'error'); return; }
+  Cloud.user.updatePassword(np).then(() => {
+    document.getElementById('cfg-new-pass').value = '';
+    document.getElementById('cfg-confirm-pass').value = '';
+    toast('Senha da conta alterada com sucesso!');
+  }).catch(err => {
+    if (err.code === 'auth/requires-recent-login') {
+      toast('Por segurança, saia e entre de novo antes de trocar a senha.', 'error');
+    } else {
+      toast(authErrorMessage(err), 'error');
+    }
+  });
 }
 
 // ─── Sidebar / Navigation ─────────────────────────────────
@@ -5101,7 +5229,7 @@ function saveConfig(e) {
     razao: document.getElementById('cfg-razao').value,
     fantasia: document.getElementById('cfg-fantasia').value,
   };
-  document.getElementById('user-display-name').textContent = state.empresa.nome || currentUser || 'Admin';
+  document.getElementById('user-display-name').textContent = state.empresa.nome || currentUser || (Cloud.user && Cloud.user.email) || 'Usuário';
   document.getElementById('user-avatar').textContent = (state.empresa.nome || 'A').charAt(0).toUpperCase();
   saveState();
   toast('Configurações salvas!');
@@ -6185,9 +6313,15 @@ function cloudInit() {
     Cloud.auth.onAuthStateChanged(u => {
       Cloud.user = u;
       Cloud.connected = !!u;
+      const loader = document.getElementById('auth-loading');
+      if (loader) loader.style.display = 'none';
       updateSyncUI();
-      if (u) startCloudListener();
-      else if (Cloud.unsub) { Cloud.unsub(); Cloud.unsub = null; }
+      if (u) {
+        handleAuthUser(u);
+      } else {
+        if (Cloud.unsub) { Cloud.unsub(); Cloud.unsub = null; }
+        showLoginScreen();
+      }
     });
     return true;
   } catch (err) {
@@ -6246,6 +6380,30 @@ function cloudDocRef() {
   return Cloud.db.collection('gestorpro').doc(Cloud.user.uid);
 }
 
+function emptyState() {
+  return {
+    clientes: [], projetos: [], financeiro: [], produtos: [],
+    licencas: [], ideias: [], empresa: {},
+    auth: { user: 'admin', pass: '1234' }, _updatedAt: 0
+  };
+}
+
+// Decide o que fazer quando um usuário é autenticado
+async function handleAuthUser(u) {
+  const lastUid = localStorage.getItem('gestorpro_last_uid');
+  if (lastUid && lastUid !== u.uid) {
+    // Conta diferente neste aparelho → limpa os dados locais do usuário anterior
+    state = emptyState();
+    await idbSet('state', state);
+  }
+  localStorage.setItem('gestorpro_last_uid', u.uid);
+  localStorage.setItem('gestorpro_cloud_email', u.email || '');
+  enterApp(u);
+  startCloudListener();
+}
+
+
+
 function startCloudListener() {
   const ref = cloudDocRef();
   if (!ref) return;
@@ -6260,6 +6418,9 @@ function startCloudListener() {
     if (remoteTime > localTime && remoteTime > Cloud.lastAdopted) {
       Cloud.lastAdopted = remoteTime;
       adoptRemoteState(remote);
+    } else if (localTime > remoteTime) {
+      // Dispositivo tem versão mais recente (ex.: edições offline) → envia
+      cloudPush(true);
     }
     setSyncStatus('ok', 'Sincronizado');
   }, err => {
@@ -6276,6 +6437,10 @@ function adoptRemoteState(remote) {
   if (!state.auth) state.auth = { user: 'admin', pass: '1234' };
   idbSet('state', state);
   renderAll();
+  // Atualiza nome/avatar com os dados que vieram da nuvem
+  const dn = state.empresa.nomeCompleto || state.empresa.nome || (Cloud.user && (Cloud.user.email||'').split('@')[0]) || 'Usuário';
+  const el = document.getElementById('user-display-name'); if (el) el.textContent = dn;
+  const av = document.getElementById('user-avatar'); if (av) av.textContent = (dn||'U').charAt(0).toUpperCase();
   toast('Dados atualizados de outro dispositivo.', 'success');
 }
 
@@ -6288,6 +6453,13 @@ function cloudPush(immediate) {
     try {
       setSyncStatus('syncing', 'Salvando...');
       const payload = { ...state, _device: Cloud.deviceId, _updatedAt: state._updatedAt || Date.now() };
+      // Firestore limita o documento a 1 MB. Avisa antes de estourar.
+      const size = new Blob([JSON.stringify(payload)]).size;
+      if (size > 950000) {
+        setSyncStatus('err', 'Dados muito grandes');
+        toast('Os dados passaram do limite da nuvem (1 MB). Remova anexos HTML grandes ou a logo para sincronizar.', 'error');
+        return;
+      }
       await ref.set(payload);
       Cloud.lastAdopted = payload._updatedAt;
       setSyncStatus('ok', 'Sincronizado');
@@ -6414,11 +6586,14 @@ async function init() {
 
   // Sincronização em nuvem + PWA
   registerServiceWorker();
-  cloudInit();
+  const cloudOk = cloudInit();
   updateSyncUI();
-  // Reconecta automaticamente se já houver sessão salva
-  if (cloudConfigured() && Cloud.auth && !Cloud.auth.currentUser) {
-    setSyncStatus('idle', 'Conectar nuvem');
+  if (!cloudOk) {
+    // Sem nuvem: revela o formulário e avisa
+    const loader = document.getElementById('auth-loading');
+    if (loader) loader.style.display = 'none';
+    const warn = document.getElementById('login-cloud-warning');
+    if (warn && cloudConfigured()) warn.style.display = '';
   }
 }
 
