@@ -1854,7 +1854,15 @@ tbody tr:last-child td { border-bottom: none; }
   /* ── Section header ── */
   .section-title { font-size: 17px; }
   .section-header { margin-bottom: 14px; }
-  .section-header .btn-primary { display: none; }
+  /* Botões de ação ("Novo X") ficam visíveis e compactos no celular */
+  .section-header { align-items: flex-start; }
+  .section-header .btn-primary {
+    display: inline-flex;
+    padding: 9px 14px;
+    font-size: 13px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
 
   /* ── Financial summary ── */
   .fin-summary {
@@ -1898,7 +1906,7 @@ tbody tr:last-child td { border-bottom: none; }
 
   /* ── Bottom nav ── */
   .bottom-nav { display: flex; }
-  .fab { display: flex; }
+  .fab { display: none !important; }
 
   /* ── Login ── */
   .login-box {
@@ -2715,6 +2723,7 @@ tbody tr:last-child td { border-bottom: none; }
               </div>
             </div>
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
+              <button class="btn btn-secondary" onclick="cloudTest()"><i class="ph ph-plugs-connected"></i> Testar conexão</button>
               <button class="btn btn-secondary" onclick="cloudForcePush()"><i class="ph ph-cloud-arrow-up"></i> Enviar dados agora</button>
               <button class="btn btn-ghost" onclick="doLogout()" style="color:var(--danger);"><i class="ph ph-sign-out"></i> Sair da conta</button>
             </div>
@@ -6426,6 +6435,7 @@ function startCloudListener() {
   }, err => {
     console.error('Listener nuvem:', err);
     setSyncStatus('err', 'Erro de leitura');
+    cloudErrorToast(err, 'Falha ao ler a nuvem');
   });
 }
 
@@ -6444,6 +6454,23 @@ function adoptRemoteState(remote) {
   toast('Dados atualizados de outro dispositivo.', 'success');
 }
 
+function cloudErrorToast(err, contexto) {
+  const code = err && err.code;
+  let msg;
+  if (code === 'permission-denied') {
+    msg = 'A nuvem recusou o acesso. Publique as REGRAS do Firestore (firestore.rules) no console do Firebase.';
+  } else if (code === 'unavailable' || code === 'failed-precondition') {
+    msg = 'Banco de dados indisponível. Confirme que o Firestore foi criado no console do Firebase.';
+  } else if (code === 'not-found') {
+    msg = 'Projeto/banco não encontrado. Verifique a configuração do Firebase.';
+  } else if (err && /invalid data|undefined/i.test(err.message || '')) {
+    msg = 'Havia um dado inválido — já corrigi e tentarei de novo.';
+  } else {
+    msg = (contexto || 'Erro de nuvem') + ': ' + ((err && (err.message || err.code)) || 'desconhecido');
+  }
+  toast(msg, 'error');
+}
+
 function cloudPush(immediate) {
   if (!Cloud.enabled || !Cloud.connected) return;
   clearTimeout(Cloud.pushTimer);
@@ -6452,7 +6479,9 @@ function cloudPush(immediate) {
     if (!ref) return;
     try {
       setSyncStatus('syncing', 'Salvando...');
-      const payload = { ...state, _device: Cloud.deviceId, _updatedAt: state._updatedAt || Date.now() };
+      // Remove valores undefined/funções — o Firestore os rejeita
+      const safe = JSON.parse(JSON.stringify(state));
+      const payload = { ...safe, _device: Cloud.deviceId, _updatedAt: state._updatedAt || Date.now() };
       // Firestore limita o documento a 1 MB. Avisa antes de estourar.
       const size = new Blob([JSON.stringify(payload)]).size;
       if (size > 950000) {
@@ -6466,6 +6495,7 @@ function cloudPush(immediate) {
     } catch (err) {
       console.error('Push nuvem:', err);
       setSyncStatus('err', 'Falha ao salvar');
+      cloudErrorToast(err, 'Falha ao enviar para a nuvem');
     }
   };
   if (immediate) doPush();
@@ -6507,6 +6537,30 @@ function cloudForcePush() {
   state._updatedAt = Date.now();
   cloudPush(true);
   toast('Enviando dados para a nuvem...');
+}
+
+async function cloudTest() {
+  if (!Cloud.connected) { toast('Você não está conectado.', 'error'); return; }
+  const ref = cloudDocRef();
+  if (!ref) { toast('Sem referência de conta.', 'error'); return; }
+  setSyncStatus('syncing', 'Testando...');
+  try {
+    // 1) Escreve um marcador de teste
+    await ref.set({ _teste: Date.now() }, { merge: true });
+    // 2) Lê de volta
+    const snap = await ref.get();
+    if (snap.exists && snap.data()._teste) {
+      setSyncStatus('ok', 'Sincronizado');
+      toast('✓ Conexão com a nuvem funcionando! Escrita e leitura OK.');
+    } else {
+      setSyncStatus('err', 'Falha no teste');
+      toast('A escrita não foi confirmada. Verifique o Firestore.', 'error');
+    }
+  } catch (err) {
+    console.error('Teste nuvem:', err);
+    setSyncStatus('err', 'Falha no teste');
+    cloudErrorToast(err, 'Teste falhou');
+  }
 }
 
 // ─── PWA (instalação + offline) ───────────────────────────
