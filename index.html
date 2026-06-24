@@ -4,6 +4,40 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>GestorPRO · Sistema de Gestão</title>
+
+<!-- ─── PWA / App nativo no celular ─────────────────────────── -->
+<meta name="theme-color" content="#0c0e14">
+<meta name="description" content="GestorPRO — Sistema de gestão de clientes, projetos, finanças e licenças com sincronização em nuvem.">
+<link rel="manifest" href="manifest.json">
+<!-- iOS standalone -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GestorPRO">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+
+<!-- ─── Firebase (sincronização em nuvem) ───────────────────── -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║  CONFIGURAÇÃO DO FIREBASE — COLE AQUI OS DADOS DO SEU PROJETO   ║
+   ║  (veja o passo a passo no arquivo GUIA-FIREBASE.md)            ║
+   ╚══════════════════════════════════════════════════════════════╝
+   Enquanto os campos estiverem com "COLE_...", o sistema funciona
+   100% offline (como hoje). Ao preencher, a nuvem é ativada.       */
+window.FIREBASE_CONFIG = {
+  apiKey:            "COLE_SUA_API_KEY",
+  authDomain:        "COLE_SEU_PROJETO.firebaseapp.com",
+  projectId:         "COLE_SEU_PROJECT_ID",
+  storageBucket:     "COLE_SEU_PROJETO.appspot.com",
+  messagingSenderId: "COLE_SEU_SENDER_ID",
+  appId:             "COLE_SEU_APP_ID"
+};
+</script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
@@ -2042,6 +2076,77 @@ tbody tr:last-child td { border-bottom: none; }
   .main { margin-left: 0 !important; }
   #documento-preview { display: block !important; box-shadow: none; margin: 0; }
 }
+
+/* ─── IDEIAS ─────────────────────────────────── */
+.ideia-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.ideia-stat {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+.ideia-stat .v { font-size: 22px; font-weight: 800; line-height: 1; }
+.ideia-stat .l { font-size: 11px; color: var(--text-muted); margin-top: 6px; text-transform: uppercase; letter-spacing: .04em; }
+.ideia-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+}
+.ideia-card {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color .18s, transform .18s, box-shadow .18s;
+}
+.ideia-card:hover { border-color: var(--border-active); transform: translateY(-2px); box-shadow: var(--shadow); }
+.ideia-card .ic-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.ideia-card .ic-title { font-weight: 700; font-size: 15px; line-height: 1.3; }
+.ideia-card .ic-block { font-size: 12.5px; line-height: 1.5; }
+.ideia-card .ic-block .lbl { display: flex; align-items: center; gap: 5px; font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); margin-bottom: 2px; }
+.ideia-card .ic-block .txt { color: var(--text); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.ideia-card .ic-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+.ideia-card .ic-actions { display: flex; gap: 6px; margin-top: auto; padding-top: 8px; border-top: 1px solid var(--border); }
+.ic-tag { font-size: 10.5px; font-weight: 600; padding: 3px 9px; border-radius: 20px; display: inline-flex; align-items: center; gap: 4px; }
+.dem-baixa { background: var(--text-faint); color: var(--text-muted); }
+.dem-media { background: var(--warning-dim); color: var(--warning); }
+.dem-alta  { background: var(--primary-dim); color: var(--primary-light); }
+.dem-validada { background: var(--success-dim); color: var(--success); }
+.st-rascunho { background: var(--text-faint); color: var(--text-muted); }
+.st-validando { background: var(--warning-dim); color: var(--warning); }
+.st-validada { background: var(--success-dim); color: var(--success); }
+.st-execucao { background: var(--primary-dim); color: var(--primary-light); }
+.st-descartada { background: var(--danger-dim); color: var(--danger); }
+
+/* ─── SYNC STATUS (cloud) ────────────────────── */
+.sync-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600;
+  padding: 5px 11px; border-radius: 20px;
+  border: 1px solid var(--border); background: var(--bg-input);
+  color: var(--text-muted); cursor: pointer; white-space: nowrap;
+}
+.sync-pill i { font-size: 15px; }
+.sync-pill.ok { color: var(--success); border-color: var(--success-dim); }
+.sync-pill.syncing { color: var(--primary-light); }
+.sync-pill.syncing i { animation: spin 1s linear infinite; }
+.sync-pill.off { color: var(--text-muted); }
+.sync-pill.err { color: var(--danger); border-color: var(--danger-dim); }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+#install-btn { display: none; }
+
+@media (max-width: 768px) {
+  .topbar .sync-pill span.sync-label { display: none; }
+}
 </style>
 </head>
 <body>
@@ -2165,6 +2270,11 @@ tbody tr:last-child td { border-bottom: none; }
         <i class="ph ph-key"></i><span>Licenças</span>
       </button>
 
+      <div class="nav-section" style="margin-top:14px;">Inovação</div>
+      <button class="nav-item" data-page="ideias" onclick="showPage('ideias')">
+        <i class="ph ph-lightbulb"></i><span>Ideias</span>
+      </button>
+
       <div class="nav-section" style="margin-top:14px;">Sistema</div>
       <button class="nav-item" data-page="configuracoes" onclick="showPage('configuracoes')">
         <i class="ph ph-gear-six"></i><span>Configurações</span>
@@ -2199,6 +2309,9 @@ tbody tr:last-child td { border-bottom: none; }
         <span class="page-title" id="topbar-title">Painel Geral</span>
       </div>
       <div class="topbar-right">
+        <div class="sync-pill off" id="sync-pill" onclick="showPage('configuracoes')" title="Status da sincronização em nuvem">
+          <i class="ph ph-cloud-slash"></i><span class="sync-label">Nuvem desativada</span>
+        </div>
         <div class="topbar-date" id="topbar-date"></div>
         <button class="theme-toggle" id="theme-toggle-btn" onclick="toggleTheme()" title="Alternar tema">
           <i class="ph ph-sun" id="theme-icon"></i>
@@ -2543,6 +2656,68 @@ tbody tr:last-child td { border-bottom: none; }
         </div>
 
         <div class="card">
+          <div class="settings-section-title" style="display:flex;align-items:center;gap:8px;">
+            <i class="ph ph-cloud" style="color:var(--primary-light);"></i> Sincronização em Nuvem
+          </div>
+          <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;line-height:1.6;">
+            Conecte-se com um e-mail e senha para acessar seus dados de <strong style="color:var(--text);">qualquer aparelho ou computador</strong>.
+            Os dados ficam protegidos no Firebase e só você (com sua conta) consegue acessá-los.
+          </p>
+
+          <!-- Aviso: Firebase ainda não configurado -->
+          <div id="cloud-not-config" style="display:none;background:var(--warning-dim);border:1px solid var(--warning);border-radius:var(--radius-sm);padding:14px 16px;font-size:13px;color:var(--text);line-height:1.6;">
+            <i class="ph ph-warning" style="color:var(--warning);"></i>
+            A nuvem ainda não está configurada. Abra o arquivo <code style="font-family:var(--font-mono);color:var(--warning);">index.html</code>,
+            cole os dados do seu projeto no bloco <code style="font-family:var(--font-mono);color:var(--warning);">window.FIREBASE_CONFIG</code>
+            e siga o passo a passo do arquivo <strong>GUIA-FIREBASE.md</strong>.
+          </div>
+
+          <!-- Formulário de conexão -->
+          <div id="cloud-connect-form" class="form-grid" style="max-width:560px;display:none;">
+            <div class="form-group">
+              <label>E-mail da nuvem</label>
+              <input type="email" id="cloud-email" placeholder="voce@email.com" autocomplete="username">
+            </div>
+            <div class="form-group">
+              <label>Senha da nuvem</label>
+              <input type="password" id="cloud-pass" placeholder="mínimo 6 caracteres" autocomplete="current-password">
+            </div>
+            <div class="form-footer" style="padding-top:4px;">
+              <button class="btn btn-primary" onclick="cloudConnectFromForm()"><i class="ph ph-sign-in"></i> Conectar / Criar conta</button>
+            </div>
+            <span style="font-size:11px;color:var(--text-muted);">Na primeira vez, a conta é criada automaticamente. Use o mesmo e-mail e senha nos outros dispositivos.</span>
+          </div>
+
+          <!-- Status conectado -->
+          <div id="cloud-status-box" style="display:none;">
+            <div style="display:flex;align-items:center;gap:12px;background:var(--success-dim);border:1px solid var(--success);border-radius:var(--radius-sm);padding:14px 16px;">
+              <i class="ph ph-cloud-check" style="font-size:24px;color:var(--success);"></i>
+              <div style="flex:1;">
+                <div style="font-weight:600;color:var(--text);">Conectado e sincronizando</div>
+                <div style="font-size:12px;color:var(--text-muted);">Conta: <span id="cloud-account-email" style="font-family:var(--font-mono);"></span></div>
+              </div>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
+              <button class="btn btn-secondary" onclick="cloudForcePush()"><i class="ph ph-cloud-arrow-up"></i> Enviar dados agora</button>
+              <button class="btn btn-ghost" onclick="cloudDisconnect()" style="color:var(--danger);"><i class="ph ph-sign-out"></i> Desconectar</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="settings-section-title" style="display:flex;align-items:center;gap:8px;">
+            <i class="ph ph-device-mobile" style="color:var(--primary-light);"></i> Instalar como aplicativo
+          </div>
+          <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;line-height:1.6;">
+            No computador, o sistema abre normalmente no navegador. No celular, você pode instalá-lo como um app nativo, com ícone na tela inicial e funcionamento em tela cheia.
+          </p>
+          <button class="btn btn-primary" id="install-btn" onclick="triggerInstall()" style="display:inline-flex;"><i class="ph ph-download-simple"></i> Instalar GestorPRO</button>
+          <span id="install-hint" style="display:block;font-size:11px;color:var(--text-muted);margin-top:10px;">
+            No iPhone (Safari): toque em Compartilhar → "Adicionar à Tela de Início". No Android (Chrome): menu ⋮ → "Instalar app".
+          </span>
+        </div>
+
+        <div class="card">
           <div class="settings-section-title">Dados da Empresa</div>
           <form id="form-config" class="form-grid" onsubmit="saveConfig(event)">
             <div class="form-group">
@@ -2714,6 +2889,39 @@ tbody tr:last-child td { border-bottom: none; }
         </div>
       </section>
 
+      <!-- ── IDEIAS ─────────────────────────────────── -->
+      <section id="page-ideias" class="page">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Ideias</div>
+            <div class="section-sub">Registre ideias que resolvem um problema real e têm demanda comprovada</div>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('ideia')">
+            <i class="ph ph-plus"></i> Nova Ideia
+          </button>
+        </div>
+
+        <div class="ideia-stats" id="ideia-stats"></div>
+
+        <div class="card">
+          <div class="action-row" style="margin-bottom:16px;">
+            <div class="search-input-wrap">
+              <i class="ph ph-magnifying-glass"></i>
+              <input type="text" id="ideia-search" placeholder="Buscar ideia..." oninput="renderIdeias()">
+            </div>
+            <select id="ideia-filter-status" onchange="renderIdeias()" style="max-width:180px;">
+              <option value="">Todos os status</option>
+              <option value="rascunho">Rascunho</option>
+              <option value="validando">Validando demanda</option>
+              <option value="validada">Demanda validada</option>
+              <option value="execucao">Em execução</option>
+              <option value="descartada">Descartada</option>
+            </select>
+          </div>
+          <div id="grid-ideias" class="ideia-grid"></div>
+        </div>
+      </section>
+
     </div><!-- /content-area -->
   </div><!-- /main -->
 </div><!-- /app -->
@@ -2828,9 +3036,91 @@ tbody tr:last-child td { border-bottom: none; }
         <label>Descrição</label>
         <textarea id="proj-desc" placeholder="Descreva o escopo do projeto..."></textarea>
       </div>
+      <div class="form-group full">
+        <label><i class="ph ph-rocket-launch" style="color:var(--primary-light);"></i> Melhorias a implementar</label>
+        <textarea id="proj-melhorias" placeholder="Liste melhorias futuras, ajustes pendentes ou próximos passos deste projeto..."></textarea>
+        <span style="font-size:11px;color:var(--text-muted);margin-top:4px;">Use uma melhoria por linha para acompanhar o que ainda falta evoluir.</span>
+      </div>
       <div class="form-footer">
         <button type="button" class="btn btn-secondary" onclick="closeModal('project')">Cancelar</button>
         <button type="submit" class="btn btn-primary"><i class="ph ph-floppy-disk"></i> Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Ideia Modal -->
+<div class="modal-overlay" id="modal-ideia">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-ideia-title">Nova Ideia</span>
+      <button class="modal-close" onclick="closeModal('ideia')"><i class="ph ph-x"></i></button>
+    </div>
+    <form class="form-grid" id="form-ideia" onsubmit="saveIdeia(event)">
+      <input type="hidden" id="ideia-id">
+      <div class="form-group full">
+        <label>Título da ideia *</label>
+        <input type="text" id="ideia-titulo" placeholder="Ex: App de agendamento para barbearias" required>
+      </div>
+      <div class="form-group full">
+        <label><i class="ph ph-warning-circle" style="color:var(--warning);"></i> Qual problema resolve? *</label>
+        <textarea id="ideia-problema" placeholder="Descreva claramente a dor ou o problema que esta ideia elimina..." required></textarea>
+      </div>
+      <div class="form-group full">
+        <label><i class="ph ph-lightbulb" style="color:var(--primary-light);"></i> Solução proposta *</label>
+        <textarea id="ideia-solucao" placeholder="Como a ideia resolve esse problema, na prática?" required></textarea>
+      </div>
+      <div class="form-group full">
+        <label><i class="ph ph-users-three" style="color:var(--success);"></i> Evidência de demanda *</label>
+        <textarea id="ideia-demanda" placeholder="Quem precisa disso? Como você sabe que há demanda real? (pedidos de clientes, pesquisas, concorrentes, buscas, conversas...)" required></textarea>
+        <span style="font-size:11px;color:var(--text-muted);margin-top:4px;">Uma boa ideia tem alguém disposto a pagar. Anote a prova de que a demanda existe.</span>
+      </div>
+      <div class="form-group">
+        <label>Nível de demanda</label>
+        <select id="ideia-nivel">
+          <option value="baixa">Baixa — sinal fraco</option>
+          <option value="media" selected>Média — alguns interessados</option>
+          <option value="alta">Alta — muita procura</option>
+          <option value="validada">Validada — já há quem pague</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Público-alvo / segmento</label>
+        <input type="text" id="ideia-publico" placeholder="Ex: pequenos comércios locais">
+      </div>
+      <div class="form-group">
+        <label>Esforço estimado</label>
+        <select id="ideia-esforco">
+          <option value="baixo">Baixo</option>
+          <option value="medio" selected>Médio</option>
+          <option value="alto">Alto</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Prioridade</label>
+        <select id="ideia-prioridade">
+          <option value="baixa">Baixa</option>
+          <option value="media" selected>Média</option>
+          <option value="alta">Alta</option>
+        </select>
+      </div>
+      <div class="form-group full">
+        <label>Status</label>
+        <select id="ideia-status">
+          <option value="rascunho">Rascunho</option>
+          <option value="validando">Validando demanda</option>
+          <option value="validada">Demanda validada</option>
+          <option value="execucao">Em execução</option>
+          <option value="descartada">Descartada</option>
+        </select>
+      </div>
+      <div class="form-group full">
+        <label>Observações / próximos passos</label>
+        <textarea id="ideia-notas" placeholder="Links, referências, o que falta validar..."></textarea>
+      </div>
+      <div class="form-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('ideia')">Cancelar</button>
+        <button type="submit" class="btn btn-primary"><i class="ph ph-floppy-disk"></i> Salvar Ideia</button>
       </div>
     </form>
   </div>
@@ -3210,6 +3500,7 @@ let state = {
   financeiro: [],
   produtos: [],
   licencas: [],
+  ideias: [],
   empresa: {},
   auth: { user: 'admin', pass: '1234' }
 };
@@ -3325,6 +3616,7 @@ const pageTitles = {
   contratos: 'Documentos',
   produtos: 'Produtos de Software',
   licencas: 'Licenças',
+  ideias: 'Ideias',
   configuracoes: 'Configurações'
 };
 
@@ -3333,6 +3625,7 @@ const fabPages = {
   clientes: () => openModal('client'),
   projetos: () => openModal('project'),
   financeiro: () => openModal('financial'),
+  ideias: () => openModal('ideia'),
 };
 
 function fabAction() {
@@ -3367,6 +3660,7 @@ function showPage(id) {
   else if (id === 'contratos') { populateClientDropdown('doc-cliente'); }
   else if (id === 'produtos') renderProdutos();
   else if (id === 'licencas') renderLicencas();
+  else if (id === 'ideias') renderIdeias();
   else if (id === 'configuracoes') loadConfigForm();
 }
 
@@ -3412,6 +3706,9 @@ function openModal(type) {
     document.getElementById('modal-project-title').textContent = 'Novo Projeto';
   }
   if (type === 'financial') { populateProjDropdown('fin-projeto', ''); }
+  if (type === 'ideia' && !document.getElementById('ideia-id').value) {
+    document.getElementById('modal-ideia-title').textContent = 'Nova Ideia';
+  }
   if (type === 'licenca') {
     populateClientDropdown('licenca-cliente');
     populateProdutoDropdown('licenca-produto');
@@ -3445,7 +3742,9 @@ document.querySelectorAll('.modal-overlay').forEach(m => {
 
 // ─── Save State ───────────────────────────────────────────
 async function saveState() {
+  state._updatedAt = Date.now();
   await idbSet('state', state);
+  cloudPush();
 }
 
 // ─── Clientes ─────────────────────────────────────────────
@@ -3548,6 +3847,7 @@ function saveProject(e) {
     duracao: parseInt(document.getElementById('proj-duracao').value) || 0,
     link: document.getElementById('proj-link').value,
     desc: document.getElementById('proj-desc').value,
+    melhorias: document.getElementById('proj-melhorias').value,
     arquivoHTML: window.projArquivoHTML || null,
   };
   if (id) {
@@ -3614,6 +3914,7 @@ function editProject(id) {
   document.getElementById('proj-duracao').value = p.duracao || '';
   document.getElementById('proj-link').value = p.link || '';
   document.getElementById('proj-desc').value = p.desc || '';
+  document.getElementById('proj-melhorias').value = p.melhorias || '';
   window.projArquivoHTML = p.arquivoHTML || null;
   updateProjectHTMLPreview();
   document.getElementById('modal-project-title').textContent = 'Editar Projeto';
@@ -3632,6 +3933,142 @@ function deleteProject(id) {
 }
 
 function filterProjectsByStatus(s) { renderProjetos(s); }
+
+// ─── Ideias ───────────────────────────────────────────────
+const ideiaNivelLabel = { baixa:'Demanda baixa', media:'Demanda média', alta:'Demanda alta', validada:'Demanda validada' };
+const ideiaStatusLabel = { rascunho:'Rascunho', validando:'Validando demanda', validada:'Demanda validada', execucao:'Em execução', descartada:'Descartada' };
+
+function saveIdeia(e) {
+  e.preventDefault();
+  const id = document.getElementById('ideia-id').value;
+  const existing = id ? state.ideias.find(i => i.id === id) : null;
+  const data = {
+    id: id || uid(),
+    titulo: document.getElementById('ideia-titulo').value,
+    problema: document.getElementById('ideia-problema').value,
+    solucao: document.getElementById('ideia-solucao').value,
+    demanda: document.getElementById('ideia-demanda').value,
+    nivel: document.getElementById('ideia-nivel').value,
+    publico: document.getElementById('ideia-publico').value,
+    esforco: document.getElementById('ideia-esforco').value,
+    prioridade: document.getElementById('ideia-prioridade').value,
+    status: document.getElementById('ideia-status').value,
+    notas: document.getElementById('ideia-notas').value,
+    criadaEm: existing ? existing.criadaEm : new Date().toISOString(),
+  };
+  if (id) {
+    const i = state.ideias.findIndex(x => x.id === id);
+    if (i > -1) state.ideias[i] = data;
+  } else {
+    state.ideias.unshift(data);
+  }
+  saveState();
+  closeModal('ideia');
+  renderIdeias();
+  toast(id ? 'Ideia atualizada!' : 'Ideia registrada!');
+}
+
+function renderIdeias() {
+  const grid = document.getElementById('grid-ideias');
+  if (!grid) return;
+  const q = (document.getElementById('ideia-search')?.value || '').toLowerCase();
+  const fStatus = document.getElementById('ideia-filter-status')?.value || '';
+
+  // Stats
+  const total = state.ideias.length;
+  const validadas = state.ideias.filter(i => i.nivel === 'validada' || i.status === 'validada').length;
+  const emExec = state.ideias.filter(i => i.status === 'execucao').length;
+  const statsEl = document.getElementById('ideia-stats');
+  if (statsEl) {
+    statsEl.innerHTML = `
+      <div class="ideia-stat"><div class="v">${total}</div><div class="l">Ideias registradas</div></div>
+      <div class="ideia-stat"><div class="v" style="color:var(--success);">${validadas}</div><div class="l">Com demanda validada</div></div>
+      <div class="ideia-stat"><div class="v" style="color:var(--primary-light);">${emExec}</div><div class="l">Em execução</div></div>`;
+  }
+
+  let list = state.ideias.filter(i => {
+    const matchQ = !q || (i.titulo + i.problema + i.solucao + i.demanda + (i.publico||'')).toLowerCase().includes(q);
+    const matchS = !fStatus || i.status === fStatus;
+    return matchQ && matchS;
+  });
+
+  if (!list.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><i class="ph ph-lightbulb"></i><p>${total ? 'Nenhuma ideia encontrada com esse filtro.' : 'Nenhuma ideia ainda. Registre a primeira ideia que resolve um problema com demanda real.'}</p></div>`;
+    return;
+  }
+
+  grid.innerHTML = list.map(i => {
+    const esc = (s) => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return `
+    <div class="ideia-card">
+      <div class="ic-head">
+        <div class="ic-title">${esc(i.titulo)}</div>
+        <span class="ic-tag st-${i.status}">${ideiaStatusLabel[i.status] || i.status}</span>
+      </div>
+      <div class="ic-block">
+        <div class="lbl"><i class="ph ph-warning-circle"></i> Problema</div>
+        <div class="txt">${esc(i.problema)}</div>
+      </div>
+      <div class="ic-block">
+        <div class="lbl"><i class="ph ph-lightbulb"></i> Solução</div>
+        <div class="txt">${esc(i.solucao)}</div>
+      </div>
+      <div class="ic-block">
+        <div class="lbl"><i class="ph ph-users-three"></i> Demanda</div>
+        <div class="txt">${esc(i.demanda)}</div>
+      </div>
+      <div class="ic-tags">
+        <span class="ic-tag dem-${i.nivel}"><i class="ph ph-trend-up"></i> ${ideiaNivelLabel[i.nivel] || i.nivel}</span>
+        ${i.publico ? `<span class="ic-tag" style="background:var(--bg-hover);color:var(--text-muted);"><i class="ph ph-target"></i> ${esc(i.publico)}</span>` : ''}
+        <span class="ic-tag" style="background:var(--bg-hover);color:var(--text-muted);"><i class="ph ph-flag"></i> ${i.prioridade}</span>
+      </div>
+      <div class="ic-actions">
+        <button class="btn btn-secondary" style="flex:1;padding:7px;font-size:12px;" onclick="converterIdeiaEmProjeto('${i.id}')" title="Transformar em projeto"><i class="ph ph-arrow-bend-up-right"></i> Virar projeto</button>
+        <button class="act-btn act-edit" onclick="editIdeia('${i.id}')"><i class="ph ph-pencil-simple"></i></button>
+        <button class="act-btn act-delete" onclick="deleteIdeia('${i.id}')"><i class="ph ph-trash"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function editIdeia(id) {
+  const i = state.ideias.find(x => x.id === id);
+  if (!i) return;
+  document.getElementById('ideia-id').value = i.id;
+  document.getElementById('ideia-titulo').value = i.titulo || '';
+  document.getElementById('ideia-problema').value = i.problema || '';
+  document.getElementById('ideia-solucao').value = i.solucao || '';
+  document.getElementById('ideia-demanda').value = i.demanda || '';
+  document.getElementById('ideia-nivel').value = i.nivel || 'media';
+  document.getElementById('ideia-publico').value = i.publico || '';
+  document.getElementById('ideia-esforco').value = i.esforco || 'medio';
+  document.getElementById('ideia-prioridade').value = i.prioridade || 'media';
+  document.getElementById('ideia-status').value = i.status || 'rascunho';
+  document.getElementById('ideia-notas').value = i.notas || '';
+  document.getElementById('modal-ideia-title').textContent = 'Editar Ideia';
+  openModal('ideia');
+}
+
+function deleteIdeia(id) {
+  if (!confirm('Excluir esta ideia?')) return;
+  state.ideias = state.ideias.filter(i => i.id !== id);
+  saveState();
+  renderIdeias();
+  toast('Ideia removida.', 'error');
+}
+
+function converterIdeiaEmProjeto(id) {
+  const i = state.ideias.find(x => x.id === id);
+  if (!i) return;
+  openModal('project');
+  setTimeout(() => {
+    document.getElementById('proj-nome').value = i.titulo || '';
+    document.getElementById('proj-desc').value =
+      `Problema: ${i.problema || ''}\n\nSolução: ${i.solucao || ''}\n\nDemanda: ${i.demanda || ''}`;
+    document.getElementById('modal-project-title').textContent = 'Novo Projeto (a partir de ideia)';
+  }, 60);
+  toast('Ideia carregada no novo projeto. Selecione o cliente e salve.');
+}
 
 // ─── Financeiro ───────────────────────────────────────────
 function saveFinancial(e) {
@@ -4670,6 +5107,7 @@ function saveConfig(e) {
 }
 
 function loadConfigForm() {
+  updateSyncUI();
   const e = state.empresa;
   document.getElementById('cfg-nome').value = e.nome || '';
   document.getElementById('cfg-doc').value = e.doc || '';
@@ -5505,6 +5943,7 @@ function renderAll() {
   renderKanban();
   renderProdutos();
   renderLicencas();
+  renderIdeias();
   populateClientDropdown('doc-cliente');
   loadConfigForm();
   // Init FAB for current page
@@ -5701,6 +6140,240 @@ function renderDashboard() {
   document.getElementById('ds-receita').textContent = fmt(mesRec);
 }
 
+// ─── CLOUD SYNC (Firebase) ────────────────────────────────
+const Cloud = {
+  app: null, auth: null, db: null,
+  user: null,
+  enabled: false, connected: false,
+  deviceId: null, unsub: null, pushTimer: null,
+  lastAdopted: 0,
+};
+
+function cloudConfigured() {
+  const c = window.FIREBASE_CONFIG || {};
+  return c.apiKey && !String(c.apiKey).startsWith('COLE_') &&
+         c.projectId && !String(c.projectId).startsWith('COLE_');
+}
+
+function getDeviceId() {
+  let d = localStorage.getItem('gestorpro_device_id');
+  if (!d) { d = '_' + Math.random().toString(36).slice(2, 11); localStorage.setItem('gestorpro_device_id', d); }
+  return d;
+}
+
+function setSyncStatus(kind, label) {
+  const pill = document.getElementById('sync-pill');
+  if (!pill) return;
+  const icons = { ok:'ph-cloud-check', syncing:'ph-cloud-arrow-up', off:'ph-cloud-slash', err:'ph-cloud-warning', idle:'ph-cloud' };
+  pill.className = 'sync-pill ' + kind;
+  pill.querySelector('i').className = 'ph ' + (icons[kind] || 'ph-cloud');
+  pill.querySelector('.sync-label').textContent = label;
+}
+
+function cloudInit() {
+  if (!cloudConfigured()) { Cloud.enabled = false; setSyncStatus('off', 'Nuvem desativada'); return false; }
+  if (typeof firebase === 'undefined') { setSyncStatus('err', 'SDK indisponível'); return false; }
+  if (Cloud.app) return true;
+  try {
+    Cloud.app = firebase.initializeApp(window.FIREBASE_CONFIG);
+    Cloud.auth = firebase.auth();
+    Cloud.db = firebase.firestore();
+    Cloud.deviceId = getDeviceId();
+    Cloud.enabled = true;
+    Cloud.auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{});
+    Cloud.auth.onAuthStateChanged(u => {
+      Cloud.user = u;
+      Cloud.connected = !!u;
+      updateSyncUI();
+      if (u) startCloudListener();
+      else if (Cloud.unsub) { Cloud.unsub(); Cloud.unsub = null; }
+    });
+    return true;
+  } catch (err) {
+    console.error('Firebase init falhou:', err);
+    setSyncStatus('err', 'Erro na nuvem');
+    return false;
+  }
+}
+
+async function cloudConnect(email, pass, createIfMissing) {
+  if (!cloudInit()) { toast('Preencha a configuração do Firebase primeiro.', 'error'); return; }
+  setSyncStatus('syncing', 'Conectando...');
+  try {
+    await Cloud.auth.signInWithEmailAndPassword(email, pass);
+    toast('Conectado à nuvem!');
+  } catch (err) {
+    if (createIfMissing && (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential')) {
+      try {
+        await Cloud.auth.createUserWithEmailAndPassword(email, pass);
+        toast('Conta de nuvem criada e conectada!');
+      } catch (e2) { handleCloudError(e2); return; }
+    } else { handleCloudError(err); return; }
+  }
+  localStorage.setItem('gestorpro_cloud_email', email);
+}
+
+function handleCloudError(err) {
+  console.error(err);
+  const map = {
+    'auth/invalid-email': 'E-mail inválido.',
+    'auth/missing-password': 'Informe a senha.',
+    'auth/weak-password': 'A senha precisa de pelo menos 6 caracteres.',
+    'auth/email-already-in-use': 'E-mail já cadastrado. Use “Conectar”.',
+    'auth/wrong-password': 'Senha incorreta.',
+    'auth/invalid-credential': 'E-mail ou senha incorretos.',
+    'auth/network-request-failed': 'Sem conexão com a internet.',
+    'auth/operation-not-allowed': 'Ative o login E-mail/Senha no Firebase Authentication.',
+  };
+  setSyncStatus('err', 'Erro');
+  toast(map[err.code] || ('Erro: ' + (err.message || err.code)), 'error');
+}
+
+async function cloudDisconnect() {
+  if (!Cloud.auth) return;
+  if (Cloud.unsub) { Cloud.unsub(); Cloud.unsub = null; }
+  await Cloud.auth.signOut();
+  localStorage.removeItem('gestorpro_cloud_email');
+  Cloud.connected = false;
+  updateSyncUI();
+  setSyncStatus('off', 'Desconectado');
+  toast('Desconectado da nuvem (os dados locais permanecem).');
+}
+
+function cloudDocRef() {
+  if (!Cloud.db || !Cloud.user) return null;
+  return Cloud.db.collection('gestorpro').doc(Cloud.user.uid);
+}
+
+function startCloudListener() {
+  const ref = cloudDocRef();
+  if (!ref) return;
+  setSyncStatus('syncing', 'Sincronizando...');
+  if (Cloud.unsub) Cloud.unsub();
+  Cloud.unsub = ref.onSnapshot({ includeMetadataChanges: false }, snap => {
+    if (!snap.exists) { cloudPush(true); setSyncStatus('ok', 'Sincronizado'); return; }
+    const remote = snap.data();
+    if (remote._device === Cloud.deviceId) { setSyncStatus('ok', 'Sincronizado'); return; }
+    const remoteTime = remote._updatedAt || 0;
+    const localTime = state._updatedAt || 0;
+    if (remoteTime > localTime && remoteTime > Cloud.lastAdopted) {
+      Cloud.lastAdopted = remoteTime;
+      adoptRemoteState(remote);
+    }
+    setSyncStatus('ok', 'Sincronizado');
+  }, err => {
+    console.error('Listener nuvem:', err);
+    setSyncStatus('err', 'Erro de leitura');
+  });
+}
+
+function adoptRemoteState(remote) {
+  const clean = { ...remote };
+  delete clean._device;
+  state = { ...state, ...clean };
+  if (!state.ideias) state.ideias = [];
+  if (!state.auth) state.auth = { user: 'admin', pass: '1234' };
+  idbSet('state', state);
+  renderAll();
+  toast('Dados atualizados de outro dispositivo.', 'success');
+}
+
+function cloudPush(immediate) {
+  if (!Cloud.enabled || !Cloud.connected) return;
+  clearTimeout(Cloud.pushTimer);
+  const doPush = async () => {
+    const ref = cloudDocRef();
+    if (!ref) return;
+    try {
+      setSyncStatus('syncing', 'Salvando...');
+      const payload = { ...state, _device: Cloud.deviceId, _updatedAt: state._updatedAt || Date.now() };
+      await ref.set(payload);
+      Cloud.lastAdopted = payload._updatedAt;
+      setSyncStatus('ok', 'Sincronizado');
+    } catch (err) {
+      console.error('Push nuvem:', err);
+      setSyncStatus('err', 'Falha ao salvar');
+    }
+  };
+  if (immediate) doPush();
+  else Cloud.pushTimer = setTimeout(doPush, 1200);
+}
+
+function updateSyncUI() {
+  const connected = Cloud.connected;
+  const email = (Cloud.user && Cloud.user.email) || localStorage.getItem('gestorpro_cloud_email') || '';
+  const statusBox = document.getElementById('cloud-status-box');
+  const connForm = document.getElementById('cloud-connect-form');
+  const notConfig = document.getElementById('cloud-not-config');
+  if (notConfig) notConfig.style.display = cloudConfigured() ? 'none' : '';
+  if (statusBox && connForm) {
+    if (connected) {
+      statusBox.style.display = '';
+      connForm.style.display = 'none';
+      document.getElementById('cloud-account-email').textContent = email;
+    } else {
+      statusBox.style.display = 'none';
+      connForm.style.display = cloudConfigured() ? '' : 'none';
+      const emailInput = document.getElementById('cloud-email');
+      if (emailInput && !emailInput.value) emailInput.value = email;
+    }
+  }
+  if (connected) setSyncStatus('ok', 'Sincronizado');
+  else if (cloudConfigured()) setSyncStatus('idle', 'Conectar nuvem');
+  else setSyncStatus('off', 'Nuvem desativada');
+}
+
+function cloudConnectFromForm() {
+  const email = document.getElementById('cloud-email').value.trim();
+  const pass = document.getElementById('cloud-pass').value;
+  if (!email || !pass) { toast('Informe e-mail e senha da nuvem.', 'error'); return; }
+  cloudConnect(email, pass, true);
+}
+function cloudForcePush() {
+  if (!Cloud.connected) { toast('Conecte-se à nuvem primeiro.', 'error'); return; }
+  state._updatedAt = Date.now();
+  cloudPush(true);
+  toast('Enviando dados para a nuvem...');
+}
+
+// ─── PWA (instalação + offline) ───────────────────────────
+let deferredInstallPrompt = null;
+
+function registerServiceWorker() {
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW não registrado:', err));
+  }
+}
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  const btn = document.getElementById('install-btn');
+  if (btn) btn.style.display = 'inline-flex';
+});
+
+async function triggerInstall() {
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    const { outcome } = await deferredInstallPrompt.userChoice;
+    if (outcome === 'accepted') toast('App instalado!');
+    deferredInstallPrompt = null;
+    document.getElementById('install-btn').style.display = 'none';
+  } else {
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    if (isIOS) {
+      alert('Para instalar no iPhone/iPad:\n\n1. Toque no botão Compartilhar do Safari (quadrado com seta).\n2. Escolha "Adicionar à Tela de Início".\n3. Toque em "Adicionar".');
+    } else {
+      alert('Para instalar: abra o menu do navegador (⋮) e escolha "Instalar app" ou "Adicionar à tela inicial".');
+    }
+  }
+}
+
+window.addEventListener('appinstalled', () => {
+  const btn = document.getElementById('install-btn');
+  if (btn) btn.style.display = 'none';
+});
+
 // ─── INIT ─────────────────────────────────────────────────
 async function init() {
   await openIDB();
@@ -5710,6 +6383,7 @@ async function init() {
     if (!state.auth) state.auth = { user: 'admin', pass: '1234' };
     if (!state.produtos) state.produtos = [];
     if (!state.licencas) state.licencas = [];
+    if (!state.ideias) state.ideias = [];
   }
   // Restore saved theme
   const savedTheme = localStorage.getItem('gestorpro_theme');
@@ -5736,6 +6410,15 @@ async function init() {
   }
   updateDate();
   setInterval(updateDate, 60000);
+
+  // Sincronização em nuvem + PWA
+  registerServiceWorker();
+  cloudInit();
+  updateSyncUI();
+  // Reconecta automaticamente se já houver sessão salva
+  if (cloudConfigured() && Cloud.auth && !Cloud.auth.currentUser) {
+    setSyncStatus('idle', 'Conectar nuvem');
+  }
 }
 
 init();
